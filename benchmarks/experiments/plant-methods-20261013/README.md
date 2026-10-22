@@ -105,12 +105,12 @@ experiments. Per-experiment limits do not enforce that aggregate automatically.
 genesis benchmark acquire benchmarks/experiments/plant-methods-20261013/acquisition.json \
   --out /data/genesis-method-sources --connections 4
 
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/plant-methods-20261013/prepare.py \
   --sources /data/genesis-method-sources --out /scratch/dap-se-inputs \
   --cohort dap-se --depth 1000000 --depth 5000000
 
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/plant-methods-20261013/compile_matrix.py \
   /scratch/dap-se-inputs/dap-se-depth-1000000.json \
   --out /scratch/dap-se-inputs/comparison-1m.json --repetitions 3 --cpus 14
@@ -148,7 +148,7 @@ have 2.88 GB of unique compressed layers before local cache reuse.
 ```bash
 git clone --branch 2.1.2 https://github.com/nf-core/atacseq.git /scratch/nfcore-atacseq
 pixi run nextflow plugin install nf-validation@1.1.4
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/plant-methods-20261013/prepare_workflows.py \
   /scratch/atac-inputs/atac-arabidopsis-depth-1000000.json \
   --out /scratch/workflow-comparison \
@@ -185,7 +185,7 @@ source revision and exact executed commands are retained with the results.
 Score both completed runs with identical definitions:
 
 ```bash
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/plant-methods-20261013/score_workflows.py \
   --genesis-run /scratch/workflow-comparison/genesis-results \
   --nfcore-run /scratch/workflow-comparison/nfcore-results \
@@ -200,7 +200,7 @@ After the native one-million-template ATAC comparison finishes, check its baseli
 against those production observations:
 
 ```bash
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/plant-methods-20261013/compare_production.py \
   --native /scratch/atac-comparison-1m \
   --workflow-scores /data/evidence/workflow-comparison \
@@ -262,7 +262,7 @@ figures, then verifies every archived file. Reads, BAMs and reference indexes
 stay outside Git.
 
 ```bash
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/plant-methods-20261013/archive.py \
   /scratch/dap-se-comparison-1m --out /data/evidence/dap-se-1m
 ```
@@ -278,7 +278,7 @@ diagnosis. Without the flag, archiving removes nothing.
 For the complete workflow comparison, archive the runs after common scoring:
 
 ```bash
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/plant-methods-20261013/archive_workflows.py \
   --genesis-run /scratch/workflow-comparison/genesis-results \
   --nfcore-run /scratch/workflow-comparison/nfcore-results \

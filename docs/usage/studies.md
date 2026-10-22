@@ -3,8 +3,8 @@
 Use `genesis study` when you want to track a study from its prepared sample sheet
 through processing, review and export. The commands save the input version, run
 jobs on your chosen workers and collect results into a catalog. AI is optional.
-For a single analysis without a catalog, use `pixi run pipeline` (DAP-seq) or
-`genesis pipeline-atac` instead.
+For a single analysis without a catalog, run `pixi run pipeline` (DAP-seq) or
+`pixi run pipeline-atac` in your genesis-preprocessing checkout instead.
 
 Before starting, prepare the sample sheet and choose the reference, controls and
 analysis settings. See the [DAP](https://github.com/kundajelab/genesis-preprocessing/blob/main/docs/usage/dapseq-reference.md) and
@@ -22,8 +22,7 @@ analysis settings. See the [DAP](https://github.com/kundajelab/genesis-preproces
 
 ## 1. Register prepared inputs
 
-Complete the [command installation](../../README.md#install-and-check-your-environment)
-with `pixi run install-all --install-cli` and put `~/.local/bin` on PATH. Keep study state and its SQLite registry on
+Complete the [installation](../../README.md#install) and put `~/.local/bin` on PATH. Keep study state and its SQLite registry on
 controller-local storage outside the checkout. Workers need a clean checkout of
 the selected commit and their installed environment. Use absolute input paths.
 
@@ -329,7 +328,8 @@ install a reader, download public sequencing datasets, or use AI. All input read
 references are generated from the repository's deterministic fixtures.
 
 ```bash
-pixi run validate-study --keep --work-root /var/tmp \
+GENESIS_REPO=/path/to/genesis-preprocessing uv run --frozen python tests/validate_study.py \
+  --keep --work-root /var/tmp \
   --bigwig-python /path/to/bigwig-environment/bin/python
 ```
 
@@ -353,5 +353,5 @@ synthetic integration only and establish no biological acceptance thresholds. Th
 does not test SSH, schedulers, live API/GPU services or public biological datasets.
 
 The [real-study validation report](https://github.com/kundajelab/genesis-preprocessing/blob/main/validation/reports/real-study-validation.md)
-records the tested revision, results and limitations. The ordinary `pixi run checks`
+records the tested revision, results and limitations. The ordinary `scripts/check.sh`
 suite uses Docker-free fixtures.

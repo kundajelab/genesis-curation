@@ -86,7 +86,7 @@ genesis benchmark acquire \
   benchmarks/experiments/reference-comparison-20261014/sra-acquisition.json \
   --out /data/sra-sources --connections 4
 
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/reference-comparison-20261014/fetch_references.py \
   benchmarks/experiments/reference-comparison-20261014/reference-downloads.json \
   --out /data/reference-work/reference-downloads
@@ -116,7 +116,7 @@ with the catalog and `--sampling` directory containing verified receipts.
 Choose a new output directory for every experiment:
 
 ```bash
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/reference-comparison-20261014/prepare.py \
   --base-plan /data/completed-comparison/experiment.json \
   --reference-panel /data/reference-panel.json --reference col-cen-1.2-araport11 \
@@ -153,7 +153,7 @@ Publisher-verified originals remain available; completed reference indexes can
 be archived and explicitly pruned while retaining BAMs for further assessments:
 
 ```bash
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/plant-methods-20261013/archive.py /scratch/colcen-results \
   --out /data/evidence/colcen --prune-indexes
 ```
@@ -169,7 +169,7 @@ reproducible work with a second verified archive. The previous archive and its
 manifest remain intact; the new retention record links both generations:
 
 ```bash
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/plant-methods-20261013/archive.py /scratch/colcen-results \
   --previous-archive /data/evidence/colcen \
   --out /data/evidence/colcen-final --prune-work
@@ -186,12 +186,12 @@ against every contig length and alignment block. NAM5's chromosome aliases
 manifest; aliases cannot merge distinct contigs.
 
 ```bash
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/reference-comparison-20261014/fetch_references.py \
   benchmarks/experiments/reference-comparison-20261014/chain-downloads.json \
   --out /data/maize-chains
 
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/reference-comparison-20261014/bind_chains.py \
   --left-reference /data/agpv4-bundle/reference.json \
   --right-reference /data/nam5-bundle/reference.json \
@@ -213,7 +213,7 @@ The output
 `mapping.json` binds both mappings to the exact FASTA hashes.
 
 ```bash
-pixi run uv run --frozen python \
+uv run --frozen python \
   benchmarks/experiments/reference-comparison-20261014/compare_references.py \
   --left /scratch/agpv4-results --right /scratch/nam5-results \
   --mapping /scratch/maize-mapping/mapping.json \
@@ -243,7 +243,7 @@ For example, save this as `/data/assessments.json` after replacing the paths:
 ```
 
 ```bash
-taskset -c 14,15 pixi run uv run --frozen python \
+taskset -c 14,15 uv run --frozen python \
   benchmarks/experiments/reference-comparison-20261014/assess_panel.py \
   /data/assessments.json --out /scratch/assessments
 ```

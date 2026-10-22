@@ -26,6 +26,7 @@ Requires [uv](https://docs.astral.sh/uv/) and Python 3.14.
 ```bash
 git clone https://github.com/kundajelab/genesis-curation.git
 cd genesis-curation
+uv python install 3.14.5   # .python-version pins the GIL build, which uv cannot download
 uv sync --frozen
 uv run python -m genesis_curation.execution.install --repo . --bin-dir ~/.local/bin
 genesis --help

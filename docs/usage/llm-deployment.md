@@ -172,7 +172,7 @@ It preserves model caches/logs. Use `transport: local` or `ssh` in the plan to c
 the topology; both are separate from offline mocks.
 
 ```bash
-pixi run uv run --frozen python tests/accept_llm_live.py \
+uv run --frozen python tests/accept_llm_live.py \
   --registry /local/catalog --plan acceptance-plan.json --authorize EXACT_PLAN_HASH \
   --config /local/providers.json --provider private --timeout 300 \
   --output live-deployment-acceptance.json

@@ -62,7 +62,8 @@ and folds `chr1` / `chr2` / `chr3`. For ChromBPNet declare the unsupplied fixtur
 bias model explicitly.
 
 Frozen Cherimoya IO dependencies are in
-`validation/environments/scatac-loaders/`. Run:
+`validation/environments/scatac-loaders/` of genesis-preprocessing, where these historical
+loader checks remain. From that checkout, run:
 
 ```bash
 pixi run uv run --frozen --project validation/environments/scatac-loaders python validation/experiments/scatac/cherimoya_loader.py --model-root ../benchmarks/cherimoya --bundle ../results/scatac-products-fixture/cherimoya
@@ -170,7 +171,7 @@ location. This uses Python and a packaged synthetic bigWig; it needs no network,
 Docker, API key or model runtime:
 
 ```bash
-pixi run uv run --frozen python examples/scatac/model_inspection_demo.py --output workspace/meeting-prep/synthetic-bundle
+uv run --frozen python examples/scatac/model_inspection_demo.py --output workspace/meeting-prep/synthetic-bundle
 genesis scatac model inspect --input workspace/meeting-prep/synthetic-bundle --format markdown
 ```
 

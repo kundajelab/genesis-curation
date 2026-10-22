@@ -27,7 +27,7 @@ at 1, 2 and 8 CPUs. It separates numerical agreement, runtime and memory use.
 
 ## Run a small comparison
 
-Install Genesis first using the [project instructions](../README.md#install-and-check-your-environment).
+Install Genesis first using the [project instructions](../README.md#install).
 On Linux x86_64, install the separate, locked comparison environment:
 
 ```bash

@@ -5,8 +5,8 @@ record metadata or QC reviews. Start with a completed DAP or bulk ATAC run. If y
 want to manage inputs and processing as well, follow the [study workflow](studies.md),
 which collects results into the same catalog automatically. No AI service is needed.
 
-Install with `pixi run install-all --install-cli` and put `~/.local/bin` on PATH
-(see [installation](../../README.md#install-and-check-your-environment)). Use
+Install genesis-curation and put `~/.local/bin` on PATH
+(see [installation](../../README.md#install)). Use
 `genesis` from any directory, or the command in the Python environment containing
 an installed wheel.
 These command families support `--help` and `--json`. Successful commands emit
@@ -26,7 +26,7 @@ eligibility always require result-specific decisions. See the
 From the repository root, run the complete offline tutorial in a new directory:
 
 ```bash
-pixi run uv run --frozen python examples/curation/offline_workflow.py /tmp/genesis-curation-demo
+uv run --frozen python examples/curation/offline_workflow.py /tmp/genesis-curation-demo
 ```
 
 It validates synthetic files, imports them, records demonstration reviews and exports
@@ -451,7 +451,7 @@ an attempt is UNKNOWN.
 Changed resources/inputs need an explicitly versioned replacement campaign linked
 to the original, not an edited campaign JSON or an assumption that `resolve` applies it.
 
-Run `pixi run uv run --frozen python tests/evaluate_metadata.py`
+Run `uv run --frozen python tests/evaluate_metadata.py`
 for the separate synthetic metadata evaluation. The fixture split and reported field,
 evidence/conflict/abstention counts test software; they do not establish real curation
 accuracy. Human correction rates and live-provider comparisons have not been measured.

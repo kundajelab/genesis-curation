@@ -120,10 +120,10 @@ Live vendor/API acceptance is separate from fake HTTP tests.
 After configuring an approved endpoint and credential, this separate runner sends
 only the fixed public probe. It tightens output/time/retry budgets and writes an
 immutable evidence report; it can incur the provider's normal charges. It is never
-called by `pixi run checks`.
+called by `scripts/check.sh`.
 
 ```bash
-pixi run uv run --frozen python tests/accept_provider_live.py \
+uv run --frozen python tests/accept_provider_live.py \
   --registry /local/catalog --config /local/providers.json --provider api \
   --authorize-egress public --output live-provider-acceptance.json
 ```

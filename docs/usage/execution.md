@@ -36,7 +36,7 @@ GENESIS_RUNTIME_DIR=/scratch/run/runtime scripts/nersc-podman.sh genesis pipelin
   --references references.json --profile nersc \
   --config /path/site.config --outdir /scratch/run
 
-# DAP-seq uses the same scheduler profiles
+# DAP-seq uses the same scheduler profiles (run in the genesis-preprocessing checkout)
 pixi run pipeline -p slurm,apptainer /path/samples.tsv -c /path/site.config
 ```
 
