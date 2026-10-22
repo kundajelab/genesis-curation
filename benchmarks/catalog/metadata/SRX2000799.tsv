@@ -1,0 +1,2 @@
+run_accession	experiment_accession	sample_accession	library_layout	library_strategy	read_count	base_count	fastq_ftp	fastq_md5	fastq_bytes
+SRR4000468	SRX2000799	SAMN05513123	PAIRED	OTHER	74689822	4630768964	ftp.sra.ebi.ac.uk/vol1/fastq/SRR400/008/SRR4000468/SRR4000468_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR400/008/SRR4000468/SRR4000468_2.fastq.gz	8d943582a8e0e9be37e29aed5b10e8ea;caf99c189a7f9c026254dfd9c6d59aa8	1892443345;1917384052

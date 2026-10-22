@@ -1,0 +1,17 @@
+{
+  "schema_version": 1,
+  "provenance": "Explicitly synthetic software fixtures; no real biological accuracy claim",
+  "development": [
+    {"id":"explicit-leaf","sources":[{"tissue":"leaf"}],"expected":{"tissue":{"status":"known","value":"leaf"}}},
+    {"id":"missing-treatment","sources":[{"tissue":"root"}],"expected":{"treatment":{"status":"unknown","value":null}}}
+  ],
+  "held_out": [
+    {"id":"conflicting-tissue","sources":[{"tissue":"leaf"},{"tissue":"root"}],"expected":{"tissue":{"status":"conflicting","value":null}}},
+    {"id":"explicit-treatment","sources":[{"treatment":"salt","developmental_stage":"seedling"}],"expected":{"treatment":{"status":"known","value":"salt"},"developmental_stage":{"status":"known","value":"seedling"}}},
+    {"id":"interspecies-dap","sources":[{"assay":"DAP-seq","tf_identity":"TF-A","tf_source_organism":"Oryza sativa","dna_organism":"Arabidopsis thaliana","dna_context":"amplified"}],"expected":{"tf_source_organism":{"status":"known","value":"Oryza sativa"},"dna_organism":{"status":"known","value":"Arabidopsis thaliana"},"tissue":{"status":"unknown","value":null}}},
+    {"id":"technical-lanes","sources":[{"technical_lane":"L2","biological_replicate":"B1"}],"expected":{"technical_lane":{"status":"known","value":"L2"},"biological_replicate":{"status":"known","value":"B1"}}},
+    {"id":"ambiguous-atac","sources":[{"library_strategy":"ATAC-seq"}],"expected":{"assay":{"status":"unknown","value":null}}},
+    {"id":"ambiguous-gro","sources":[{"protocol":"GRO-cap"}],"expected":{"protocol":{"status":"unknown","value":null}}},
+    {"id":"unknown-cultivar","sources":[{"cultivar":"unlisted author term"}],"expected":{"cultivar":{"status":"known","value":"unlisted author term"},"treatment":{"status":"unknown","value":null}}}
+  ]
+}

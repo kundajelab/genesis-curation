@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "scatac_inventory": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 4,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "scatac_inventory"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "source_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "sheet": {
+              "type": "string"
+            },
+            "worksheets": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "rows": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            }
+          },
+          "required": [
+            "source_id",
+            "source_sha256",
+            "sheet",
+            "worksheets",
+            "rows"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "scatac_output": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 4,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "scatac_output"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "location",
+            "output_kind",
+            "manifest_version",
+            "manifest",
+            "review_status",
+            "model_ready"
+          ],
+          "properties": {
+            "location": {
+              "type": "string",
+              "minLength": 1
+            },
+            "output_kind": {
+              "enum": [
+                "scatac-fragments",
+                "scatac-pseudobulk-core",
+                "scatac-group-core",
+                "scatac-group",
+                "scatac-model"
+              ]
+            },
+            "manifest_version": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "manifest": {
+              "type": "object"
+            },
+            "review_status": {
+              "const": "UNREVIEWED"
+            },
+            "model_ready": {
+              "const": false
+            }
+          }
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "$id": "urn:genesis:curation:records:4"
+}

@@ -1,0 +1,14 @@
+[
+  {
+    "run_accession": "SRR31238993",
+    "experiment_accession": "SRX26618982",
+    "sample_accession": "SAMN44427861",
+    "study_accession": "PRJNA1177481",
+    "library_layout": "PAIRED",
+    "library_name": "Control_TF_DNA_A_thaliana_Col-0_DAPi712H12-ORGi5005-96P155-repool",
+    "read_count": "17390338",
+    "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/093/SRR31238993/SRR31238993_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/093/SRR31238993/SRR31238993_2.fastq.gz",
+    "fastq_md5": "5524135acd482a6b5b69cc1038671220;5eacdd1c1ff19b878044c9438a2fa4a4",
+    "fastq_bytes": "1416658831;1200747767"
+  }
+]

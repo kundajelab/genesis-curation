@@ -1,0 +1,1817 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:genesis:curation:records:1",
+  "$defs": {
+    "source": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "source"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string",
+              "minLength": 1
+            },
+            "worker": {
+              "type": "string",
+              "minLength": 1
+            },
+            "sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "snapshot": {
+              "type": "string"
+            },
+            "media_type": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "location",
+            "worker",
+            "sha256",
+            "snapshot",
+            "media_type"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "finding"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "rule_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "rule_version": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "subject": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "version": {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "scope": {
+                  "enum": [
+                    "study",
+                    "biosample",
+                    "library",
+                    "lane",
+                    "analysis_attempt",
+                    "reference",
+                    "artifact"
+                  ]
+                }
+              },
+              "required": [
+                "id",
+                "version",
+                "scope"
+              ],
+              "additionalProperties": false
+            },
+            "result": {
+              "enum": [
+                "PASS",
+                "WARN",
+                "ERROR",
+                "NOT_EVALUATED",
+                "NOT_APPLICABLE"
+              ]
+            },
+            "expected": {
+              "type": "string",
+              "minLength": 1
+            },
+            "observed": {},
+            "evidence": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "locator": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "worker": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "location",
+                "sha256",
+                "locator",
+                "worker"
+              ],
+              "additionalProperties": false
+            },
+            "validator_version": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "rule_id",
+            "rule_version",
+            "subject",
+            "result",
+            "expected",
+            "observed",
+            "evidence",
+            "validator_version"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "measurement": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "measurement"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "subject_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "metric": {
+              "type": "string",
+              "minLength": 1
+            },
+            "metric_version": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "definition": {
+              "type": "string",
+              "minLength": 1
+            },
+            "units": {
+              "type": "string",
+              "minLength": 1
+            },
+            "denominator": {
+              "type": "string",
+              "minLength": 1
+            },
+            "value": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "evidence": {
+              "type": "object",
+              "properties": {
+                "location": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "sha256": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "locator": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "worker": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "location",
+                "sha256",
+                "locator",
+                "worker"
+              ],
+              "additionalProperties": false
+            },
+            "depth": {
+              "type": "string",
+              "minLength": 1
+            },
+            "denominator_value": {
+              "type": [
+                "number",
+                "null"
+              ]
+            }
+          },
+          "required": [
+            "subject_id",
+            "metric",
+            "metric_version",
+            "definition",
+            "units",
+            "denominator",
+            "value",
+            "evidence",
+            "depth",
+            "denominator_value"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "manifest": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "manifest"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "source_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "dataset_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "assay": {
+              "enum": [
+                "DAP-seq",
+                "bulk-ATAC"
+              ]
+            },
+            "species": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "study": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "biosample": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "library": {
+              "type": "string",
+              "minLength": 1
+            },
+            "lanes": {
+              "type": "array",
+              "items": {
+                "type": "object"
+              }
+            },
+            "reference": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "version": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "contigs": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                },
+                "fasta": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "fasta_sha256": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "tss": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "tss_sha256": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "pattern": "^[a-f0-9]{64}$"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                "assembly": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "annotation_release": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "genome_size": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "mitochondrial_contigs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "plastid_contigs": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "version",
+                "contigs",
+                "fasta",
+                "fasta_sha256",
+                "tss",
+                "tss_sha256",
+                "assembly",
+                "annotation_release",
+                "genome_size",
+                "mitochondrial_contigs",
+                "plastid_contigs"
+              ],
+              "additionalProperties": false
+            },
+            "worker": {
+              "type": "string",
+              "minLength": 1
+            },
+            "run": {
+              "type": "object",
+              "properties": {
+                "campaign_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "job_id": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "attempt": {
+                  "type": [
+                    "integer",
+                    "null"
+                  ],
+                  "minimum": 1
+                },
+                "execution_state": {
+                  "enum": [
+                    "SUCCEEDED",
+                    "FAILED",
+                    "UNKNOWN"
+                  ]
+                },
+                "git_sha": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "parameters": {
+                  "type": "object"
+                },
+                "provenance_complete": {
+                  "type": "boolean"
+                },
+                "root": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "required": [
+                "campaign_id",
+                "job_id",
+                "attempt",
+                "execution_state",
+                "git_sha",
+                "parameters",
+                "provenance_complete",
+                "root"
+              ],
+              "additionalProperties": false
+            },
+            "metadata": {
+              "type": "object"
+            },
+            "artifacts": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "path": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "worker": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "format": {
+                    "enum": [
+                      "fasta",
+                      "tss",
+                      "bed",
+                      "narrowPeak",
+                      "bigwig",
+                      "bam",
+                      "json",
+                      "tsv",
+                      "html",
+                      "zip",
+                      "file"
+                    ]
+                  },
+                  "role": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "required": {
+                    "type": "boolean"
+                  },
+                  "availability": {
+                    "enum": [
+                      "available",
+                      "intentionally_pruned",
+                      "unavailable",
+                      "not_required"
+                    ]
+                  },
+                  "retention": {
+                    "enum": [
+                      "published",
+                      "intermediate",
+                      "source"
+                    ]
+                  },
+                  "sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "size": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "minimum": 0
+                  },
+                  "reference_id": {
+                    "type": [
+                      "string",
+                      "null"
+                    ]
+                  },
+                  "signal": {
+                    "anyOf": [
+                      {
+                        "type": "object",
+                        "properties": {
+                          "kind": {
+                            "enum": [
+                              "raw_counts",
+                              "normalized_coverage"
+                            ]
+                          },
+                          "unit": {
+                            "enum": [
+                              "cut",
+                              "read_end",
+                              "fragment",
+                              "base_coverage"
+                            ]
+                          },
+                          "normalization": {
+                            "enum": [
+                              "none",
+                              "CPM",
+                              "RPKM"
+                            ]
+                          },
+                          "strand": {
+                            "enum": [
+                              "both",
+                              "plus",
+                              "minus"
+                            ]
+                          },
+                          "derivation": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "required": [
+                          "kind",
+                          "unit",
+                          "normalization",
+                          "strand",
+                          "derivation"
+                        ],
+                        "additionalProperties": false
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "sorted": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "id",
+                  "path",
+                  "worker",
+                  "format",
+                  "role",
+                  "required",
+                  "availability",
+                  "retention",
+                  "sha256",
+                  "size",
+                  "reference_id",
+                  "signal"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "sources": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/source"
+              }
+            },
+            "measurements": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/measurement"
+              }
+            }
+          },
+          "required": [
+            "source_id",
+            "dataset_id",
+            "name",
+            "assay",
+            "species",
+            "study",
+            "biosample",
+            "library",
+            "lanes",
+            "reference",
+            "worker",
+            "run",
+            "metadata",
+            "artifacts",
+            "sources",
+            "measurements"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "validation": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "validation"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "dataset_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "manifest_version": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "level": {
+              "enum": [
+                "metadata",
+                "full"
+              ]
+            },
+            "findings": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/finding"
+              }
+            },
+            "complete": {
+              "type": "boolean"
+            },
+            "bytes_scanned": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "records_scanned": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "seconds": {
+              "type": "number",
+              "minimum": 0
+            },
+            "budgets": {
+              "type": "object"
+            },
+            "observed_at": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "dataset_id",
+            "manifest_version",
+            "level",
+            "findings",
+            "complete",
+            "bytes_scanned",
+            "records_scanned",
+            "seconds",
+            "budgets",
+            "observed_at"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "bundle": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "bundle"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "manifests": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/manifest"
+              }
+            },
+            "validations": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/validation"
+              }
+            }
+          },
+          "required": [
+            "manifests",
+            "validations"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "policy": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "policy"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "author": {
+              "type": "string",
+              "minLength": 1
+            },
+            "policy_version": {
+              "type": "string",
+              "minLength": 1
+            },
+            "assays": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "species": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "references": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "protocols": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "diagnostic": {
+              "type": "boolean"
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "worker": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "location",
+                  "sha256",
+                  "locator",
+                  "worker"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "metric": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "metric_version": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "definition": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "units": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "denominator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "minimum_evidence": {
+                    "type": "integer",
+                    "minimum": 0
+                  },
+                  "operator": {
+                    "enum": [
+                      "minimum",
+                      "maximum",
+                      "equals"
+                    ]
+                  },
+                  "threshold": {
+                    "type": [
+                      "number",
+                      "null"
+                    ]
+                  },
+                  "missing": {
+                    "enum": [
+                      "WARN",
+                      "ERROR",
+                      "NOT_EVALUATED"
+                    ]
+                  },
+                  "severity": {
+                    "enum": [
+                      "WARN",
+                      "ERROR"
+                    ]
+                  },
+                  "rationale": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "depth": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "id",
+                  "metric",
+                  "metric_version",
+                  "definition",
+                  "units",
+                  "denominator",
+                  "minimum_evidence",
+                  "operator",
+                  "threshold",
+                  "missing",
+                  "severity",
+                  "rationale",
+                  "depth"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "name",
+            "author",
+            "policy_version",
+            "assays",
+            "species",
+            "references",
+            "protocols",
+            "diagnostic",
+            "evidence",
+            "rules"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "assessment": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "assessment"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "dataset_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "manifest_version": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "validation_version": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "metadata_version": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "policy": {
+              "$ref": "#/$defs/policy"
+            },
+            "findings": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/finding"
+              }
+            },
+            "result": {
+              "enum": [
+                "PASS",
+                "WARN",
+                "ERROR",
+                "NOT_EVALUATED",
+                "NOT_APPLICABLE"
+              ]
+            }
+          },
+          "required": [
+            "dataset_id",
+            "manifest_version",
+            "validation_version",
+            "metadata_version",
+            "policy",
+            "findings",
+            "result"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "proposal": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "proposal"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "dataset_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "manifest_version": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "changes": {
+              "type": "object",
+              "minProperties": 1
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "worker": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "location",
+                  "sha256",
+                  "locator",
+                  "worker"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "dataset_id",
+            "manifest_version",
+            "changes",
+            "evidence",
+            "reason"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "decision": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "decision"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "dataset_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "category": {
+              "enum": [
+                "metadata",
+                "qc",
+                "eligibility"
+              ]
+            },
+            "action": {
+              "enum": [
+                "approve",
+                "reject",
+                "request-info"
+              ]
+            },
+            "target": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "token": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "bindings": {
+              "type": "object"
+            },
+            "reviewer": {
+              "type": "object",
+              "properties": {
+                "uid": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "user": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "host": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "project_identity": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "uid",
+                "user",
+                "host",
+                "project_identity"
+              ],
+              "additionalProperties": false
+            },
+            "reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "worker": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "location",
+                  "sha256",
+                  "locator",
+                  "worker"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "timestamp": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [
+            "dataset_id",
+            "category",
+            "action",
+            "target",
+            "token",
+            "bindings",
+            "reviewer",
+            "reason",
+            "evidence",
+            "timestamp"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "profile"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "author": {
+              "type": "string",
+              "minLength": 1
+            },
+            "required_roles": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "require_approval": {
+              "type": "boolean"
+            },
+            "require_full_validation": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "name",
+            "author",
+            "required_roles",
+            "require_approval",
+            "require_full_validation"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "selection": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "selection"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "registry_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "candidates": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "manifest_version": {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  }
+                },
+                "required": [
+                  "id",
+                  "manifest_version"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "registry_id",
+            "candidates"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "invocation": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "invocation"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "provider_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model_revision": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "worker": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "location",
+                  "sha256",
+                  "locator",
+                  "worker"
+                ],
+                "additionalProperties": false
+              }
+            },
+            "response_hash": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "provider_id",
+            "model_id",
+            "model_revision",
+            "evidence",
+            "response_hash"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    },
+    "deployment": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "deployment"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "node_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model_id": {
+              "type": "string",
+              "minLength": 1
+            },
+            "model_revision": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "plan_hash": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "observed_state": {
+              "type": "string",
+              "minLength": 1
+            },
+            "evidence": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "location": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "sha256": {
+                    "anyOf": [
+                      {
+                        "type": "string",
+                        "pattern": "^[a-f0-9]{64}$"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "locator": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "worker": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "required": [
+                  "location",
+                  "sha256",
+                  "locator",
+                  "worker"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "node_id",
+            "model_id",
+            "model_revision",
+            "plan_hash",
+            "observed_state",
+            "evidence"
+          ],
+          "additionalProperties": false
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ],
+      "additionalProperties": false
+    }
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/source"
+    },
+    {
+      "$ref": "#/$defs/finding"
+    },
+    {
+      "$ref": "#/$defs/measurement"
+    },
+    {
+      "$ref": "#/$defs/manifest"
+    },
+    {
+      "$ref": "#/$defs/validation"
+    },
+    {
+      "$ref": "#/$defs/bundle"
+    },
+    {
+      "$ref": "#/$defs/policy"
+    },
+    {
+      "$ref": "#/$defs/assessment"
+    },
+    {
+      "$ref": "#/$defs/proposal"
+    },
+    {
+      "$ref": "#/$defs/decision"
+    },
+    {
+      "$ref": "#/$defs/profile"
+    },
+    {
+      "$ref": "#/$defs/selection"
+    },
+    {
+      "$ref": "#/$defs/invocation"
+    },
+    {
+      "$ref": "#/$defs/deployment"
+    }
+  ]
+}

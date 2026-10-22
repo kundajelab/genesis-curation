@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "node": {
+    "schema_version": 1,
+    "id": "node-a",
+    "worker": {
+      "transport": "local",
+      "repo": "/srv/genesis",
+      "python": "/srv/genesis-curation/.venv/bin/python",
+      "root": "/srv/genesis-serving/node"
+    },
+    "roles": [
+      "llm-serving"
+    ],
+    "gpu_uuids": [
+      "GPU-aaaa-bbbb"
+    ],
+    "dedicated": true,
+    "allocation": null,
+    "budgets": {
+      "memory_mib": 2048,
+      "cpu": 1,
+      "disk_bytes": 10000000,
+      "gpu_memory_mib": 4000,
+      "pipeline_memory_mib": 0,
+      "pipeline_gpu_uuids": []
+    },
+    "site_approved": true,
+    "login_node": false
+  },
+  "image": "vllm/vllm-openai@sha256:1111111111111111111111111111111111111111111111111111111111111111",
+  "hf_cli": "/srv/genesis-serving/hf",
+  "cache": "/srv/genesis-serving/cache",
+  "port": 19090,
+  "controller_port": 19091,
+  "context_length": 1024,
+  "concurrency": 1,
+  "tensor_parallel_size": 1,
+  "kv_cache_mib": 32,
+  "runtime_overhead_mib": 64,
+  "gpu_memory_utilization": 0.5,
+  "supported_architectures": [],
+  "license_accepted": false,
+  "gated_access_confirmed": false,
+  "readiness_seconds": 1,
+  "api_key_file": "/srv/genesis-serving/key",
+  "hf_token_file": null,
+  "quantization": null
+}

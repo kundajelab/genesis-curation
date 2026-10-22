@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "providers": [
+    {
+      "id": "api",
+      "mode": "live",
+      "endpoint": "https://api.example.org/v1",
+      "model": "REPLACE_WITH_APPROVED_MODEL_ID",
+      "model_revision": null,
+      "serving_revision": null,
+      "external": true,
+      "credential": {
+        "env": "GENESIS_API_KEY",
+        "file": null
+      },
+      "allowed_tasks": [
+        "probe",
+        "metadata",
+        "diagnose",
+        "ask"
+      ],
+      "allowed_classifications": [
+        "public"
+      ],
+      "context_chars": 100000,
+      "max_tokens": 512,
+      "timeout_seconds": 30,
+      "max_retries": 1,
+      "concurrency": 1,
+      "format_repair": true,
+      "capabilities": {
+        "json_schema": true,
+        "tools": false,
+        "streaming": false
+      },
+      "mock_response": null
+    },
+    {
+      "id": "private",
+      "mode": "live",
+      "endpoint": "http://127.0.0.1:19091/v1",
+      "model": "namespace/approved-model",
+      "model_revision": null,
+      "serving_revision": null,
+      "external": false,
+      "credential": {
+        "file": "/absolute/path/to/existing-private-key"
+      },
+      "allowed_tasks": [
+        "probe",
+        "metadata",
+        "diagnose",
+        "ask"
+      ],
+      "allowed_classifications": [
+        "public",
+        "internal",
+        "local-only"
+      ],
+      "context_chars": 100000,
+      "max_tokens": 512,
+      "timeout_seconds": 30,
+      "max_retries": 1,
+      "concurrency": 1,
+      "format_repair": true,
+      "capabilities": {
+        "json_schema": true,
+        "tools": false,
+        "streaming": false
+      },
+      "mock_response": null
+    }
+  ]
+}

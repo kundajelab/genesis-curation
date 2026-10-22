@@ -1,0 +1,546 @@
+{
+  "cohorts": {
+    "dap-lyrata": {
+      "assay": "DAP-seq",
+      "cultivar": "MN47",
+      "libraries": [
+        {
+          "biological_replicate": "not_established",
+          "control": null,
+          "ena": {
+            "base_count": "6953819384",
+            "experiment_accession": "SRX26577288",
+            "fastq_bytes": "1898265823;1654498699",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/011/SRR31195811/SRR31195811_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/011/SRR31195811/SRR31195811_2.fastq.gz",
+            "fastq_md5": "8fa906750dbb1893c4f13081637431d0;7756aa3794e69cdf77a8e8945f5db0cd",
+            "library_layout": "PAIRED",
+            "read_count": "23025892",
+            "run_accession": "SRR31195811",
+            "sample_accession": "SAMN44427636"
+          },
+          "id": "SRR31195811",
+          "layout": "PE",
+          "metadata": null,
+          "reads": [
+            "SRR31195811_1.fastq.gz",
+            "SRR31195811_2.fastq.gz"
+          ],
+          "sample_id": "Control_TF_DNA_A_lyrata_MN47_DAPi712H12-ORGi5038-96P155-repool"
+        },
+        {
+          "biological_replicate": "not_established",
+          "control": "SRR31195811",
+          "ena": {
+            "base_count": "2645610902",
+            "experiment_accession": "SRX26577234",
+            "fastq_bytes": "626719192;661329173",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/019/SRR31195919/SRR31195919_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/019/SRR31195919/SRR31195919_2.fastq.gz",
+            "fastq_md5": "f6ad1b99c9533427f64980eed6844412;c9072cf0488514096882d7a40d305162",
+            "library_layout": "PAIRED",
+            "read_count": "8760301",
+            "run_accession": "SRR31195919",
+            "sample_accession": "SAMN44427636"
+          },
+          "id": "SRR31195919",
+          "layout": "PE",
+          "metadata": {
+            "characteristics": {
+              "96 well_plate_id": "96P220",
+              "genotype": "MN47",
+              "multidap sample_id": "DAPi712D07-96P220",
+              "tf family": "RWPRK",
+              "tf id": "AT1G74480",
+              "tf source_species": "Arabidopsis_thaliana_Col-0",
+              "tissue": "plant"
+            },
+            "geo": "GSM9027734",
+            "processing": [
+              "Fastq files were quality filtered and adapters were trimmed using BBTools v38.96 bbduk.sh62 with parameters k=21 mink=11 ktrim=r tbo tpe qtrim=r trimq=6 maq=10, and then aligned to the corresponding reference genome using bowtie2 v2.4.2 and parameters --no-mixed --no-discordant. Bam files from negative control wells were merged using the samtools v1.15.1 merge command, to generate a single background file for each 96-well plate. The MACS3 v3.0.0a6 callpeak command was used to generate narrowPeak files, using the merged background as the control, with the parameters --call-summits --keep-dup 1 and \u2013gsize with the total fasta genome size. Bigwig files were generated using deeptools v3.5.2 bamCoverage with parameters --extendReads --binSize 1 --ignoreDuplicates --maxFragmentLength 600 --normalizeUsing RPGC, and --effectiveGenomeSize with the total fasta genome assembly size of each species.",
+              "Assembly: Arabidopsis lyrata MN47: Phytozome v2.1",
+              "Supplementary files format and content: narrowPeak are tab-delimited extended bed format files that contain peak regions identified by MACS3, using the matched negative controls on each 96 well plate to dentify regions that were enriched for by each transcription factor. The identified peaks represent putative transcription factor binding sites.",
+              "Supplementary files format and content: bigwig files show the genome coverage of each DAP-seq library. They can be used to compare coverage between different libraries and to view peaks in a genome browser. Note that they should be compared to the matched negative control libraries from the same plate.",
+              "Library strategy: DAP-seq"
+            ],
+            "relations": [
+              "BioSample: https://www.ncbi.nlm.nih.gov/biosample/SAMN44427636",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26577234"
+            ],
+            "title": "AT1G74480_A_lyrata_MN47_DAPi712D07-ORGi5038-96P220"
+          },
+          "reads": [
+            "SRR31195919_1.fastq.gz",
+            "SRR31195919_2.fastq.gz"
+          ],
+          "sample_id": "AT1G74480_A_lyrata_MN47_DAPi712D07-ORGi5038-96P220"
+        },
+        {
+          "biological_replicate": "not_established",
+          "control": "SRR31195811",
+          "ena": {
+            "base_count": "4246680210",
+            "experiment_accession": "SRX26577356",
+            "fastq_bytes": "972250205;1044192816",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/079/SRR31195679/SRR31195679_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/079/SRR31195679/SRR31195679_2.fastq.gz",
+            "fastq_md5": "b4f678313d7a85db496faf06b7c3d774;e83fc7de43e0c74939a7a59fe5a6c141",
+            "library_layout": "PAIRED",
+            "read_count": "14061855",
+            "run_accession": "SRR31195679",
+            "sample_accession": "SAMN44427636"
+          },
+          "id": "SRR31195679",
+          "layout": "PE",
+          "metadata": {
+            "characteristics": {
+              "96 well_plate_id": "96P220",
+              "genotype": "MN47",
+              "multidap sample_id": "DAPi712C07-96P220",
+              "tf family": "ABI3VP1",
+              "tf id": "AT5G60130",
+              "tf source_species": "Arabidopsis_thaliana_Col-0",
+              "tissue": "plant"
+            },
+            "geo": "GSM9027707",
+            "processing": [
+              "Fastq files were quality filtered and adapters were trimmed using BBTools v38.96 bbduk.sh62 with parameters k=21 mink=11 ktrim=r tbo tpe qtrim=r trimq=6 maq=10, and then aligned to the corresponding reference genome using bowtie2 v2.4.2 and parameters --no-mixed --no-discordant. Bam files from negative control wells were merged using the samtools v1.15.1 merge command, to generate a single background file for each 96-well plate. The MACS3 v3.0.0a6 callpeak command was used to generate narrowPeak files, using the merged background as the control, with the parameters --call-summits --keep-dup 1 and \u2013gsize with the total fasta genome size. Bigwig files were generated using deeptools v3.5.2 bamCoverage with parameters --extendReads --binSize 1 --ignoreDuplicates --maxFragmentLength 600 --normalizeUsing RPGC, and --effectiveGenomeSize with the total fasta genome assembly size of each species.",
+              "Assembly: Arabidopsis lyrata MN47: Phytozome v2.1",
+              "Supplementary files format and content: narrowPeak are tab-delimited extended bed format files that contain peak regions identified by MACS3, using the matched negative controls on each 96 well plate to dentify regions that were enriched for by each transcription factor. The identified peaks represent putative transcription factor binding sites.",
+              "Supplementary files format and content: bigwig files show the genome coverage of each DAP-seq library. They can be used to compare coverage between different libraries and to view peaks in a genome browser. Note that they should be compared to the matched negative control libraries from the same plate.",
+              "Library strategy: DAP-seq"
+            ],
+            "relations": [
+              "BioSample: https://www.ncbi.nlm.nih.gov/biosample/SAMN44427636",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26577356"
+            ],
+            "title": "AT5G60130_A_lyrata_MN47_DAPi712C07-ORGi5038-96P220"
+          },
+          "reads": [
+            "SRR31195679_1.fastq.gz",
+            "SRR31195679_2.fastq.gz"
+          ],
+          "sample_id": "AT5G60130_A_lyrata_MN47_DAPi712C07-ORGi5038-96P220"
+        },
+        {
+          "biological_replicate": "not_established",
+          "control": "SRR31195811",
+          "ena": {
+            "base_count": "21685976740",
+            "experiment_accession": "SRX26577509",
+            "fastq_bytes": "5090671953;5352052238",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/009/SRR31196109/SRR31196109_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/009/SRR31196109/SRR31196109_2.fastq.gz",
+            "fastq_md5": "63ff44ce254a543babdb2b8be7a11909;88ee66cac936dc126333f4476aac008e",
+            "library_layout": "PAIRED",
+            "read_count": "71807870",
+            "run_accession": "SRR31196109",
+            "sample_accession": "SAMN44427636"
+          },
+          "id": "SRR31196109",
+          "layout": "PE",
+          "metadata": {
+            "characteristics": {
+              "96 well_plate_id": "96P166",
+              "genotype": "MN47",
+              "multidap sample_id": "DAPi711B06-96P166",
+              "tf family": "G2LIKE",
+              "tf id": "AT3G24120",
+              "tf source_species": "Arabidopsis_thaliana_Col-0",
+              "tissue": "plant"
+            },
+            "geo": "GSM9027603",
+            "processing": [
+              "Fastq files were quality filtered and adapters were trimmed using BBTools v38.96 bbduk.sh62 with parameters k=21 mink=11 ktrim=r tbo tpe qtrim=r trimq=6 maq=10, and then aligned to the corresponding reference genome using bowtie2 v2.4.2 and parameters --no-mixed --no-discordant. Bam files from negative control wells were merged using the samtools v1.15.1 merge command, to generate a single background file for each 96-well plate. The MACS3 v3.0.0a6 callpeak command was used to generate narrowPeak files, using the merged background as the control, with the parameters --call-summits --keep-dup 1 and \u2013gsize with the total fasta genome size. Bigwig files were generated using deeptools v3.5.2 bamCoverage with parameters --extendReads --binSize 1 --ignoreDuplicates --maxFragmentLength 600 --normalizeUsing RPGC, and --effectiveGenomeSize with the total fasta genome assembly size of each species.",
+              "Assembly: Arabidopsis lyrata MN47: Phytozome v2.1",
+              "Supplementary files format and content: narrowPeak are tab-delimited extended bed format files that contain peak regions identified by MACS3, using the matched negative controls on each 96 well plate to dentify regions that were enriched for by each transcription factor. The identified peaks represent putative transcription factor binding sites.",
+              "Supplementary files format and content: bigwig files show the genome coverage of each DAP-seq library. They can be used to compare coverage between different libraries and to view peaks in a genome browser. Note that they should be compared to the matched negative control libraries from the same plate.",
+              "Library strategy: DAP-seq"
+            ],
+            "relations": [
+              "BioSample: https://www.ncbi.nlm.nih.gov/biosample/SAMN44427636",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26577509"
+            ],
+            "title": "AT3G24120_A_lyrata_MN47_DAPi711B06-ORGi5038-96P166"
+          },
+          "reads": [
+            "SRR31196109_1.fastq.gz",
+            "SRR31196109_2.fastq.gz"
+          ],
+          "sample_id": "AT3G24120_A_lyrata_MN47_DAPi711B06-ORGi5038-96P166"
+        },
+        {
+          "biological_replicate": "not_established",
+          "control": "SRR31195811",
+          "ena": {
+            "base_count": "158476916",
+            "experiment_accession": "SRX26577459",
+            "fastq_bytes": "37166321;38744521",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/063/SRR31196263/SRR31196263_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR311/063/SRR31196263/SRR31196263_2.fastq.gz",
+            "fastq_md5": "b6c27a71ce6d15eb8aaf66d6766a4176;fa906312e673c6aab3f5b5b099ee8e45",
+            "library_layout": "PAIRED",
+            "read_count": "524758",
+            "run_accession": "SRR31196263",
+            "sample_accession": "SAMN44427636"
+          },
+          "id": "SRR31196263",
+          "layout": "PE",
+          "metadata": {
+            "characteristics": {
+              "96 well_plate_id": "96P155",
+              "genotype": "MN47",
+              "multidap sample_id": "DAPi712D05-96P155",
+              "tf family": "EIL",
+              "tf id": "AT3G20770",
+              "tf source_species": "Arabidopsis_thaliana_Col-0",
+              "tissue": "plant"
+            },
+            "geo": "GSM9027728",
+            "processing": [
+              "Fastq files were quality filtered and adapters were trimmed using BBTools v38.96 bbduk.sh62 with parameters k=21 mink=11 ktrim=r tbo tpe qtrim=r trimq=6 maq=10, and then aligned to the corresponding reference genome using bowtie2 v2.4.2 and parameters --no-mixed --no-discordant. Bam files from negative control wells were merged using the samtools v1.15.1 merge command, to generate a single background file for each 96-well plate. The MACS3 v3.0.0a6 callpeak command was used to generate narrowPeak files, using the merged background as the control, with the parameters --call-summits --keep-dup 1 and \u2013gsize with the total fasta genome size. Bigwig files were generated using deeptools v3.5.2 bamCoverage with parameters --extendReads --binSize 1 --ignoreDuplicates --maxFragmentLength 600 --normalizeUsing RPGC, and --effectiveGenomeSize with the total fasta genome assembly size of each species.",
+              "Assembly: Arabidopsis lyrata MN47: Phytozome v2.1",
+              "Supplementary files format and content: narrowPeak are tab-delimited extended bed format files that contain peak regions identified by MACS3, using the matched negative controls on each 96 well plate to dentify regions that were enriched for by each transcription factor. The identified peaks represent putative transcription factor binding sites.",
+              "Supplementary files format and content: bigwig files show the genome coverage of each DAP-seq library. They can be used to compare coverage between different libraries and to view peaks in a genome browser. Note that they should be compared to the matched negative control libraries from the same plate.",
+              "Library strategy: DAP-seq"
+            ],
+            "relations": [
+              "BioSample: https://www.ncbi.nlm.nih.gov/biosample/SAMN44427636",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26577460",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26577459"
+            ],
+            "title": "AT3G20770_A_lyrata_MN47_DAPi712D05-ORGi5038-96P155"
+          },
+          "reads": [
+            "SRR31196263_1.fastq.gz",
+            "SRR31196263_2.fastq.gz"
+          ],
+          "sample_id": "AT3G20770_A_lyrata_MN47_DAPi712D05-ORGi5038-96P155"
+        }
+      ],
+      "selection": {
+        "control_policy": "repository assigned controls; not author plate-pooled controls",
+        "eligible_families": [
+          "ABI3VP1",
+          "AP2EREBP",
+          "ARF",
+          "ARID",
+          "BBRBPC",
+          "BES1",
+          "BHLH",
+          "BZIP",
+          "BZR",
+          "C2C2DOF",
+          "C2C2GATA",
+          "C2C2YABBY",
+          "C2H2",
+          "CAMTA",
+          "CPP",
+          "E2FDP",
+          "EIL",
+          "G2LIKE",
+          "GRF",
+          "HOMEOBOX",
+          "HSF",
+          "LOBAS2",
+          "MADS",
+          "MYB",
+          "MYBRELATED",
+          "NAC",
+          "RAV",
+          "REM",
+          "RWPRK",
+          "SBP",
+          "TCP",
+          "TRIHELIX",
+          "WRKY",
+          "ZFHD"
+        ],
+        "excluded": [],
+        "families": 4,
+        "method": "lowest SHA256(seed:family), then lowest SHA256(seed:exact sample title)",
+        "retrieved": "2026-10-14T06:51:58.614349+00:00",
+        "seed": 60141,
+        "sheet": "15-Arabidopsis_lyrata-PRJNA1177479.tsv",
+        "sheet_sha256": "ea3adcd94c4188906b6fcbdb8e6121778ac7331ad7225d7dc02abb6da131cf71",
+        "source_sha256": "9ed5eb63427eb5b80259301ecbb53d4f7c9eb50f239cbbbf0a72caaa4528431b",
+        "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE298980&targ=gsm&form=text&view=full"
+      },
+      "species": "Arabidopsis_lyrata"
+    },
+    "dap-sorghum": {
+      "assay": "DAP-seq",
+      "cultivar": "RTx430",
+      "libraries": [
+        {
+          "biological_replicate": "not_established",
+          "control": null,
+          "ena": {
+            "base_count": "3683608458",
+            "experiment_accession": "SRX26600144",
+            "fastq_bytes": "820092354;860861559",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/027/SRR31219427/SRR31219427_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/027/SRR31219427/SRR31219427_2.fastq.gz",
+            "fastq_md5": "dfe7dd02c8930e806d73d7d39170e6e9;c1cc04dcaec8f067415a8379802ecc75",
+            "library_layout": "PAIRED",
+            "read_count": "12197379",
+            "run_accession": "SRR31219427",
+            "sample_accession": "SAMN44427576"
+          },
+          "id": "SRR31219427",
+          "layout": "PE",
+          "metadata": {
+            "characteristics": {
+              "96 well_plate_id": "96P247",
+              "genotype": "RTx430",
+              "multidap sample_id": "DAPi712A12-96P247",
+              "tf id": "negative_control",
+              "tissue": "plant"
+            },
+            "geo": "GSM9030761",
+            "processing": [
+              "Fastq files were quality filtered and adapters were trimmed using BBTools v38.96 bbduk.sh62 with parameters k=21 mink=11 ktrim=r tbo tpe qtrim=r trimq=6 maq=10, and then aligned to the corresponding reference genome using bowtie2 v2.4.2 and parameters --no-mixed --no-discordant. Bam files from negative control wells were merged using the samtools v1.15.1 merge command, to generate a single background file for each 96-well plate. The MACS3 v3.0.0a6 callpeak command was used to generate narrowPeak files, using the merged background as the control, with the parameters --call-summits --keep-dup 1 and \u2013gsize with the total fasta genome size. Bigwig files were generated using deeptools v3.5.2 bamCoverage with parameters --extendReads --binSize 1 --ignoreDuplicates --maxFragmentLength 600 --normalizeUsing RPGC, and --effectiveGenomeSize with the total fasta genome assembly size of each species.",
+              "Assembly: Sorghum bicolor RTx430: Phytozome v2.1",
+              "Supplementary files format and content: narrowPeak are tab-delimited extended bed format files that contain peak regions identified by MACS3, using the matched negative controls on each 96 well plate to dentify regions that were enriched for by each transcription factor. The identified peaks represent putative transcription factor binding sites.",
+              "Supplementary files format and content: bigwig files show the genome coverage of each DAP-seq library. They can be used to compare coverage between different libraries and to view peaks in a genome browser. Note that they should be compared to the matched negative control libraries from the same plate.",
+              "Library strategy: DAP-seq"
+            ],
+            "relations": [
+              "BioSample: https://www.ncbi.nlm.nih.gov/biosample/SAMN44427576",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26600144"
+            ],
+            "title": "Control_TF_DNA_S_bicolor_RTx430_DAPi712A12-ORGi5019-96P247"
+          },
+          "reads": [
+            "SRR31219427_1.fastq.gz",
+            "SRR31219427_2.fastq.gz"
+          ],
+          "sample_id": "Control_TF_DNA_S_bicolor_RTx430_DAPi712A12-ORGi5019-96P247"
+        },
+        {
+          "biological_replicate": "not_established",
+          "control": "SRR31219427",
+          "ena": {
+            "base_count": "7298122940",
+            "experiment_accession": "SRX26600065",
+            "fastq_bytes": "1751202591;1836854333",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/007/SRR31219507/SRR31219507_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/007/SRR31219507/SRR31219507_2.fastq.gz",
+            "fastq_md5": "c5fe892e4ab1685d315d87e2eb46adc1;8e02694cf2ebd8b3c17ab4a094929992",
+            "library_layout": "PAIRED",
+            "read_count": "24165970",
+            "run_accession": "SRR31219507",
+            "sample_accession": "SAMN44427576"
+          },
+          "id": "SRR31219507",
+          "layout": "PE",
+          "metadata": {
+            "characteristics": {
+              "96 well_plate_id": "96P220",
+              "genotype": "RTx430",
+              "multidap sample_id": "DAPi712D07-96P220",
+              "tf family": "RWPRK",
+              "tf id": "AT1G74480",
+              "tf source_species": "Arabidopsis_thaliana_Col-0",
+              "tissue": "plant"
+            },
+            "geo": "GSM9030677",
+            "processing": [
+              "Fastq files were quality filtered and adapters were trimmed using BBTools v38.96 bbduk.sh62 with parameters k=21 mink=11 ktrim=r tbo tpe qtrim=r trimq=6 maq=10, and then aligned to the corresponding reference genome using bowtie2 v2.4.2 and parameters --no-mixed --no-discordant. Bam files from negative control wells were merged using the samtools v1.15.1 merge command, to generate a single background file for each 96-well plate. The MACS3 v3.0.0a6 callpeak command was used to generate narrowPeak files, using the merged background as the control, with the parameters --call-summits --keep-dup 1 and \u2013gsize with the total fasta genome size. Bigwig files were generated using deeptools v3.5.2 bamCoverage with parameters --extendReads --binSize 1 --ignoreDuplicates --maxFragmentLength 600 --normalizeUsing RPGC, and --effectiveGenomeSize with the total fasta genome assembly size of each species.",
+              "Assembly: Sorghum bicolor RTx430: Phytozome v2.1",
+              "Supplementary files format and content: narrowPeak are tab-delimited extended bed format files that contain peak regions identified by MACS3, using the matched negative controls on each 96 well plate to dentify regions that were enriched for by each transcription factor. The identified peaks represent putative transcription factor binding sites.",
+              "Supplementary files format and content: bigwig files show the genome coverage of each DAP-seq library. They can be used to compare coverage between different libraries and to view peaks in a genome browser. Note that they should be compared to the matched negative control libraries from the same plate.",
+              "Library strategy: DAP-seq"
+            ],
+            "relations": [
+              "BioSample: https://www.ncbi.nlm.nih.gov/biosample/SAMN44427576",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26600065"
+            ],
+            "title": "AT1G74480_S_bicolor_RTx430_DAPi712D07-ORGi5019-96P220"
+          },
+          "reads": [
+            "SRR31219507_1.fastq.gz",
+            "SRR31219507_2.fastq.gz"
+          ],
+          "sample_id": "AT1G74480_S_bicolor_RTx430_DAPi712D07-ORGi5019-96P220"
+        },
+        {
+          "biological_replicate": "not_established",
+          "control": "SRR31219427",
+          "ena": {
+            "base_count": "2549947570",
+            "experiment_accession": "SRX26600126",
+            "fastq_bytes": "622346589;646947291",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/045/SRR31219445/SRR31219445_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/045/SRR31219445/SRR31219445_2.fastq.gz",
+            "fastq_md5": "e4c13d0c6aaf4f92c676e842a4eb9c30;a3d668724918e106687b92c43fb4e71c",
+            "library_layout": "PAIRED",
+            "read_count": "8443535",
+            "run_accession": "SRR31219445",
+            "sample_accession": "SAMN44427576"
+          },
+          "id": "SRR31219445",
+          "layout": "PE",
+          "metadata": {
+            "characteristics": {
+              "96 well_plate_id": "96P220",
+              "genotype": "RTx430",
+              "multidap sample_id": "DAPi712D11-96P220",
+              "tf family": "ABI3VP1",
+              "tf id": "AT3G18990",
+              "tf source_species": "Arabidopsis_thaliana_Col-0",
+              "tissue": "plant"
+            },
+            "geo": "GSM9030683",
+            "processing": [
+              "Fastq files were quality filtered and adapters were trimmed using BBTools v38.96 bbduk.sh62 with parameters k=21 mink=11 ktrim=r tbo tpe qtrim=r trimq=6 maq=10, and then aligned to the corresponding reference genome using bowtie2 v2.4.2 and parameters --no-mixed --no-discordant. Bam files from negative control wells were merged using the samtools v1.15.1 merge command, to generate a single background file for each 96-well plate. The MACS3 v3.0.0a6 callpeak command was used to generate narrowPeak files, using the merged background as the control, with the parameters --call-summits --keep-dup 1 and \u2013gsize with the total fasta genome size. Bigwig files were generated using deeptools v3.5.2 bamCoverage with parameters --extendReads --binSize 1 --ignoreDuplicates --maxFragmentLength 600 --normalizeUsing RPGC, and --effectiveGenomeSize with the total fasta genome assembly size of each species.",
+              "Assembly: Sorghum bicolor RTx430: Phytozome v2.1",
+              "Supplementary files format and content: narrowPeak are tab-delimited extended bed format files that contain peak regions identified by MACS3, using the matched negative controls on each 96 well plate to dentify regions that were enriched for by each transcription factor. The identified peaks represent putative transcription factor binding sites.",
+              "Supplementary files format and content: bigwig files show the genome coverage of each DAP-seq library. They can be used to compare coverage between different libraries and to view peaks in a genome browser. Note that they should be compared to the matched negative control libraries from the same plate.",
+              "Library strategy: DAP-seq"
+            ],
+            "relations": [
+              "BioSample: https://www.ncbi.nlm.nih.gov/biosample/SAMN44427576",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26600126"
+            ],
+            "title": "AT3G18990_S_bicolor_RTx430_DAPi712D11-ORGi5019-96P220"
+          },
+          "reads": [
+            "SRR31219445_1.fastq.gz",
+            "SRR31219445_2.fastq.gz"
+          ],
+          "sample_id": "AT3G18990_S_bicolor_RTx430_DAPi712D11-ORGi5019-96P220"
+        },
+        {
+          "biological_replicate": "not_established",
+          "control": "SRR31219427",
+          "ena": {
+            "base_count": "17275971910",
+            "experiment_accession": "SRX26600119",
+            "fastq_bytes": "4151401628;4340211386",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/052/SRR31219452/SRR31219452_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/052/SRR31219452/SRR31219452_2.fastq.gz",
+            "fastq_md5": "bfc81493373eb7a302b18288f7970bbc;5ccb8aba9764cb1d6c70c441152d36e5",
+            "library_layout": "PAIRED",
+            "read_count": "57205205",
+            "run_accession": "SRR31219452",
+            "sample_accession": "SAMN44427576"
+          },
+          "id": "SRR31219452",
+          "layout": "PE",
+          "metadata": {
+            "characteristics": {
+              "96 well_plate_id": "96P220",
+              "genotype": "RTx430",
+              "multidap sample_id": "DAPi712F05-96P220",
+              "tf family": "G2LIKE",
+              "tf id": "AT2G01060",
+              "tf source_species": "Arabidopsis_thaliana_Col-0",
+              "tissue": "plant"
+            },
+            "geo": "GSM9030710",
+            "processing": [
+              "Fastq files were quality filtered and adapters were trimmed using BBTools v38.96 bbduk.sh62 with parameters k=21 mink=11 ktrim=r tbo tpe qtrim=r trimq=6 maq=10, and then aligned to the corresponding reference genome using bowtie2 v2.4.2 and parameters --no-mixed --no-discordant. Bam files from negative control wells were merged using the samtools v1.15.1 merge command, to generate a single background file for each 96-well plate. The MACS3 v3.0.0a6 callpeak command was used to generate narrowPeak files, using the merged background as the control, with the parameters --call-summits --keep-dup 1 and \u2013gsize with the total fasta genome size. Bigwig files were generated using deeptools v3.5.2 bamCoverage with parameters --extendReads --binSize 1 --ignoreDuplicates --maxFragmentLength 600 --normalizeUsing RPGC, and --effectiveGenomeSize with the total fasta genome assembly size of each species.",
+              "Assembly: Sorghum bicolor RTx430: Phytozome v2.1",
+              "Supplementary files format and content: narrowPeak are tab-delimited extended bed format files that contain peak regions identified by MACS3, using the matched negative controls on each 96 well plate to dentify regions that were enriched for by each transcription factor. The identified peaks represent putative transcription factor binding sites.",
+              "Supplementary files format and content: bigwig files show the genome coverage of each DAP-seq library. They can be used to compare coverage between different libraries and to view peaks in a genome browser. Note that they should be compared to the matched negative control libraries from the same plate.",
+              "Library strategy: DAP-seq"
+            ],
+            "relations": [
+              "BioSample: https://www.ncbi.nlm.nih.gov/biosample/SAMN44427576",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26600119"
+            ],
+            "title": "AT2G01060_S_bicolor_RTx430_DAPi712F05-ORGi5019-96P220"
+          },
+          "reads": [
+            "SRR31219452_1.fastq.gz",
+            "SRR31219452_2.fastq.gz"
+          ],
+          "sample_id": "AT2G01060_S_bicolor_RTx430_DAPi712F05-ORGi5019-96P220"
+        },
+        {
+          "biological_replicate": "not_established",
+          "control": "SRR31219427",
+          "ena": {
+            "base_count": "15113336924",
+            "experiment_accession": "SRX26600044",
+            "fastq_bytes": "3661572539;3861872793",
+            "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/028/SRR31219528/SRR31219528_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR312/028/SRR31219528/SRR31219528_2.fastq.gz",
+            "fastq_md5": "ed0b31077f7b577cdcde2bd367cedcaf;98a56986f2847e21bad35882cf3a2029",
+            "library_layout": "PAIRED",
+            "read_count": "50044162",
+            "run_accession": "SRR31219528",
+            "sample_accession": "SAMN44427576"
+          },
+          "id": "SRR31219528",
+          "layout": "PE",
+          "metadata": {
+            "characteristics": {
+              "96 well_plate_id": "96P220",
+              "genotype": "RTx430",
+              "multidap sample_id": "DAPi712A10-96P220",
+              "tf family": "TRIHELIX",
+              "tf id": "AT5G05550",
+              "tf source_species": "Arabidopsis_thaliana_Col-0",
+              "tissue": "plant"
+            },
+            "geo": "GSM9030633",
+            "processing": [
+              "Fastq files were quality filtered and adapters were trimmed using BBTools v38.96 bbduk.sh62 with parameters k=21 mink=11 ktrim=r tbo tpe qtrim=r trimq=6 maq=10, and then aligned to the corresponding reference genome using bowtie2 v2.4.2 and parameters --no-mixed --no-discordant. Bam files from negative control wells were merged using the samtools v1.15.1 merge command, to generate a single background file for each 96-well plate. The MACS3 v3.0.0a6 callpeak command was used to generate narrowPeak files, using the merged background as the control, with the parameters --call-summits --keep-dup 1 and \u2013gsize with the total fasta genome size. Bigwig files were generated using deeptools v3.5.2 bamCoverage with parameters --extendReads --binSize 1 --ignoreDuplicates --maxFragmentLength 600 --normalizeUsing RPGC, and --effectiveGenomeSize with the total fasta genome assembly size of each species.",
+              "Assembly: Sorghum bicolor RTx430: Phytozome v2.1",
+              "Supplementary files format and content: narrowPeak are tab-delimited extended bed format files that contain peak regions identified by MACS3, using the matched negative controls on each 96 well plate to dentify regions that were enriched for by each transcription factor. The identified peaks represent putative transcription factor binding sites.",
+              "Supplementary files format and content: bigwig files show the genome coverage of each DAP-seq library. They can be used to compare coverage between different libraries and to view peaks in a genome browser. Note that they should be compared to the matched negative control libraries from the same plate.",
+              "Library strategy: DAP-seq"
+            ],
+            "relations": [
+              "BioSample: https://www.ncbi.nlm.nih.gov/biosample/SAMN44427576",
+              "SRA: https://www.ncbi.nlm.nih.gov/sra?term=SRX26600044"
+            ],
+            "title": "AT5G05550_S_bicolor_RTx430_DAPi712A10-ORGi5019-96P220"
+          },
+          "reads": [
+            "SRR31219528_1.fastq.gz",
+            "SRR31219528_2.fastq.gz"
+          ],
+          "sample_id": "AT5G05550_S_bicolor_RTx430_DAPi712A10-ORGi5019-96P220"
+        }
+      ],
+      "selection": {
+        "control_policy": "repository assigned controls; not author plate-pooled controls",
+        "eligible_families": [
+          "ABI3VP1",
+          "AP2EREBP",
+          "ARID",
+          "BBRBPC",
+          "BES1",
+          "BZIP",
+          "C2C2DOF",
+          "C2C2GATA",
+          "C2C2YABBY",
+          "C2H2",
+          "CAMTA",
+          "CPP",
+          "E2FDP",
+          "G2LIKE",
+          "GRF",
+          "HOMEOBOX",
+          "HSF",
+          "LOBAS2",
+          "MYB",
+          "MYBRELATED",
+          "NAC",
+          "RAV",
+          "REM",
+          "RWPRK",
+          "SBP",
+          "TCP",
+          "TRIHELIX",
+          "WRKY",
+          "ZFHD"
+        ],
+        "excluded": [],
+        "families": 4,
+        "method": "lowest SHA256(seed:family), then lowest SHA256(seed:exact sample title)",
+        "retrieved": "2026-10-14T06:52:06.828941+00:00",
+        "seed": 60141,
+        "sheet": "24-Sorghum_bicolor-PRJNA1177471.tsv",
+        "sheet_sha256": "e924d2f184f2f90fb43dd088b606cbc82d2a6f395e2195777b903dd58bf6e4a0",
+        "source_sha256": "d57e896e503b1ef283f6433b7ee3e3dd06bfdb946e73e5779495427ea00611b8",
+        "source_url": "https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE299020&targ=gsm&form=text&view=full"
+      },
+      "species": "Sorghum_bicolor"
+    }
+  },
+  "schema_version": 1
+}

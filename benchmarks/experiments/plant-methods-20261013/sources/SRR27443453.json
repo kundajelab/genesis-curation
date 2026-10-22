@@ -1,0 +1,14 @@
+[
+  {
+    "run_accession": "SRR27443453",
+    "experiment_accession": "SRX23115643",
+    "sample_accession": "SAMN39276717",
+    "study_accession": "PRJNA1061549",
+    "library_layout": "PAIRED",
+    "library_name": "GSM8004580",
+    "read_count": "372718258",
+    "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR274/053/SRR27443453/SRR27443453_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR274/053/SRR27443453/SRR27443453_2.fastq.gz",
+    "fastq_md5": "d9dba6778fc685429facacb51b22aabf;97b77dbd81508cb762b8ffad0ac57c3c",
+    "fastq_bytes": "18812039314;18617726293"
+  }
+]

@@ -1,0 +1,72 @@
+<EXPERIMENT_SET>
+<EXPERIMENT accession="SRX23115643" alias="GSM8004580_r1" broker_name="NCBI">
+  <IDENTIFIERS>
+    <PRIMARY_ID>SRX23115643</PRIMARY_ID>
+    <EXTERNAL_ID namespace="GEO">GSM8004580_r1</EXTERNAL_ID>
+    <SUBMITTER_ID namespace="">GSM8004580_r1</SUBMITTER_ID>
+  </IDENTIFIERS>
+  <TITLE>GSM8004580: Maize ATAC-seq 2500 nuclei rep2; Zea mays; ATAC-seq</TITLE>
+  <STUDY_REF accession="SRP482202">
+    <IDENTIFIERS>
+      <PRIMARY_ID>SRP482202</PRIMARY_ID>
+      <EXTERNAL_ID namespace="BioProject">PRJNA1061549</EXTERNAL_ID>
+    </IDENTIFIERS>
+  </STUDY_REF>
+  <DESIGN>
+    <DESIGN_DESCRIPTION/>
+    <SAMPLE_DESCRIPTOR accession="SRS20070455">
+      <IDENTIFIERS>
+        <PRIMARY_ID>SRS20070455</PRIMARY_ID>
+        <EXTERNAL_ID namespace="GEO">GSM8004580</EXTERNAL_ID>
+      </IDENTIFIERS>
+    </SAMPLE_DESCRIPTOR>
+    <LIBRARY_DESCRIPTOR>
+      <LIBRARY_NAME>GSM8004580</LIBRARY_NAME>
+      <LIBRARY_STRATEGY>ATAC-seq</LIBRARY_STRATEGY>
+      <LIBRARY_SOURCE>GENOMIC</LIBRARY_SOURCE>
+      <LIBRARY_SELECTION>other</LIBRARY_SELECTION>
+      <LIBRARY_LAYOUT>
+        <PAIRED/>
+      </LIBRARY_LAYOUT>
+      <LIBRARY_CONSTRUCTION_PROTOCOL>Seeding maize was finely chopped using a double-edged razor blade, and the slurry underwent initial filtration through Miracloth, followed by two filtrations through a 20 µm nylon mesh to eliminate large debris. After centrifugation, the pelleted nuclei, chloroplasts, and starch grains were resuspended in the ORB buffer where chloroplasts to burst. The nuclei suspension was then filtered twice through a 10 µm mesh. Approximately 400 µl of the green-coloured nucleus suspension was loaded onto the top of the Percoll-Sucrose gradient and centrifuged. Nuclei fractionation occurred at the interface between the ORB and SCB layers, and the isolated nuclei were transferred and pelleted in NEB buffer. The freshly isolated nuclei and extracted genomic DNA underwent fragmentation and tagging by Tn5. Following cleanup, the first PCR was conducted to amplify DNA fragments and add barcodes. Subsequently, the number of cycles for the secondary PCR was determined through qPCR. The quality of the constructed library was assessed using Qubit and Bioanalyzer. Sequencing was carried out using the Illumina NovaSeq 6000.</LIBRARY_CONSTRUCTION_PROTOCOL>
+    </LIBRARY_DESCRIPTOR>
+  </DESIGN>
+  <PLATFORM>
+    <ILLUMINA>
+      <INSTRUMENT_MODEL>Illumina NovaSeq 6000</INSTRUMENT_MODEL>
+    </ILLUMINA>
+  </PLATFORM>
+  <EXPERIMENT_LINKS>
+    <EXPERIMENT_LINK>
+      <XREF_LINK>
+        <DB>ENA-SAMPLE</DB>
+        <ID>SRS20070455</ID>
+      </XREF_LINK>
+    </EXPERIMENT_LINK>
+    <EXPERIMENT_LINK>
+      <XREF_LINK>
+        <DB>ENA-SUBMISSION</DB>
+        <ID>SRA1780806</ID>
+      </XREF_LINK>
+    </EXPERIMENT_LINK>
+    <EXPERIMENT_LINK>
+      <XREF_LINK>
+        <DB>ENA-FASTQ-FILES</DB>
+        <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRX23115643&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+      </XREF_LINK>
+    </EXPERIMENT_LINK>
+    <EXPERIMENT_LINK>
+      <XREF_LINK>
+        <DB>ENA-SUBMITTED-FILES</DB>
+        <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRX23115643&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+      </XREF_LINK>
+    </EXPERIMENT_LINK>
+  </EXPERIMENT_LINKS>
+  <EXPERIMENT_ATTRIBUTES>
+    <EXPERIMENT_ATTRIBUTE>
+      <TAG>ENA-STATUS</TAG>
+      <VALUE>PUBLIC</VALUE>
+    </EXPERIMENT_ATTRIBUTE>
+  </EXPERIMENT_ATTRIBUTES>
+</EXPERIMENT>
+</EXPERIMENT_SET>

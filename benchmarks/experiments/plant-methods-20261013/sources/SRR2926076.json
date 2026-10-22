@@ -1,0 +1,14 @@
+[
+  {
+    "run_accession": "SRR2926076",
+    "experiment_accession": "SRX1411986",
+    "sample_accession": "SAMN04235887",
+    "study_accession": "PRJNA257556",
+    "library_layout": "SINGLE",
+    "library_name": "",
+    "read_count": "5593468",
+    "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR292/006/SRR2926076/SRR2926076.fastq.gz",
+    "fastq_md5": "2cd3aa63b3accf975802d5b0e6fcfb2b",
+    "fastq_bytes": "337903008"
+  }
+]

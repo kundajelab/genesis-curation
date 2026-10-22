@@ -1,0 +1,9 @@
+{
+  "ALIGN_AND_MARK": "kundajelab/dap_seq_alignment@sha256:4764008ba8fbb5d831bd6f9ed6a720fd494062b39f0bae63ff2e4efd316ad842",
+  "ENRICHMENT": "kundajelab/genesis_tools@sha256:31458d4a6a83541f463ea4b0e692a0afc65c6df441f70c3f71fc4ccf1a11eb59",
+  "FRAGMENTS": "kundajelab/genesis_tools@sha256:31458d4a6a83541f463ea4b0e692a0afc65c6df441f70c3f71fc4ccf1a11eb59",
+  "PEAKS": "kundajelab/dap_seq_peaks@sha256:10467dd29e3d25ce7769f76f57402bd1a5a582006e911d06479bfcc3e3325df3",
+  "PROVENANCE": "kundajelab/genesis_tools@sha256:31458d4a6a83541f463ea4b0e692a0afc65c6df441f70c3f71fc4ccf1a11eb59",
+  "RAW_FASTQC": "sha256:97ca1e181a55a1d87653984956983fea3ff76cab5875f45ae2143168ff4fd73d",
+  "REPORT": "sha256:3f8fc8c57e57994b95408cd02a7ced44a6fb90396b9067bbe2d2dcdebb396b50"
+}

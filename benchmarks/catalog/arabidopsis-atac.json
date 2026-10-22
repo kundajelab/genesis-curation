@@ -1,0 +1,61 @@
+{
+  "schema_version": 1,
+  "id": "arabidopsis-atac",
+  "assay": "bulk-ATAC",
+  "synthetic": false,
+  "status": "NEEDS_REFERENCE",
+  "reason": "Exact TAIR10 FASTA bytes, annotation release and SHA256 are unresolved; FASTQs are not downloaded or SHA256-pinned. Replicate and library metadata need curation.",
+  "reference": {
+    "requested_basename": "TAIR10.fa.gz",
+    "species": "Arabidopsis thaliana",
+    "assembly": "TAIR10",
+    "cultivar": "Col-0",
+    "fasta_sha256": "UNSPECIFIED",
+    "annotation_release": "UNSPECIFIED"
+  },
+  "assets": {},
+  "libraries": [],
+  "thresholds": "UNSPECIFIED",
+  "source": {
+    "study": "GSE85203",
+    "ENA_records": [
+      {
+        "run_accession": "SRR4000468",
+        "experiment_accession": "SRX2000799",
+        "sample_accession": "SAMN05513123",
+        "library_layout": "PAIRED",
+        "library_strategy": "OTHER",
+        "read_count": "74689822",
+        "base_count": "4630768964",
+        "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR400/008/SRR4000468/SRR4000468_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR400/008/SRR4000468/SRR4000468_2.fastq.gz",
+        "fastq_md5": "8d943582a8e0e9be37e29aed5b10e8ea;caf99c189a7f9c026254dfd9c6d59aa8",
+        "fastq_bytes": "1892443345;1917384052"
+      },
+      {
+        "run_accession": "SRR4000469",
+        "experiment_accession": "SRX2000800",
+        "sample_accession": "SAMN05513136",
+        "library_layout": "PAIRED",
+        "library_strategy": "OTHER",
+        "read_count": "22612751",
+        "base_count": "1401990562",
+        "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR400/009/SRR4000469/SRR4000469_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR400/009/SRR4000469/SRR4000469_2.fastq.gz",
+        "fastq_md5": "b9333fb587f006c0240cf1fadecb6285;683910e668a1629e416e0f1ce2468e9c",
+        "fastq_bytes": "569530029;590128538"
+      }
+    ],
+    "metadata_only": true,
+    "compute_cap_templates_per_library": 1000000,
+    "compute_cap_is_biological_threshold": false,
+    "proposed_roles": [
+      "GSM2260231 reported replicate 1",
+      "GSM2260232 reported replicate 2"
+    ],
+    "open_questions": [
+      "Confirm biological versus technical replicate identities",
+      "Pin exact reference and annotations without assembly substitution",
+      "Determine FASTQ SHA256 from separately recorded acquisition; ENA MD5 is available",
+      "Retain source library layout and explicitly approve any R1-only projection"
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "type": "object",
+  "properties": {
+    "explanation": {
+      "type": "string",
+      "maxLength": 4000
+    },
+    "hypotheses": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 500
+      },
+      "maxItems": 8
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": [
+    "explanation",
+    "hypotheses",
+    "citations"
+  ],
+  "additionalProperties": false
+}

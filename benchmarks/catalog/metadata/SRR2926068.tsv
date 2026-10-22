@@ -1,0 +1,2 @@
+run_accession	experiment_accession	sample_accession	library_layout	library_strategy	read_count	base_count	fastq_ftp	fastq_md5	fastq_bytes
+SRR2926068	SRX1411978	SAMN04235879	PAIRED	OTHER	4241389	424138900	ftp.sra.ebi.ac.uk/vol1/fastq/SRR292/008/SRR2926068/SRR2926068_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR292/008/SRR2926068/SRR2926068_2.fastq.gz	ce67f4bb3016672bb1c26d074de4dfaf;29232cb3f06416364396a6537e8b2eb6	173371459;175428467

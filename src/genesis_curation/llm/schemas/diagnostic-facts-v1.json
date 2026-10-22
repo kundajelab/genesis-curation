@@ -1,0 +1,48 @@
+{
+  "type": "object",
+  "properties": {
+    "worker_state": {
+      "enum": [
+        "RUNNING",
+        "UNKNOWN",
+        "STARTING",
+        "QUEUED",
+        "NEEDS_REVIEW",
+        "FAILED",
+        "SUCCEEDED",
+        "ABSENT",
+        "STOPPED",
+        "CANCELLED"
+      ]
+    },
+    "exit_code": {
+      "type": "integer"
+    },
+    "oom_kill": {
+      "type": "boolean"
+    },
+    "resource_evidence": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "qc_concern": {
+      "type": "boolean"
+    },
+    "tool_exception": {
+      "type": "boolean"
+    },
+    "campaign_hash": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "job": {
+      "type": "string",
+      "minLength": 1
+    },
+    "attempt": {
+      "type": "integer",
+      "minimum": 1
+    }
+  },
+  "additionalProperties": false
+}

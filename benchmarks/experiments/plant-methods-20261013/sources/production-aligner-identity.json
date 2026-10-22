@@ -1,0 +1,60 @@
+{
+  "native-2.3": {
+    "package": {
+      "name": "bwa-mem2",
+      "version": "2.3",
+      "build": "he70b90d_0",
+      "url": "https://conda.anaconda.org/bioconda/linux-64/bwa-mem2-2.3-he70b90d_0.tar.bz2",
+      "sha256": "7ccf117aa586d663e12181e60f0cf60215fb162515e0b6e98517f5e108613d41"
+    },
+    "banner_stdout": "2.2.1\n",
+    "banner_stderr": "Looking to launch executable \"/data/homes/yl814/package/genesis/genesis-preprocessing/benchmarks/environment/.pixi/envs/default/bin/bwa-mem2.avx2\", simd = .avx2\nLaunching executable \"/data/homes/yl814/package/genesis/genesis-preprocessing/benchmarks/environment/.pixi/envs/default/bin/bwa-mem2.avx2\"\n",
+    "binaries": {
+      "bwa-mem2": "b853ef5cc427046b1b58726e7e75ed45876f93bfd93fe5471126246b4024a28a",
+      "bwa-mem2.avx": "7983c869470d750d2ec3bdd83a02f342c12067267fe8ab689e0d73f07bee9166",
+      "bwa-mem2.avx2": "8e203c1fba16281a653bd74d5215d1256f857d4976b10793180a33d97de9d181",
+      "bwa-mem2.avx512bw": "7f0091d25a74a5cfa950271b6e05b45d2281fb6e8442f536ea5e75b42c88e2f7",
+      "bwa-mem2.sse41": "1e06b15a36b5bff05cddc437199a8f2a3e6458ae6025606305522e8e09556856",
+      "bwa-mem2.sse42": "ef54cca805f5df977fc629de99f7ac22f8ae2732ce1c0001eb413b0b82712fd2"
+    }
+  },
+  "native-2.2.1": {
+    "package": {
+      "name": "bwa-mem2",
+      "version": "2.2.1",
+      "build": "he70b90d_8",
+      "url": "https://conda.anaconda.org/bioconda/linux-64/bwa-mem2-2.2.1-he70b90d_8.tar.bz2",
+      "sha256": "7db7a2b1555e27c5b66fb27c309b2e2ea5fd8198bd4e084b6fe165113967b69e"
+    },
+    "banner_stdout": "2.2.1\n",
+    "banner_stderr": "Looking to launch executable \"/data/homes/yl814/package/genesis/genesis-preprocessing/benchmarks/environment/bwa-mem2-2.2.1/.pixi/envs/default/bin/bwa-mem2.avx2\", simd = .avx2\nLaunching executable \"/data/homes/yl814/package/genesis/genesis-preprocessing/benchmarks/environment/bwa-mem2-2.2.1/.pixi/envs/default/bin/bwa-mem2.avx2\"\n",
+    "binaries": {
+      "bwa-mem2": "b853ef5cc427046b1b58726e7e75ed45876f93bfd93fe5471126246b4024a28a",
+      "bwa-mem2.avx": "58eb4cfe040bc82e41e83f131b0f96219a9d2b797efb73850599435a01aab734",
+      "bwa-mem2.avx2": "9095cda315e16eeec007482f5657f9d42bf698d57e1554383809dd6b7d0d3817",
+      "bwa-mem2.avx512bw": "0d8560b4c8266a3f734c0d6bb7de8e075519325fcaf987872bca9eff047356d9",
+      "bwa-mem2.sse41": "cffd33575d9c22d303cdf82280da39c851a7e00fa20d528011ba5c1a77769de5",
+      "bwa-mem2.sse42": "fd2af971ad3235b7fdb17a402ce0ab6bc3b79cafb2973d4306302902cd1bb4c2"
+    }
+  },
+  "production": {
+    "image": "kundajelab/dap_seq_alignment@sha256:4764008ba8fbb5d831bd6f9ed6a720fd494062b39f0bae63ff2e4efd316ad842",
+    "package": {
+      "name": "bwa-mem2",
+      "version": "2.3",
+      "build": "he70b90d_0",
+      "url": "https://conda.anaconda.org/bioconda/linux-64/bwa-mem2-2.3-he70b90d_0.tar.bz2",
+      "sha256": "7ccf117aa586d663e12181e60f0cf60215fb162515e0b6e98517f5e108613d41"
+    },
+    "binaries": {
+      "bwa-mem2": "b853ef5cc427046b1b58726e7e75ed45876f93bfd93fe5471126246b4024a28a",
+      "bwa-mem2.avx": "7983c869470d750d2ec3bdd83a02f342c12067267fe8ab689e0d73f07bee9166",
+      "bwa-mem2.avx2": "8e203c1fba16281a653bd74d5215d1256f857d4976b10793180a33d97de9d181",
+      "bwa-mem2.avx512bw": "7f0091d25a74a5cfa950271b6e05b45d2281fb6e8442f536ea5e75b42c88e2f7",
+      "bwa-mem2.sse41": "1e06b15a36b5bff05cddc437199a8f2a3e6458ae6025606305522e8e09556856",
+      "bwa-mem2.sse42": "ef54cca805f5df977fc629de99f7ac22f8ae2732ce1c0001eb413b0b82712fd2"
+    }
+  },
+  "production_matches_native_2.3": true,
+  "production_matches_native_2.2.1": false
+}

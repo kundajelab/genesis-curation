@@ -1,0 +1,38 @@
+{
+  "schema_version": 1,
+  "providers": [
+    {
+      "id": "mock",
+      "mode": "mock",
+      "endpoint": null,
+      "model": "synthetic-mock",
+      "model_revision": null,
+      "serving_revision": null,
+      "external": false,
+      "credential": null,
+      "allowed_tasks": [
+        "probe",
+        "metadata",
+        "diagnose",
+        "ask"
+      ],
+      "allowed_classifications": [
+        "public",
+        "internal",
+        "local-only"
+      ],
+      "context_chars": 100000,
+      "max_tokens": 512,
+      "timeout_seconds": 30,
+      "max_retries": 1,
+      "concurrency": 1,
+      "format_repair": true,
+      "capabilities": {
+        "json_schema": true,
+        "tools": false,
+        "streaming": false
+      },
+      "mock_response": null
+    }
+  ]
+}

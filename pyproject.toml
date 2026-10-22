@@ -1,0 +1,33 @@
+[project]
+name = "genesis-curation"
+version = "0.1.0"
+description = "Genesis metadata curation, review, records, studies and method benchmarks"
+requires-python = ">=3.14"
+dependencies = ["defopt>=7,<8", "pysam>=0.24.1,<0.25", "jsonschema>=4.26,<5"]
+
+[project.scripts]
+genesis = "genesis_curation.execution.controller:main"
+
+[build-system]
+requires = ["setuptools>=82"]
+build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+dev = ["ruff>=0.14,<1", "ty>=0.0.30,<1"]
+
+[tool.ruff]
+line-length = 100
+# Fixture inputs are reproduced byte-for-byte from their original sources.
+extend-exclude = ["tests/fixtures"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "ANN"]
+
+[tool.ty.terminal]
+error-on-warning = true
+
+[tool.ty.src]
+exclude = ["tests/fixtures"]
+
+[tool.setuptools.package-data]
+genesis_curation = ["benchmark/report.html", "scatac/assets/*", "contracts/schemas/*.json", "qc_policy/policies/*.json", "llm/schemas/*.json", "llm/prompts/*.txt", "curation/vocabularies/*.json"]

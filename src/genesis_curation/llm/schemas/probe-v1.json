@@ -1,0 +1,12 @@
+{
+  "type": "object",
+  "properties": {
+    "ok": {
+      "const": true
+    }
+  },
+  "required": [
+    "ok"
+  ],
+  "additionalProperties": false
+}

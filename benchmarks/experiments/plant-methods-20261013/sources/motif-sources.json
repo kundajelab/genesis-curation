@@ -1,0 +1,20 @@
+[
+  {
+    "matrix": "MA0565.1",
+    "url": "https://jaspar.elixir.no/api/v1/matrix/MA0565.1/",
+    "sha256": "324c5300050c3c7f6ffbd9bd85cb9070c464e243f2903a30c7728b68548c47f5",
+    "bytes": 949,
+    "retrieved_utc": "2026-10-13T07:42:31.853094+00:00",
+    "role": "independent PBM motif, not DAP-derived",
+    "license": "CC BY 4.0"
+  },
+  {
+    "matrix": "MA0931.1",
+    "url": "https://jaspar.elixir.no/api/v1/matrix/MA0931.1/",
+    "sha256": "6c3810d6d5646c7bb1c2ee8e7863878badcd167a04acd5dd97698da5922040fa",
+    "bytes": 1052,
+    "retrieved_utc": "2026-10-13T07:42:32.187458+00:00",
+    "role": "independent PBM motif, not DAP-derived",
+    "license": "CC BY 4.0"
+  }
+]

@@ -1,0 +1,270 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "node": {
+      "type": "object",
+      "properties": {
+        "schema_version": {
+          "const": 1
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "worker": {
+          "type": "object",
+          "properties": {
+            "transport": {
+              "enum": [
+                "local",
+                "ssh"
+              ]
+            },
+            "repo": {
+              "type": "string"
+            },
+            "python": {
+              "type": "string"
+            },
+            "root": {
+              "type": "string"
+            },
+            "host": {
+              "type": "string"
+            },
+            "slots": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "diagnostic_roots": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "transport",
+            "repo",
+            "python",
+            "root"
+          ],
+          "additionalProperties": false
+        },
+        "roles": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "processing",
+              "llm-serving"
+            ]
+          }
+        },
+        "gpu_uuids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "dedicated": {
+          "type": "boolean"
+        },
+        "allocation": {
+          "anyOf": [
+            {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "expires_at": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "expires_at"
+              ],
+              "additionalProperties": false
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "budgets": {
+          "type": "object",
+          "properties": {
+            "memory_mib": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "cpu": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "disk_bytes": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "gpu_memory_mib": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "pipeline_memory_mib": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "pipeline_gpu_uuids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": [
+            "memory_mib",
+            "cpu",
+            "disk_bytes",
+            "gpu_memory_mib",
+            "pipeline_memory_mib",
+            "pipeline_gpu_uuids"
+          ],
+          "additionalProperties": false
+        },
+        "site_approved": {
+          "type": "boolean"
+        },
+        "login_node": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "schema_version",
+        "id",
+        "worker",
+        "roles",
+        "gpu_uuids",
+        "dedicated",
+        "allocation",
+        "budgets",
+        "site_approved",
+        "login_node"
+      ],
+      "additionalProperties": false
+    },
+    "image": {
+      "type": "string",
+      "minLength": 1
+    },
+    "hf_cli": {
+      "type": "string"
+    },
+    "cache": {
+      "type": "string"
+    },
+    "port": {
+      "type": "integer",
+      "minimum": 1024,
+      "maximum": 65535
+    },
+    "controller_port": {
+      "type": "integer",
+      "minimum": 1024,
+      "maximum": 65535
+    },
+    "context_length": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "concurrency": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "tensor_parallel_size": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "kv_cache_mib": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "runtime_overhead_mib": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "gpu_memory_utilization": {
+      "type": "number",
+      "exclusiveMinimum": 0,
+      "maximum": 0.95
+    },
+    "supported_architectures": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "license_accepted": {
+      "type": "boolean"
+    },
+    "gated_access_confirmed": {
+      "type": "boolean"
+    },
+    "readiness_seconds": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 3600
+    },
+    "api_key_file": {
+      "type": "string"
+    },
+    "hf_token_file": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "quantization": {
+      "anyOf": [
+        {
+          "type": "string",
+          "minLength": 1
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "node",
+    "image",
+    "hf_cli",
+    "cache",
+    "port",
+    "controller_port",
+    "context_length",
+    "concurrency",
+    "tensor_parallel_size",
+    "kv_cache_mib",
+    "runtime_overhead_mib",
+    "gpu_memory_utilization",
+    "supported_architectures",
+    "license_accepted",
+    "gated_access_confirmed",
+    "readiness_seconds",
+    "api_key_file",
+    "hf_token_file"
+  ],
+  "additionalProperties": false
+}

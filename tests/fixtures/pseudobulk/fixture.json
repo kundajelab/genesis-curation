@@ -1,0 +1,308 @@
+{
+  "libraries": [
+    {
+      "study_id": "toy",
+      "biological_sample_id": "bio1",
+      "biological_replicate_id": "r1",
+      "library_id": "L1",
+      "species": "Synthetic fixture",
+      "assembly": "toy-v1",
+      "reference_id": "toy-v1",
+      "reference_fasta_sha256": "9280412424a74621c3151ca4c2c2fd87f439fb141de8b4095bb3c2a42395f430",
+      "annotation_sha256": null,
+      "accession_cultivar_ecotype": "toy",
+      "tissue": "toy",
+      "developmental_stage": "toy",
+      "treatment": "none",
+      "condition": "toy",
+      "assay": "snATAC",
+      "protocol": "toy",
+      "technical_merge_group": null,
+      "coordinate_offsets": [
+        4,
+        -5
+      ]
+    },
+    {
+      "study_id": "toy",
+      "biological_sample_id": "bio2",
+      "biological_replicate_id": "r2",
+      "library_id": "L2",
+      "species": "Synthetic fixture",
+      "assembly": "toy-v1",
+      "reference_id": "toy-v1",
+      "reference_fasta_sha256": "9280412424a74621c3151ca4c2c2fd87f439fb141de8b4095bb3c2a42395f430",
+      "annotation_sha256": null,
+      "accession_cultivar_ecotype": "toy",
+      "tissue": "toy",
+      "developmental_stage": "toy",
+      "treatment": "none",
+      "condition": "toy",
+      "assay": "snATAC",
+      "protocol": "toy",
+      "technical_merge_group": null,
+      "coordinate_offsets": [
+        4,
+        -5
+      ]
+    }
+  ],
+  "cells": [
+    {
+      "library_id": "L1",
+      "barcode": "AAA",
+      "author_original_label": "A_original",
+      "harmonized_label": "A",
+      "annotation_source": "toy",
+      "annotation_status": "synthetic",
+      "ontology_id": null,
+      "atac_present": true,
+      "rna_present": false,
+      "atac_include": true,
+      "rna_include": false,
+      "cell_calling_status": "toy-included",
+      "doublet_status": "not-assessed",
+      "qc_metrics": {
+        "fragments": null,
+        "unique_fragments": null,
+        "duplicate_fraction": null,
+        "tss_enrichment": null,
+        "frip": null,
+        "mitochondrial_fraction": null,
+        "plastid_fraction": null,
+        "low_mapq_fraction": null
+      },
+      "qc_thresholds": "UNSPECIFIED"
+    },
+    {
+      "library_id": "L1",
+      "barcode": "BBB",
+      "author_original_label": "B_original",
+      "harmonized_label": "B",
+      "annotation_source": "toy",
+      "annotation_status": "synthetic",
+      "ontology_id": null,
+      "atac_present": true,
+      "rna_present": false,
+      "atac_include": true,
+      "rna_include": false,
+      "cell_calling_status": "toy-included",
+      "doublet_status": "not-assessed",
+      "qc_metrics": {
+        "fragments": null,
+        "unique_fragments": null,
+        "duplicate_fraction": null,
+        "tss_enrichment": null,
+        "frip": null,
+        "mitochondrial_fraction": null,
+        "plastid_fraction": null,
+        "low_mapq_fraction": null
+      },
+      "qc_thresholds": "UNSPECIFIED"
+    },
+    {
+      "library_id": "L1",
+      "barcode": "CCC",
+      "author_original_label": "C_original",
+      "harmonized_label": "C",
+      "annotation_source": "toy",
+      "annotation_status": "synthetic",
+      "ontology_id": null,
+      "atac_present": true,
+      "rna_present": false,
+      "atac_include": true,
+      "rna_include": false,
+      "cell_calling_status": "toy-included",
+      "doublet_status": "not-assessed",
+      "qc_metrics": {
+        "fragments": null,
+        "unique_fragments": null,
+        "duplicate_fraction": null,
+        "tss_enrichment": null,
+        "frip": null,
+        "mitochondrial_fraction": null,
+        "plastid_fraction": null,
+        "low_mapq_fraction": null
+      },
+      "qc_thresholds": "UNSPECIFIED"
+    },
+    {
+      "library_id": "L2",
+      "barcode": "AAA",
+      "author_original_label": "A_original",
+      "harmonized_label": "A",
+      "annotation_source": "toy",
+      "annotation_status": "synthetic",
+      "ontology_id": null,
+      "atac_present": true,
+      "rna_present": false,
+      "atac_include": true,
+      "rna_include": false,
+      "cell_calling_status": "toy-included",
+      "doublet_status": "not-assessed",
+      "qc_metrics": {
+        "fragments": null,
+        "unique_fragments": null,
+        "duplicate_fraction": null,
+        "tss_enrichment": null,
+        "frip": null,
+        "mitochondrial_fraction": null,
+        "plastid_fraction": null,
+        "low_mapq_fraction": null
+      },
+      "qc_thresholds": "UNSPECIFIED"
+    },
+    {
+      "library_id": "L2",
+      "barcode": "BBB",
+      "author_original_label": "B_original",
+      "harmonized_label": "B",
+      "annotation_source": "toy",
+      "annotation_status": "synthetic",
+      "ontology_id": null,
+      "atac_present": true,
+      "rna_present": false,
+      "atac_include": true,
+      "rna_include": false,
+      "cell_calling_status": "toy-included",
+      "doublet_status": "not-assessed",
+      "qc_metrics": {
+        "fragments": null,
+        "unique_fragments": null,
+        "duplicate_fraction": null,
+        "tss_enrichment": null,
+        "frip": null,
+        "mitochondrial_fraction": null,
+        "plastid_fraction": null,
+        "low_mapq_fraction": null
+      },
+      "qc_thresholds": "UNSPECIFIED"
+    },
+    {
+      "library_id": "L2",
+      "barcode": "CCC",
+      "author_original_label": "C_original",
+      "harmonized_label": "C",
+      "annotation_source": "toy",
+      "annotation_status": "synthetic",
+      "ontology_id": null,
+      "atac_present": true,
+      "rna_present": false,
+      "atac_include": true,
+      "rna_include": false,
+      "cell_calling_status": "toy-included",
+      "doublet_status": "not-assessed",
+      "qc_metrics": {
+        "fragments": null,
+        "unique_fragments": null,
+        "duplicate_fraction": null,
+        "tss_enrichment": null,
+        "frip": null,
+        "mitochondrial_fraction": null,
+        "plastid_fraction": null,
+        "low_mapq_fraction": null
+      },
+      "qc_thresholds": "UNSPECIFIED"
+    },
+    {
+      "library_id": "L1",
+      "barcode": "DDD",
+      "author_original_label": "A_original",
+      "harmonized_label": "A",
+      "annotation_source": "toy",
+      "annotation_status": "synthetic",
+      "ontology_id": null,
+      "atac_present": true,
+      "rna_present": false,
+      "atac_include": true,
+      "rna_include": false,
+      "cell_calling_status": "toy-included",
+      "doublet_status": "not-assessed",
+      "qc_metrics": {
+        "fragments": null,
+        "unique_fragments": null,
+        "duplicate_fraction": null,
+        "tss_enrichment": null,
+        "frip": null,
+        "mitochondrial_fraction": null,
+        "plastid_fraction": null,
+        "low_mapq_fraction": null
+      },
+      "qc_thresholds": "UNSPECIFIED"
+    }
+  ],
+  "fragments": [
+    {
+      "library_id": "L1",
+      "barcode": "AAA",
+      "chrom": "chr1",
+      "start": 100,
+      "end": 150,
+      "support": 2
+    },
+    {
+      "library_id": "L1",
+      "barcode": "AAA",
+      "chrom": "chr1",
+      "start": 200,
+      "end": 250,
+      "support": 2
+    },
+    {
+      "library_id": "L1",
+      "barcode": "BBB",
+      "chrom": "chr1",
+      "start": 100,
+      "end": 150,
+      "support": 1
+    },
+    {
+      "library_id": "L1",
+      "barcode": "CCC",
+      "chrom": "chr1",
+      "start": 100,
+      "end": 150,
+      "support": 1
+    },
+    {
+      "library_id": "L2",
+      "barcode": "AAA",
+      "chrom": "chr1",
+      "start": 100,
+      "end": 150,
+      "support": 2
+    },
+    {
+      "library_id": "L2",
+      "barcode": "BBB",
+      "chrom": "chr1",
+      "start": 100,
+      "end": 150,
+      "support": 1
+    },
+    {
+      "library_id": "L2",
+      "barcode": "BBB",
+      "chrom": "chr1",
+      "start": 200,
+      "end": 250,
+      "support": 1
+    },
+    {
+      "library_id": "L2",
+      "barcode": "CCC",
+      "chrom": "chr1",
+      "start": 100,
+      "end": 150,
+      "support": 1
+    },
+    {
+      "library_id": "L1",
+      "barcode": "DDD",
+      "chrom": "chr1",
+      "start": 100,
+      "end": 150,
+      "support": 1
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "schema_version": 1,
+  "id": "arabidopsis-dap",
+  "assay": "DAP-seq",
+  "synthetic": false,
+  "status": "NEEDS_REFERENCE",
+  "reason": "Exact TAIR10 FASTA bytes, annotation release and SHA256 are unresolved; FASTQs are not downloaded or SHA256-pinned. Replicate and library metadata need curation.",
+  "reference": {
+    "requested_basename": "TAIR10.fa.gz",
+    "species": "Arabidopsis thaliana",
+    "assembly": "TAIR10",
+    "cultivar": "Col-0",
+    "fasta_sha256": "UNSPECIFIED",
+    "annotation_release": "UNSPECIFIED"
+  },
+  "assets": {},
+  "libraries": [],
+  "thresholds": "UNSPECIFIED",
+  "source": {
+    "study": "GSE60141",
+    "ENA_records": [
+      {
+        "run_accession": "SRR2926076",
+        "experiment_accession": "SRX1411986",
+        "sample_accession": "SAMN04235887",
+        "library_layout": "SINGLE",
+        "library_strategy": "OTHER",
+        "read_count": "5593468",
+        "base_count": "559346800",
+        "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR292/006/SRR2926076/SRR2926076.fastq.gz",
+        "fastq_md5": "2cd3aa63b3accf975802d5b0e6fcfb2b",
+        "fastq_bytes": "337903008"
+      },
+      {
+        "run_accession": "SRR2926841",
+        "experiment_accession": "SRX1412751",
+        "sample_accession": "SAMN04235996",
+        "library_layout": "SINGLE",
+        "library_strategy": "OTHER",
+        "read_count": "11752793",
+        "base_count": "1175279300",
+        "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR292/001/SRR2926841/SRR2926841.fastq.gz",
+        "fastq_md5": "c2609c9accd386a7e5ec844a6a51870e",
+        "fastq_bytes": "862409812"
+      },
+      {
+        "run_accession": "SRR2926068",
+        "experiment_accession": "SRX1411978",
+        "sample_accession": "SAMN04235879",
+        "library_layout": "PAIRED",
+        "library_strategy": "OTHER",
+        "read_count": "4241389",
+        "base_count": "424138900",
+        "fastq_ftp": "ftp.sra.ebi.ac.uk/vol1/fastq/SRR292/008/SRR2926068/SRR2926068_1.fastq.gz;ftp.sra.ebi.ac.uk/vol1/fastq/SRR292/008/SRR2926068/SRR2926068_2.fastq.gz",
+        "fastq_md5": "ce67f4bb3016672bb1c26d074de4dfaf;29232cb3f06416364396a6537e8b2eb6",
+        "fastq_bytes": "173371459;175428467"
+      }
+    ],
+    "metadata_only": true,
+    "compute_cap_templates_per_library": 1000000,
+    "compute_cap_is_biological_threshold": false,
+    "proposed_roles": [
+      "FUS3",
+      "ABI5",
+      "shared bead control; repository uses R1 only from PAIRED source"
+    ],
+    "open_questions": [
+      "Confirm biological versus technical replicate identities",
+      "Pin exact reference and annotations without assembly substitution",
+      "Determine FASTQ SHA256 from separately recorded acquisition; ENA MD5 is available",
+      "Retain source library layout and explicitly approve any R1-only projection"
+    ]
+  }
+}

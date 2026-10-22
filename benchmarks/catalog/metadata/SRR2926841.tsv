@@ -1,0 +1,2 @@
+run_accession	experiment_accession	sample_accession	library_layout	library_strategy	read_count	base_count	fastq_ftp	fastq_md5	fastq_bytes
+SRR2926841	SRX1412751	SAMN04235996	SINGLE	OTHER	11752793	1175279300	ftp.sra.ebi.ac.uk/vol1/fastq/SRR292/001/SRR2926841/SRR2926841.fastq.gz	c2609c9accd386a7e5ec844a6a51870e	862409812

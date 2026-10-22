@@ -1,0 +1,568 @@
+"""Read existing published run records without changing scientific inputs or outputs."""
+
+from __future__ import annotations
+
+import csv
+import hashlib
+import re
+from pathlib import Path
+from typing import Any
+
+from .records import (
+    ArtifactManifest,
+    QCMeasurement,
+    SourceEvidence,
+    identity,
+    load,
+    record,
+)
+
+
+def snapshot(path: Path, worker: str) -> dict[str, Any]:
+    """Store a source document under its resolved location.
+
+    Metric evidence must cite source["data"]["location"], not the caller's path: validation
+    matches them as strings, and a path through a symlink would never match.
+    """
+    with path.open("rb") as stream:
+        raw = stream.read(32 * 1024 * 1024 + 1)
+    if len(raw) > 32 * 1024 * 1024:
+        raise ValueError("Source snapshot exceeds document limit")
+    checksum = hashlib.sha256(raw).hexdigest()
+    return record(
+        "source",
+        {
+            "location": str(path.resolve()),
+            "worker": worker,
+            "sha256": checksum,
+            "snapshot": raw.decode(),
+            "media_type": "application/json"
+            if path.suffix == ".json"
+            else "text/tab-separated-values",
+        },
+        identity("source", worker, str(path.resolve())),
+    )
+
+
+def reference(value: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "id": value.get("reference_id"),
+        "version": value.get("fasta_sha256"),
+        "contigs": value.get("contigs", {}),
+        "fasta": value.get("fasta"),
+        "fasta_sha256": value.get("fasta_sha256"),
+        "tss": value.get("tss"),
+        "tss_sha256": value.get("tss_sha256"),
+        "assembly": value.get("assembly"),
+        "annotation_release": value.get("annotation_release"),
+        "genome_size": value.get("genome_size"),
+        "mitochondrial_contigs": value.get("mitochondrial_contigs", []),
+        "plastid_contigs": value.get("plastid_contigs", []),
+    }
+
+
+def artifact(
+    root: Path,
+    relative: str,
+    worker: str,
+    dataset: str,
+    role: str,
+    fmt: str,
+    ref: str | None,
+    *,
+    required: bool = True,
+    checksum: str | None = None,
+    signal: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    path = root / relative
+    return {
+        "id": identity("artifact", dataset, relative),
+        "path": str(path.absolute()),
+        "worker": worker,
+        "format": fmt,
+        "role": role,
+        "required": required,
+        "availability": "available" if path.is_file() else "unavailable",
+        "retention": "published",
+        "sha256": checksum,
+        "size": path.stat().st_size if path.is_file() else None,
+        "reference_id": ref,
+        "signal": signal,
+    }
+
+
+def signal(role: str, strand: str = "both") -> dict[str, Any]:
+    return {
+        "kind": "normalized_coverage" if role == "track_cpm" else "raw_counts",
+        "unit": {"track_cpm": "base_coverage", "cuts_counts": "cut", "counts_5p": "read_end"}[role],
+        "normalization": "CPM" if role == "track_cpm" else "none",
+        "strand": strand,
+        "derivation": "Genesis supported workflow v1: " + role,
+    }
+
+
+def measurements(
+    root: Path, dataset: str, worker: str
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    result, sources = [], []
+    definitions = {
+        "FRiP": ("fragment-frip/v1", "fraction", "all usable fragments"),
+        "peak_count": ("called-peaks/v1", "peaks", "none"),
+        "usable_fragments": ("usable-fragments/v1", "fragments", "none"),
+        "fragments_in_peaks": ("fragments-overlapping-peaks/v1", "fragments", "none"),
+        "duplicate_fraction": (
+            "nuclear-duplicate-fraction/v1",
+            "fraction",
+            "nuclear proper pairs passing MAPQ, before duplicate exclusion",
+        ),
+        "NRF": (
+            "nuclear-NRF/v1",
+            "fraction",
+            "nuclear proper pairs passing MAPQ, before duplicate exclusion",
+        ),
+        "PBC1": ("nuclear-PBC1/v1", "fraction", "distinct nuclear fragment coordinates"),
+        "PBC2": ("nuclear-PBC2/v1", "ratio", "doubleton nuclear fragment coordinates"),
+    }
+    for relative in ("fragments/metrics.json", "qc/enrichment.json"):
+        path = root / relative
+        if not path.is_file():
+            continue
+        source = snapshot(path, worker)
+        sources.append(source)
+        data = load(path)
+        for name, (definition, units, denominator) in definitions.items():
+            if name not in data:
+                continue
+            result.append(
+                QCMeasurement(
+                    dataset,
+                    name,
+                    definition,
+                    units,
+                    denominator,
+                    data[name],
+                    SourceEvidence(
+                        source["data"]["location"], source["data"]["sha256"], "/" + name, worker
+                    ),
+                    metric_version=data.get("metric_version", 1),
+                    denominator_value=data.get("usable_fragments")
+                    if name == "FRiP"
+                    else (
+                        data.get("counts", {}).get("eligible_before_dedup")
+                        if name in {"duplicate_fraction", "NRF"}
+                        else None
+                    ),
+                ).export()
+            )
+        for name, value in data.get("counts", {}).items():
+            result.append(
+                QCMeasurement(
+                    dataset,
+                    name,
+                    "atac-counter/v1:" + name,
+                    "records"
+                    if name == "secondary_or_supplementary_records"
+                    else (
+                        "fragments"
+                        if name == "usable_fragments"
+                        else (
+                            "templates" if name in {"total_templates", "invalid_pair"} else "pairs"
+                        )
+                    ),
+                    "none",
+                    value,
+                    SourceEvidence(
+                        source["data"]["location"],
+                        source["data"]["sha256"],
+                        "/counts/" + name,
+                        worker,
+                    ),
+                    metric_version=data.get("metric_version", 1),
+                ).export()
+            )
+        if "tss" in data and "metric" in data["tss"]:
+            metric = data["tss"]["metric"]
+            result.append(
+                QCMeasurement(
+                    dataset,
+                    "TSS_enrichment",
+                    metric["definition"],
+                    metric["unit"],
+                    "mean cut count in two 100bp TSS flanks",
+                    metric["value"],
+                    SourceEvidence(
+                        source["data"]["location"],
+                        source["data"]["sha256"],
+                        "/tss/metric/value",
+                        worker,
+                    ),
+                    denominator_value=metric.get("denominator"),
+                ).export()
+            )
+    return result, sources
+
+
+def from_atac(root: Path, source_id: str, worker: str, study: str | None) -> list[dict[str, Any]]:
+    original = load(root / "manifest.json")
+    if original.get("schema_version") != 1 or not isinstance(original.get("libraries"), list):
+        raise ValueError("Expected a supported ATAC version 1 run manifest")
+    provenance = load(root / "provenance.json") if (root / "provenance.json").is_file() else {}
+    checksums = (
+        load(root / "output/checksums.json") if (root / "output/checksums.json").is_file() else {}
+    )
+    sources = [snapshot(root / "manifest.json", worker)]
+    if provenance and provenance.get("manifest_sha256") != sources[0]["data"]["sha256"]:
+        raise ValueError("ATAC provenance does not match the current run manifest")
+    if provenance:
+        sources.append(snapshot(root / "provenance.json", worker))
+    if checksums:
+        sources.append(snapshot(root / "output/checksums.json", worker))
+    result = []
+    for library in original["libraries"]:
+        name = library["library_id"]
+        from ..atac.inputs import identifier
+
+        identifier(name)
+        dataset = identity("dataset", source_id, name)
+        ref = reference(library["reference"])
+        folder = root / "output" / name
+        measured, metric_sources = measurements(folder, dataset, worker)
+        artifacts = []
+        for relative, role, fmt in (
+            ("fragments/fragments.bed.gz", "fragments", "bed"),
+            ("fragments/fragments.bed.gz.tbi", "fragment_index", "file"),
+            ("fragments/metrics.json", "metrics", "json"),
+            ("fragments/chrom.sizes", "chrom_sizes", "tsv"),
+            ("tracks/cuts.counts.bw", "cuts_counts", "bigwig"),
+            ("peaks/atac_peaks.narrowPeak", "peaks", "narrowPeak"),
+            ("qc/enrichment.json", "enrichment", "json"),
+            ("qc/adapters.json", "adapters", "json"),
+            ("qc/multiqc_report.html", "report", "html"),
+            ("qc/multiqc_data/multiqc_data.json", "multiqc", "json"),
+            ("provenance/acquisition.json", "acquisition", "json"),
+        ):
+            entry = artifact(
+                folder,
+                relative,
+                worker,
+                dataset,
+                role,
+                fmt,
+                ref["id"],
+                checksum=checksums.get(name + "/" + relative),
+                signal=signal(role) if fmt == "bigwig" else None,
+            )
+            if role == "fragments":
+                entry["sorted"] = True
+            artifacts.append(entry)
+        # Enumerate the actual published FastQC reports; absence is an explicit requirement.
+        fastqc = sorted((folder / "qc/fastqc").glob("*_fastqc.zip"))
+        for path in fastqc:
+            artifacts.append(
+                artifact(
+                    folder,
+                    str(path.relative_to(folder)),
+                    worker,
+                    dataset,
+                    "fastqc",
+                    "zip",
+                    ref["id"],
+                )
+            )
+        if len(fastqc) != 2:
+            artifacts.append(
+                artifact(
+                    folder,
+                    "qc/fastqc/EXPECTED_TWO_MATE_REPORTS",
+                    worker,
+                    dataset,
+                    "fastqc",
+                    "file",
+                    ref["id"],
+                )
+            )
+        result.append(
+            ArtifactManifest(
+                source_id,
+                dataset,
+                name,
+                "bulk-ATAC",
+                library["reference"].get("species"),
+                study,
+                library.get("sample_id"),
+                name,
+                library["lanes"],
+                ref,
+                worker,
+                {
+                    "campaign_id": None,
+                    "job_id": None,
+                    "attempt": None,
+                    "execution_state": "SUCCEEDED"
+                    if provenance.get("exit_code") == 0
+                    else "UNKNOWN",
+                    "git_sha": provenance.get("git_sha"),
+                    "parameters": {
+                        k: library[k] for k in ("mapq", "duplicates", "adapter_r1", "adapter_r2")
+                    },
+                    "provenance_complete": bool(
+                        provenance.get("containers")
+                        and provenance.get("manifest_sha256")
+                        and provenance.get("source_sha256")
+                        and provenance.get("git_sha")
+                    ),
+                    "root": str(root),
+                },
+                {
+                    "biological_replicate": library.get("biological_replicate"),
+                    "protocol": "bulk-ATAC",
+                    "role": "assay",
+                    "output_contract": "genesis-published-v1",
+                },
+                artifacts,
+                sources + metric_sources,
+                measured,
+            ).export()
+        )
+    return result
+
+
+# The Nextflow run records its own provenance (trace, report, git-status.txt, dap-images.lock).
+# Carry that record into each manifest as-is; assessing it is not this adapter's job.
+DAP_PROVENANCE_NOTE = (
+    "DAP provenance is recorded by the Nextflow run (trace, report, git-status.txt, "
+    "dap-images.lock) and is not assessed by this adapter"
+)
+
+
+def dap_run_record(output: Path) -> tuple[str | None, dict[str, Any]]:
+    """Copy a DAP run's recorded commit, container engine, image pins and dirty files."""
+    status_path, lock_path = output / "git-status.txt", output / "dap-images.lock"
+    fields: dict[str, str] = {}
+    dirty: list[str] = []
+    if status_path.is_file():
+        lines = status_path.read_text().splitlines()
+        for index, line in enumerate(lines):
+            key, separator, value = line.partition(": ")
+            if line == "dirty files:":
+                dirty = [entry for entry in lines[index + 1 :] if entry.strip()]
+                break
+            if separator:
+                fields[key] = value
+    commit = fields.get("commit")
+    if commit is not None and not re.fullmatch(r"[0-9a-f]{40}", commit):
+        commit = None
+    images: dict[str, str] = {}
+    if lock_path.is_file():
+        for line in lock_path.read_text().splitlines():
+            name, separator, image = line.strip().partition("=")
+            if separator and not name.startswith("#"):
+                images[name] = image
+    evidence = {
+        "container_engine": fields.get("container engine"),
+        "images": images,
+        "dirty_files": dirty,
+    }
+    return commit, evidence
+
+
+def from_dap(
+    root: Path,
+    source_id: str,
+    worker: str,
+    study: str | None,
+    sheet: Path | None,
+    references: Path | None,
+) -> list[dict[str, Any]]:
+    path = root / "output/multiqc/multiqc_data/genesis_provenance.json"
+    provenance = load(path)
+    sources = [snapshot(path, worker)]
+    # DAP runs record image pins and Git status beside their outputs, not per-task evidence.
+    commit, run_evidence = dap_run_record(root / "output")
+    limitations = [DAP_PROVENANCE_NOTE]
+    rows: dict[str, dict[str, str]] = {}
+    if sheet:
+        with sheet.open() as stream:
+            rows = {row["sample_id"]: row for row in csv.DictReader(stream, delimiter="\t")}
+        sources.append(snapshot(sheet, worker))
+    result = []
+    names = [s["id"] for s in provenance["samples"]]
+    if len(set(names)) != len(names):
+        raise ValueError("Duplicate DAP sample identity")
+    for sample in provenance["samples"]:
+        name, species = sample["id"], sample["species"]
+        from ..samples import IDENTIFIER
+
+        if not all(IDENTIFIER.fullmatch(x) for x in (name, species, sample["reference_fasta"])):
+            raise ValueError("Unsafe DAP identity")
+        dataset = identity("dataset", source_id, name)
+        if sample["layout"] not in {"SE", "PE"}:
+            raise ValueError("Unsupported DAP library layout")
+        if sample.get("control", "-") != "-" and sample["control"] not in names:
+            raise ValueError("DAP control is absent from published sample provenance")
+        ref = reference(
+            {
+                "reference_id": sample["ref_id"],
+                "fasta": str((references / sample["reference_fasta"]).resolve())
+                if references
+                else None,
+            }
+        )
+        folder = root / "output" / species / name
+        artifacts = []
+
+        def add(
+            relative: str,
+            role: str,
+            fmt: str,
+            required: bool = True,
+            semantics: dict[str, Any] | None = None,
+            output: list[dict[str, Any]] = artifacts,
+            base: Path = folder,
+            dataset_id: str = dataset,
+            reference_id: str | None = ref["id"],
+        ) -> None:
+            output.append(
+                artifact(
+                    base,
+                    relative,
+                    worker,
+                    dataset_id,
+                    role,
+                    fmt,
+                    reference_id,
+                    required=required,
+                    signal=semantics,
+                )
+            )
+
+        add(name + ".metadata.tsv", "metadata", "tsv")
+        for stem in [name + ".tracks"] + (
+            [name + ".tracks.read1"] if sample["layout"] == "PE" else []
+        ):
+            for suffix, role, strand in (
+                ("CPM", "track_cpm", "both"),
+                ("plus.CPM", "track_cpm", "plus"),
+                ("minus.CPM", "track_cpm", "minus"),
+                ("plus.5p.counts", "counts_5p", "plus"),
+                ("minus.5p.counts", "counts_5p", "minus"),
+            ):
+                add(stem + "." + suffix + ".bw", role, "bigwig", semantics=signal(role, strand))
+        control = sample.get("control", "-")
+        if control != "-":
+            add(name + ".macs3_peaks.narrowPeak.gz", "peaks", "narrowPeak")
+            for suffix in ("RPM", "mean_RPKM"):
+                add(name + ".peaks." + suffix + ".tsv", "quantification", "tsv")
+        for mate in ("read1", "read2") if sample["layout"] == "PE" else ("read1",):
+            add(f"qc/fastqc/{name}.{mate}_fastqc.zip", "fastqc", "zip")
+        for suffix in ("main.stats.txt", "read1.stats.txt", "flagstat.txt", "idxstats.tsv"):
+            add(name + ".qc.report." + suffix, "alignment_qc", "tsv")
+        for item in artifacts:
+            expected = [
+                s["sha256"]
+                for s in provenance.get("sources", [])
+                if s.get("sample") == name and s.get("filename") == Path(item["path"]).name
+            ]
+            if len(expected) == 1:
+                item["sha256"] = expected[0]
+        # Preserve native QC definitions and their raw sources. FastQC flags are
+        # descriptive evidence, never dataset rejection criteria.
+        qc_sources, measured = [], []
+        raw_path = root / "output/multiqc/multiqc_data/genesis_flagstat.json"
+        if raw_path.is_file():
+            qc_source = snapshot(raw_path, worker)
+            qc_sources.append(qc_source)
+            raw = load(raw_path)
+            key = name + ".qc.report.flagstat.txt"
+            for metric, value in raw.get(key, {}).items():
+                if type(value) not in (int, float) and value is not None:
+                    continue
+                # MultiQC names do not specify every metric's denominator. Keep
+                # those fields in the source snapshot without inventing units.
+                if metric not in {"flagstat_total", "mapped_passed", "duplicates_passed"}:
+                    continue
+                measured.append(
+                    QCMeasurement(
+                        dataset,
+                        metric,
+                        "samtools-flagstat/" + metric + "/v1",
+                        "records",
+                        "none",
+                        value,
+                        SourceEvidence(
+                            qc_source["data"]["location"],
+                            qc_source["data"]["sha256"],
+                            "/" + key + "/" + metric,
+                            worker,
+                        ),
+                    ).export()
+                )
+        artifacts.append(
+            artifact(
+                root,
+                "output/multiqc/multiqc_report.html",
+                worker,
+                dataset,
+                "report",
+                "html",
+                ref["id"],
+            )
+        )
+        result.append(
+            ArtifactManifest(
+                source_id,
+                dataset,
+                name,
+                "DAP-seq",
+                species,
+                study,
+                None,
+                name,
+                [],
+                ref,
+                worker,
+                {
+                    "campaign_id": None,
+                    "job_id": None,
+                    "attempt": None,
+                    "execution_state": "UNKNOWN",
+                    "git_sha": commit or provenance.get("run", {}).get("git_sha"),
+                    "parameters": run_evidence,
+                    "provenance_complete": False,
+                    "root": str(root),
+                },
+                {
+                    "layout": sample["layout"],
+                    "control": control,
+                    "role": "control" if control == "-" else "assay",
+                    "original_sample": rows.get(name),
+                    "output_contract": "genesis-published-v1",
+                    "provenance_limitations": limitations,
+                },
+                artifacts,
+                sources + qc_sources,
+                measured,
+            ).export()
+        )
+    return result
+
+
+def run_manifests(
+    root: Path,
+    assay: str,
+    source_id: str,
+    worker: str,
+    study: str | None = None,
+    sheet: Path | None = None,
+    references: Path | None = None,
+) -> list[dict[str, Any]]:
+    if not source_id.strip() or not worker.strip():
+        raise ValueError("Explicit source and worker identities are required")
+    # absolute(), not resolve(), as in artifact(): run roots and artifact paths must stay spelled as
+    # planned (e.g. not /var rewritten to /private/var), or collection cannot match them.
+    root = root.absolute()
+    if assay == "bulk-ATAC":
+        return from_atac(root, source_id, worker, study)
+    if assay == "DAP-seq":
+        return from_dap(root, source_id, worker, study, sheet, references)
+    raise ValueError("Unsupported assay")

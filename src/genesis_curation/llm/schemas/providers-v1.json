@@ -1,0 +1,197 @@
+{
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "providers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mode": {
+            "enum": [
+              "disabled",
+              "mock",
+              "live"
+            ]
+          },
+          "endpoint": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "model": {
+            "type": "string"
+          },
+          "model_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "serving_revision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "external": {
+            "type": "boolean"
+          },
+          "credential": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "env": {
+                    "type": "string"
+                  },
+                  "file": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "file"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "allowed_tasks": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "probe",
+                "metadata",
+                "diagnose",
+                "ask"
+              ]
+            }
+          },
+          "allowed_classifications": {
+            "type": "array",
+            "items": {
+              "enum": [
+                "public",
+                "internal",
+                "local-only"
+              ]
+            }
+          },
+          "context_chars": {
+            "type": "integer",
+            "minimum": 256,
+            "maximum": 4000000
+          },
+          "max_tokens": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 32768
+          },
+          "timeout_seconds": {
+            "type": "number",
+            "minimum": 0.01,
+            "maximum": 300
+          },
+          "max_retries": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 3
+          },
+          "concurrency": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 32
+          },
+          "format_repair": {
+            "type": "boolean"
+          },
+          "capabilities": {
+            "type": "object",
+            "properties": {
+              "json_schema": {
+                "type": "boolean"
+              },
+              "tools": {
+                "type": "boolean"
+              },
+              "streaming": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "json_schema",
+              "tools",
+              "streaming"
+            ],
+            "additionalProperties": false
+          },
+          "mock_response": {
+            "anyOf": [
+              {
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "mode",
+          "endpoint",
+          "model",
+          "model_revision",
+          "serving_revision",
+          "external",
+          "credential",
+          "allowed_tasks",
+          "allowed_classifications",
+          "context_chars",
+          "max_tokens",
+          "timeout_seconds",
+          "max_retries",
+          "concurrency",
+          "format_repair",
+          "capabilities",
+          "mock_response"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "schema_version",
+    "providers"
+  ],
+  "additionalProperties": false
+}

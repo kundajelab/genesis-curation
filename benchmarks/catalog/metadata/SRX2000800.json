@@ -1,0 +1,6 @@
+{
+  "url": "https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRX2000800&result=read_run&fields=run_accession,experiment_accession,sample_accession,library_layout,library_strategy,read_count,base_count,fastq_ftp,fastq_md5,fastq_bytes&format=tsv",
+  "elapsed_seconds": 0.39859724597772583,
+  "sha256": "a6113ae39e3a8fd0a1cd6a6675ba02aab759f03cce5f54d1ae7a54e49beca600",
+  "source": "ENA official filereport API"
+}

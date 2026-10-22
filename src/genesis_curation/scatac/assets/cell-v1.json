@@ -1,0 +1,189 @@
+{
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "library_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "barcode": {
+      "type": "string",
+      "minLength": 1
+    },
+    "author_original_label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "harmonized_label": {
+      "type": "string",
+      "minLength": 1
+    },
+    "annotation_source": {
+      "type": "string",
+      "minLength": 1
+    },
+    "annotation_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "cell_calling_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "doublet_status": {
+      "type": "string",
+      "minLength": 1
+    },
+    "ontology_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "atac_present": {
+      "type": "boolean"
+    },
+    "rna_present": {
+      "type": "boolean"
+    },
+    "atac_include": {
+      "type": "boolean"
+    },
+    "rna_include": {
+      "type": "boolean"
+    },
+    "qc_metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "fragments": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "unique_fragments": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "duplicate_fraction": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "tss_enrichment": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "frip": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "mitochondrial_fraction": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "plastid_fraction": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "low_mapq_fraction": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1
+        }
+      },
+      "required": [
+        "fragments",
+        "unique_fragments",
+        "duplicate_fraction",
+        "tss_enrichment",
+        "frip",
+        "mitochondrial_fraction",
+        "plastid_fraction",
+        "low_mapq_fraction"
+      ]
+    },
+    "qc_thresholds": {
+      "const": "UNSPECIFIED"
+    }
+  },
+  "required": [
+    "library_id",
+    "barcode",
+    "author_original_label",
+    "harmonized_label",
+    "annotation_source",
+    "annotation_status",
+    "cell_calling_status",
+    "doublet_status",
+    "ontology_id",
+    "atac_present",
+    "rna_present",
+    "atac_include",
+    "rna_include",
+    "qc_metrics",
+    "qc_thresholds"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:genesis:cell:1",
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "atac_include": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "atac_present": {
+            "const": true
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "rna_include": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "rna_present": {
+            "const": true
+          }
+        }
+      }
+    }
+  ]
+}

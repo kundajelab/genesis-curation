@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "scope": "Pinned local linux/amd64 production images versus native baseline Conda package identities; no image pull or scientific computation",
+  "components": {
+    "alignment": {
+      "image": "kundajelab/dap_seq_alignment@sha256:4764008ba8fbb5d831bd6f9ed6a720fd494062b39f0bae63ff2e4efd316ad842",
+      "packages": {
+        "bwa-mem2": {
+          "production": {
+            "name": "bwa-mem2",
+            "version": "2.3",
+            "build": "he70b90d_0",
+            "url": "https://conda.anaconda.org/bioconda/linux-64/bwa-mem2-2.3-he70b90d_0.tar.bz2",
+            "sha256": "7ccf117aa586d663e12181e60f0cf60215fb162515e0b6e98517f5e108613d41"
+          },
+          "native": {
+            "name": "bwa-mem2",
+            "version": "2.3",
+            "build": "he70b90d_0",
+            "url": "https://conda.anaconda.org/bioconda/linux-64/bwa-mem2-2.3-he70b90d_0.tar.bz2",
+            "sha256": "7ccf117aa586d663e12181e60f0cf60215fb162515e0b6e98517f5e108613d41"
+          },
+          "same_package_artifact": true
+        },
+        "samtools": {
+          "production": {
+            "name": "samtools",
+            "version": "1.24",
+            "build": "h9dcdb79_1",
+            "url": "https://conda.anaconda.org/bioconda/linux-64/samtools-1.24-h9dcdb79_1.conda",
+            "sha256": "18fd604932d0fc197dcfdd54d67e7c54770a2d8eca819e03074556ed9cd3422e"
+          },
+          "native": {
+            "name": "samtools",
+            "version": "1.24",
+            "build": "h9dcdb79_1",
+            "url": "https://conda.anaconda.org/bioconda/linux-64/samtools-1.24-h9dcdb79_1.conda",
+            "sha256": "18fd604932d0fc197dcfdd54d67e7c54770a2d8eca819e03074556ed9cd3422e"
+          },
+          "same_package_artifact": true
+        },
+        "htslib": {
+          "production": {
+            "name": "htslib",
+            "version": "1.24",
+            "build": "ha79157c_0",
+            "url": "https://conda.anaconda.org/bioconda/linux-64/htslib-1.24-ha79157c_0.conda",
+            "sha256": "97e0f0b8700f56b1ade3034f81070ede705fce3ef9a1b5f15e79e3eb9997ac17"
+          },
+          "native": {
+            "name": "htslib",
+            "version": "1.24",
+            "build": "ha79157c_0",
+            "url": "https://conda.anaconda.org/bioconda/linux-64/htslib-1.24-ha79157c_0.conda",
+            "sha256": "97e0f0b8700f56b1ade3034f81070ede705fce3ef9a1b5f15e79e3eb9997ac17"
+          },
+          "same_package_artifact": true
+        }
+      }
+    },
+    "peaks": {
+      "image": "kundajelab/dap_seq_peaks@sha256:10467dd29e3d25ce7769f76f57402bd1a5a582006e911d06479bfcc3e3325df3",
+      "packages": {
+        "macs3": {
+          "production": {
+            "name": "macs3",
+            "version": "3.0.5",
+            "build": "py313hfeada96_0",
+            "url": "https://conda.anaconda.org/bioconda/linux-64/macs3-3.0.5-py313hfeada96_0.conda",
+            "sha256": "0b3441422fd27bf714fa052512dcdf83b9756cb192bf316e2b30ec56a74cb415"
+          },
+          "native": {
+            "name": "macs3",
+            "version": "3.0.5",
+            "build": "py312h9639c01_0",
+            "url": "https://conda.anaconda.org/bioconda/linux-64/macs3-3.0.5-py312h9639c01_0.conda",
+            "sha256": "9f8d194996955bde0fb24058ad194aee346bf0177cbb94c5ad04d806c34b23a1"
+          },
+          "same_package_artifact": false
+        }
+      }
+    }
+  }
+}

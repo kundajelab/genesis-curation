@@ -1,0 +1,22 @@
+schema_version = 1
+id = "arabidopsis-dap"
+assay = "DAP-seq"
+adapter = "postalign"
+dataset = "arabidopsis-dap.json"
+baseline = "mapq0-retained"
+comparison = "matched-stage"
+seed = 60141
+[parameters]
+mapq = [0, 10, 30]
+duplicates = ["retained", "marked", "excluded"]
+keep_dup = "1"
+qvalue = 0.05
+spp = false
+quantify = true
+[limits]
+cpus = 2
+memory_gb = 4
+seconds = 1800
+disk_bytes = 2000000000
+download_bytes = 6000000000
+max_arms = 9

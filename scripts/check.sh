@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+# Run all offline checks. Integration tests that need a genesis-preprocessing checkout
+# (tests/validate_study.py) or live services (tests/accept_*_live.py) are run separately.
+set -euo pipefail
+root=$(cd -- "$(dirname -- "$0")/.." && pwd)
+run=(uv run --frozen --project "$root")
+"${run[@]}" ruff check "$root/src" "$root/tests" "$root/examples/curation"
+"${run[@]}" ruff format --check "$root/src" "$root/tests" "$root/examples/curation"
+"${run[@]}" ty check --project "$root" "$root/src"
+"${run[@]}" ty check --project "$root" --extra-search-path "$root/tests" "$root/tests"
+for test in verify_publication verify_benchmark verify_benchmark_spec verify_benchmark_methods \
+    verify_benchmark_references verify_execution verify_cli verify_curation verify_curation_artifacts \
+    verify_curation_adapters verify_ai verify_llm_deployment evaluate_metadata verify_study \
+    verify_scatac_inventory verify_scatac_fragments verify_scatac_pseudobulk verify_scatac_exports \
+    verify_scatac_inspection verify_macs3_launcher; do
+    "${run[@]}" python "$root/tests/$test.py"
+done
+for check in check_reference_comparison check_sra_sampling check_queue_stop; do
+    "${run[@]}" python "$root/benchmarks/experiments/reference-comparison-20261014/$check.py"
+done
