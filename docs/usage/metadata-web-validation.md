@@ -104,3 +104,27 @@ format returned that case in about 2.6 seconds under both settings.
 Hosted OpenAI/Claude acceptance, Alex's cell-type annotation workflow, real sequencing
 pipeline checks, public sequencing downloads and biological validation were **NOT
 RUN** in this task. They are not implied by the local model or offline test results.
+
+## Guided review usability follow-up — 2026-10-23
+
+The simplified GUI was tested against an isolated local registry with synthetic
+metadata and the mock worker. Browser checks passed for table upload and preview,
+identifier selection, species-first review, approval and automatic advancement,
+correction through a selected source excerpt, information requests, skipping
+without saving, and export containing only the two explicitly approved fields.
+An unknown field remained unapprovable without a correction and evidence.
+The missing-evidence action opened the source form. Mock proposal completion
+exposed a View suggestions action; opening it showed the new revision and zero
+retained approvals. This test does not measure real-provider accuracy.
+
+The production TypeScript/Vite build passed. The required `scripts/check.sh` with
+`GENESIS_REPO` set passed all commands listed above; binary bigWig subchecks, live
+hosted API checks, full model lifecycle acceptance and real scientific pipelines
+remained NOT RUN. The first check attempt could not resolve its build dependency
+under network restrictions; the subsequent permitted run completed successfully.
+The first frontend build used the wrong container UID; rebuilding as the workspace
+owner succeeded. No failed attempt is counted as a pass.
+
+Desktop (1440 px) and mobile (390 px) layout checks passed, including expanded
+source evidence. An initially overflowing source identifier now wraps. These are
+functional browser checks, not a measured curator usability study.

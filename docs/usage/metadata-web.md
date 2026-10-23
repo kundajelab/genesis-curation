@@ -116,6 +116,25 @@ not enabled. It is an evaluation configuration, not a biological validation clai
 
 ### Curator workflow
 
+The default screen guides curators through **Add a dataset → Review suggestions →
+Download reviewed metadata**. Start with a study ID or upload a table; the preview
+suggests an identifier column, which remains editable. Dataset name and sharing
+classification stay explicit.
+
+Review shows one field at a time, starting with species, tissue and assay. Compare
+the suggested value with its source, choose or write a reason, then select
+**Approve and continue**, **Needs information**, or **Reject**. **Skip for now**
+saves no decision. Progress distinguishes reviewed fields from approved fields;
+unresolved fields are excluded from accepted metadata. Corrections can select a
+source excerpt without typing a JSON pointer. Advanced citation entry remains
+available. Missing evidence can be attached through **Add missing evidence**.
+
+Use **See all fields** to revisit decisions. Model/skill selection, re-analysis
+guidance, history and background activity are expandable. A submitted AI task shows
+its status and a **View suggestions** or **View answer** action when complete;
+results never overwrite an in-progress form automatically. Re-analysis restarts
+review. Reviewed metadata is not a claim of processing completion or scientific QC.
+
 1. Upload CSV, TSV or JSON, or fetch a GEO/ENA/SRA accession. Inspect the preview,
    namespace, identifier column and classification before importing. No sequencing
    files are downloaded. Original fields remain available in source snapshots.
