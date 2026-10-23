@@ -15,7 +15,7 @@ from typing import Any
 
 from ..contracts.records import canonical, fingerprint, identity, loads, now, record, validate
 
-SCHEMA_VERSION = 4
+SCHEMA_VERSION = 5
 MIGRATIONS = {
     1: [
         "CREATE TABLE meta (key TEXT PRIMARY KEY,value TEXT NOT NULL)",
@@ -111,6 +111,16 @@ MIGRATIONS = {
         "CREATE INDEX input_decisions_target ON input_decisions(dataset,category,sequence DESC)",
         "CREATE TABLE study_collections (study TEXT,plan TEXT,job TEXT,attempt INTEGER,"
         "spec TEXT,receipt TEXT NOT NULL,PRIMARY KEY(study,plan,job,attempt,spec))",
+    ],
+    5: [
+        "CREATE TABLE curation_subjects (id TEXT PRIMARY KEY, "
+        "version TEXT NOT NULL, body TEXT NOT NULL)",
+        "CREATE TABLE curation_events (sequence INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "subject TEXT NOT NULL REFERENCES curation_subjects(id), version TEXT UNIQUE NOT NULL)",
+        "CREATE TRIGGER immutable_curation_events_update BEFORE UPDATE ON curation_events "
+        "BEGIN SELECT RAISE(ABORT,'immutable curation event'); END",
+        "CREATE TRIGGER immutable_curation_events_delete BEFORE DELETE ON curation_events "
+        "BEGIN SELECT RAISE(ABORT,'immutable curation event'); END",
     ],
 }
 

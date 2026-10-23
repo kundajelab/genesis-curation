@@ -108,7 +108,7 @@ def dump(path: Path, value: object, *, immutable: bool = False) -> None:
 
 @lru_cache
 def schema(version: int = 1) -> dict[str, Any]:
-    if version not in {1, 2, 3, 4}:
+    if version not in {1, 2, 3, 4, 5}:
         raise ValueError("Unsupported contract version")
     return loads(files(__package__).joinpath(f"schemas/records-v{version}.json").read_text())
 
@@ -132,7 +132,7 @@ def validator(kind: str, version: int = 1) -> Validator:
 def validate(value: object, kind: str | None = None) -> dict[str, Any]:
     if not isinstance(value, dict) or type(value.get("schema_version")) is not int:
         raise ValueError("A versioned record object is required")
-    if value["schema_version"] not in {1, 2, 3, 4} or (kind and value.get("kind") != kind):
+    if value["schema_version"] not in {1, 2, 3, 4, 5} or (kind and value.get("kind") != kind):
         raise ValueError("Unsupported record version or kind")
     if not isinstance(value.get("kind"), str):
         raise ValueError("A record kind is required")

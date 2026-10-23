@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "curation_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 5,
+          "type": "integer"
+        },
+        "kind": {
+          "const": "curation_event"
+        },
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "version": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "data": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "subject": {
+              "type": "string"
+            },
+            "operation": {
+              "enum": [
+                "import",
+                "source",
+                "proposal",
+                "decision",
+                "message",
+                "example"
+              ]
+            },
+            "parent": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "actor": {
+              "type": "string",
+              "minLength": 1
+            },
+            "created": {
+              "type": "string"
+            },
+            "payload": {
+              "type": "object"
+            }
+          },
+          "required": [
+            "subject",
+            "operation",
+            "parent",
+            "actor",
+            "created",
+            "payload"
+          ]
+        }
+      },
+      "required": [
+        "schema_version",
+        "kind",
+        "id",
+        "version",
+        "data"
+      ]
+    }
+  }
+}

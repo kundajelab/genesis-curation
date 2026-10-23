@@ -17,6 +17,7 @@ from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_ope
 
 from ..contracts.records import canonical, dump, fingerprint, load, loads, now, record
 from ..registry import store
+from . import wire
 from .security import check, credential, endpoint, redact, response_text, schema
 
 MAX_RESPONSE = 1024 * 1024
@@ -103,11 +104,9 @@ def admission(directory: Path, config: dict[str, Any]) -> Iterator[None]:
 
 def post(config: dict[str, Any], payload: dict[str, Any], secret: str) -> tuple[int, str]:
     deadline = time.monotonic() + config["timeout_seconds"]
-    headers = {"Content-Type": "application/json"}
-    if secret:
-        headers["Authorization"] = "Bearer " + secret
+    suffix, headers, payload = wire.request(config, payload, secret)
     request = Request(
-        endpoint(config["endpoint"], external=config["external"]) + "/chat/completions",
+        endpoint(config["endpoint"], external=config["external"]) + suffix,
         data=canonical(payload).encode(),
         headers=headers,
         method="POST",
@@ -124,7 +123,13 @@ def post(config: dict[str, Any], payload: dict[str, Any], secret: str) -> tuple[
             raw, status = read_response(error.fp, deadline), error.code
     if len(raw) > MAX_RESPONSE:
         raise ValueError("Provider response exceeds 1 MiB")
-    return status, raw.decode("utf-8", errors="replace")
+    text = raw.decode("utf-8", errors="replace")
+    if status == 200:
+        try:
+            text = wire.response(config.get("protocol", "openai-chat"), text)
+        except ValueError, TypeError, KeyError, AttributeError:
+            text = canonical({"error": "Malformed native provider response"})
+    return status, text
 
 
 def parse_response(

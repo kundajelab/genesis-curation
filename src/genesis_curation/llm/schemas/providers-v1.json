@@ -163,6 +163,22 @@
                 "type": "null"
               }
             ]
+          },
+          "protocol": {
+            "enum": [
+              "openai-chat",
+              "openai-responses",
+              "anthropic-messages"
+            ]
+          },
+          "chat_template_kwargs": {
+            "type": "object",
+            "properties": {
+              "enable_thinking": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
           }
         },
         "required": [
