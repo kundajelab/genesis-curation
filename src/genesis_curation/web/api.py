@@ -15,7 +15,7 @@ from starlette.types import ASGIApp
 
 from ..contracts.records import canonical, fingerprint, loads
 from ..llm import providers
-from . import catalog, runtime, skills
+from . import catalog, inbox, runtime, skills
 
 LIMIT = 3 * 1024 * 1024
 
@@ -155,6 +155,62 @@ def create_app(
     @app.get("/api/subjects")
     def subjects() -> list[dict[str, Any]]:
         return catalog.listing(registry)
+
+    @app.get("/api/inbox")
+    def review_inbox() -> dict[str, Any]:
+        return inbox.listing(registry)
+
+    @app.post("/api/subjects/{subject}/resolve")
+    async def resolve_task(subject: str, request: Request) -> dict[str, Any]:
+        body = await request.json()
+        return inbox.resolve(
+            registry,
+            subject,
+            body["version"],
+            body["fields"],
+            body["action"],
+            body["reason"],
+            request.state.account["actor"],
+        )
+
+    @app.post("/api/prepare")
+    async def prepare_inbox(request: Request) -> dict[str, Any]:
+        body = await request.json()
+        ids = body.get("subjects")
+        if (
+            not isinstance(ids, list)
+            or not 1 <= len(ids) <= 1000
+            or any(not isinstance(key, str) for key in ids)
+            or len(set(ids)) != len(ids)
+        ):
+            raise ValueError("Select 1–1000 unique records to prepare")
+        config = providers.select(config_path, body["provider"])
+        skill = skills.select(root / "skills", body["skill"])
+        records, skipped = [], []
+        for key in ids:
+            state = catalog.get(registry, key)
+            # Preparation never clears existing work. Explicit re-analysis remains separate.
+            if state["proposal"] or state["reviews"]:
+                skipped.append(key)
+                continue
+            if (
+                state["classification"] not in config["allowed_classifications"]
+                or state["classification"] == "local-only"
+                and config.get("external")
+            ):
+                raise ValueError("Provider is not authorized for every selected record")
+            records.append({"subject": key, "version": state["version"]})
+        if not records:
+            return {"id": None, "skipped": skipped}
+        payload = {
+            "records": records,
+            "provider": body["provider"],
+            "provider_hash": fingerprint(config),
+            "skill": body["skill"],
+            "skill_hash": skill["sha256"],
+        }
+        key = runtime.enqueue(root, "prepare", request.state.account["actor"], payload)
+        return {"id": key, "skipped": skipped}
 
     @app.get("/api/subjects/{subject}")
     def subject_view(subject: str) -> dict[str, Any]:

@@ -117,7 +117,7 @@ def logout(root: Path, token: str) -> None:
 
 
 def enqueue(root: Path, kind: str, actor: str, payload: dict[str, Any]) -> str:
-    if kind not in {"propose", "chat", "accession", "probe"}:
+    if kind not in {"propose", "chat", "accession", "probe", "prepare"}:
         raise ValueError("Unknown job type")
     key = str(uuid.uuid4())
     with connection(root) as db:
@@ -180,12 +180,22 @@ def cancel(root: Path, key: str) -> None:
         )
 
 
+def progress(root: Path, key: str, result: dict[str, Any]) -> None:
+    with connection(root) as db:
+        db.execute(
+            "UPDATE jobs SET result=?,updated=? WHERE id=? AND status='RUNNING'",
+            (canonical(result), now(), key),
+        )
+
+
 def finish(root: Path, key: str, result: dict[str, Any] | None, error: str | None = None) -> None:
     with connection(root) as db:
         row = db.execute("SELECT cancel FROM jobs WHERE id=?", (key,)).fetchone()
         state = "SUCCEEDED" if result is not None else "CANCELLED" if row[0] else "FAILED"
+        if result and result.get("cancelled"):
+            state = "CANCELLED"
         db.execute(
-            "UPDATE jobs SET status=?,updated=?,result=?,error=? WHERE id=?",
+            "UPDATE jobs SET status=?,updated=?,result=COALESCE(?,result),error=? WHERE id=?",
             (state, now(), canonical(result) if result is not None else None, error, key),
         )
 

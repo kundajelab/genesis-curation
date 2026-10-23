@@ -46,6 +46,37 @@ def execute(
         raise ValueError("Provider configuration changed; submit a new job")
     if kind == "probe":
         return providers.probe(root / "catalog", config)
+    if kind == "prepare":
+        skill = skills.select(root / "skills", data["skill"])
+        if skill["sha256"] != data["skill_hash"]:
+            raise ValueError("Skill changed; submit a new preparation")
+        result: dict[str, Any] = {"prepared": [], "failed": [], "remaining": len(data["records"])}
+        runtime.progress(root, task["id"], result)
+        for item in data["records"]:
+            if cancellation and cancellation.is_set():
+                result["cancelled"] = True
+                break
+            try:
+                catalog.run_proposal(
+                    root / "catalog",
+                    item["subject"],
+                    item["version"],
+                    config,
+                    skill,
+                    task["actor"],
+                    cancellation=cancellation,
+                )
+                result["prepared"].append(item["subject"])
+            except Exception as error:
+                if cancellation and cancellation.is_set():
+                    result["cancelled"] = True
+                    break
+                result["failed"].append(
+                    {"subject": item["subject"], "error": redact(str(error))[:1000]}
+                )
+            result["remaining"] -= 1
+            runtime.progress(root, task["id"], result)
+        return result
     if kind == "propose":
         skill = skills.select(root / "skills", data["skill"])
         if data.get("skill_hash") and skill["sha256"] != data["skill_hash"]:

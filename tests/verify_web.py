@@ -14,10 +14,10 @@ from unittest.mock import patch
 from verify_ai import FakeHandler, configuration, inference, server
 from verify_curation import rejects
 
-from genesis_curation.contracts.records import canonical, loads
+from genesis_curation.contracts.records import canonical, fingerprint, loads
 from genesis_curation.llm import wire
 from genesis_curation.registry import store
-from genesis_curation.web import catalog, runtime, skills, worker
+from genesis_curation.web import catalog, inbox, runtime, skills, worker
 from genesis_curation.web.api import create_app
 
 
@@ -165,6 +165,40 @@ async def http_checks(root: Path, config: Path) -> None:
     assert status == 200 and result["rows"][0]["id"] == "browser"
     assert "frame-ancestors 'none'" in headers["content-security-policy"]
     assert (await request("/api/imports/preview", {"text": "x" * (3 * 1024**2)}, auth))[0] == 413
+    status, _, imported = await request(
+        "/api/imports/commit",
+        {
+            "text": '[{"id":"inbox-http","organism":"Arabidopsis thaliana"}]',
+            "filename": "inbox.json",
+            "namespace": "http-inbox",
+            "id_column": "id",
+            "classification": "public",
+        },
+        auth,
+    )
+    assert status == 200
+    key = imported["subjects"][0]
+    state = catalog.get(root / "catalog", key)
+    assert (await request("/api/inbox", headers=auth))[0] == 200
+    status, _, prepared = await request(
+        "/api/prepare", {"subjects": [key], "provider": "test", "skill": "none"}, auth
+    )
+    assert status == 200 and runtime.job(root, prepared["id"])["kind"] == "prepare"
+    status, _, _ = await request(
+        f"/api/subjects/{key}/resolve",
+        {
+            "version": state["version"],
+            "fields": ["organism"],
+            "action": "approve",
+            "reason": "Checked cited source",
+        },
+        auth,
+    )
+    assert status == 200
+    status, _, skipped = await request(
+        "/api/prepare", {"subjects": [key], "provider": "test", "skill": "none"}, auth
+    )
+    assert status == 200 and skipped["id"] is None and skipped["skipped"] == [key]
     assert (await request("/api/logout", {}, auth))[0] == 200
     assert (await request("/api/session", headers=auth))[0] == 401
     print("PASS HTTP authentication, secure cookies, origin/CSRF, upload budget and logout")
@@ -200,7 +234,138 @@ def native_http(root: Path) -> None:
     print("PASS native OpenAI/Claude HTTP invocation, audit persistence and truncation rejection")
 
 
+def inbox_checks() -> None:
+    with tempfile.TemporaryDirectory() as temporary:
+        root = Path(temporary)
+        runtime.initialize(root, "curator", "a long test password")
+        registry = root / "catalog"
+        ids = catalog.import_rows(
+            registry,
+            canonical(
+                [
+                    {"id": "one", "organism": "Arabidopsis thaliana", "tissue": "leaf"},
+                    {"id": "two", "organism": "Oryza sativa"},
+                ]
+            ),
+            "inbox.json",
+            "inbox",
+            "id",
+            "public",
+            "curator",
+        )
+        state = catalog.get(registry, ids[0])
+        # An invalid member must roll back the entire group, including audit history.
+        old_history = catalog.history(registry, ids[0])
+        rejects(
+            lambda: inbox.resolve(
+                registry,
+                ids[0],
+                state["version"],
+                ["organism", "genotype"],
+                "approve",
+                "Checked",
+                "curator",
+            )
+        )
+        assert catalog.get(registry, ids[0]) == state
+        assert catalog.history(registry, ids[0]) == old_history
+        reviewed = inbox.resolve(
+            registry,
+            ids[0],
+            state["version"],
+            ["organism", "tissue"],
+            "approve",
+            "Checked both sources",
+            "curator",
+        )
+        rejects(
+            lambda: inbox.resolve(
+                registry, ids[0], state["version"], ["organism"], "approve", "Stale", "curator"
+            )
+        )
+        reviewed = inbox.resolve(
+            registry,
+            ids[0],
+            reviewed["version"],
+            ["genotype"],
+            "request-info",
+            "Ask the study author",
+            "curator",
+        )
+        tasks = inbox.listing(registry)["tasks"]
+        assert any(t["status"] == "waiting" for t in tasks)
+        assert any(t["status"] == "done" and len(t["fields"]) == 2 for t in tasks)
+        exported = next(r for r in catalog.export(registry)["records"] if r["id"] == ids[0])
+        assert exported["metadata"] == {"organism": "Arabidopsis thaliana", "tissue": "leaf"}
+        assert "genotype" in exported["unresolved"]
+        reviewed = inbox.resolve(
+            registry,
+            ids[0],
+            reviewed["version"],
+            ["genotype"],
+            "reject",
+            "Leave unknown",
+            "curator",
+        )
+        assert not any(t["status"] == "waiting" for t in inbox.listing(registry)["tasks"])
+        store.backup(registry, root / "inbox.sqlite")
+        store.restore(root / "inbox.sqlite", root / "restored")
+        assert inbox.listing(root / "restored") == inbox.listing(registry)
+        config = configuration("mock")
+        config_path = root / "providers.json"
+        config_path.write_text(canonical({"schema_version": 1, "providers": [config]}))
+        payload = {
+            "records": [
+                {"subject": key, "version": catalog.get(registry, key)["version"]} for key in ids
+            ],
+            "provider": "test",
+            "provider_hash": fingerprint(config),
+            "skill": "none",
+            "skill_hash": skills.select(root / "skills", "none")["sha256"],
+        }
+        # A review after submission invalidates only that record, not the rest of the batch.
+        inbox.resolve(
+            registry,
+            ids[0],
+            reviewed["version"],
+            ["cultivar"],
+            "reject",
+            "Leave unknown",
+            "curator",
+        )
+        key = runtime.enqueue(root, "prepare", "curator", payload)
+        assert worker.once(root, config_path)
+        result = runtime.job(root, key)
+        assert result["status"] == "SUCCEEDED"
+        assert result["result"]["prepared"] == [ids[1]]
+        assert result["result"]["failed"][0]["subject"] == ids[0]
+        assert result["result"]["remaining"] == 0
+        assert catalog.get(registry, ids[0])["reviews"]["organism"]["action"] == "approve"
+        assert not catalog.get(registry, ids[1])["reviews"]
+        # Keep partial progress after a crash; do not replay a batch on recovery.
+        key = runtime.enqueue(root, "prepare", "curator", payload)
+        assert runtime.claim(root)
+        runtime.progress(root, key, {"prepared": [ids[1]], "failed": [], "remaining": 1})
+        runtime.recover(root)
+        assert runtime.job(root, key)["status"] == "INTERRUPTED"
+        assert runtime.job(root, key)["result"]["prepared"] == [ids[1]]
+        key = runtime.enqueue(root, "prepare", "curator", payload)
+        task = runtime.claim(root)
+        assert task
+        cancelled = threading.Event()
+        cancelled.set()
+        result = worker.execute(root, config_path, task, cancelled)
+        runtime.finish(root, key, result)
+        assert runtime.job(root, key)["status"] == "CANCELLED"
+        assert runtime.job(root, key)["result"]["remaining"] == 2
+    print(
+        "PASS inbox grouped decisions, rollback, stale review, waiting/done persistence, "
+        "approved-only export, batch isolation, partial recovery and cancellation"
+    )
+
+
 def main() -> None:
+    inbox_checks()
     native_protocols()
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
