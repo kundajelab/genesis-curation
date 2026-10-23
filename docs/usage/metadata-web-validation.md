@@ -128,3 +128,29 @@ owner succeeded. No failed attempt is counted as a pass.
 Desktop (1440 px) and mobile (390 px) layout checks passed, including expanded
 source evidence. An initially overflowing source identifier now wraps. These are
 functional browser checks, not a measured curator usability study.
+
+## AI-prepared reviewer inbox — 2026-10-23
+
+The inbox replaces the field-by-field default with grouped tasks and persistent
+To do / Waiting / Done lists. New offline checks verify atomic multi-field
+approval and rollback, stale-version rejection, waiting and completed decisions,
+backup/restore of inbox state, approved-only exports, per-record batch failures,
+protection of newer human reviews, partial progress after interruption, cancellation,
+and authenticated preparation/resolve endpoints. The full `scripts/check.sh` with
+`GENESIS_REPO` set passed; the optional scientific, binary-reader and hosted-live
+checks listed above remain NOT RUN.
+
+Browser checks on an isolated synthetic registry and mock provider verified:
+
+- Importing two records automatically prepared four grouped review tasks.
+- AI preparation accepted zero fields without a human decision.
+- Unchecking one suggestion and approving the other two accepted only those two.
+- Moving nineteen missing fields to Waiting survived a page reload.
+- Keeping those fields unknown moved their review to Done without exporting values.
+- The mobile inbox at 390 px had no horizontal overflow.
+
+The TypeScript/Vite production build passed. Initial development checks found an
+unsupported audit operation and an inferred Python type error; both were fixed
+before the passing full run. Grouped review now uses the existing per-field audit
+operation inside one transaction. These tests establish workflow behavior, not
+biological accuracy or measured curator time savings.

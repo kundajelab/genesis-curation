@@ -116,24 +116,39 @@ not enabled. It is an evaluation configuration, not a biological validation clai
 
 ### Curator workflow
 
-The default screen guides curators through **Add a dataset → Review suggestions →
-Download reviewed metadata**. Start with a study ID or upload a table; the preview
-suggests an identifier column, which remains editable. Dataset name and sharing
-classification stay explicit.
+The default screen is **My to-do list**. Adding records automatically queues AI
+preparation with an available provider allowed for their sharing classification,
+preferring a local provider. The inbox updates as each record is prepared. If no
+provider is available, source-extracted tasks remain available and are explicitly
+identified. Existing imported records can use **Prepare my inbox**.
 
-Review shows one field at a time, starting with species, tissue and assay. Compare
-the suggested value with its source, choose or write a reason, then select
-**Approve and continue**, **Needs information**, or **Reject**. **Skip for now**
-saves no decision. Progress distinguishes reviewed fields from approved fields;
-unresolved fields are excluded from accepted metadata. Corrections can select a
-source excerpt without typing a JSON pointer. Advanced citation entry remains
-available. Missing evidence can be attached through **Add missing evidence**.
+AI reads the available source evidence and drafts proposals; it does not approve
+metadata. The inbox groups the resulting work into source-supported suggestions,
+conflicting evidence, and missing information. Suggested values and source quotes
+are visible together. Reviewers can uncheck individual suggestions before approving
+the selected group in one action. Each field receives its own immutable decision;
+the entire selection is validated and saved in one transaction.
 
-Use **See all fields** to revisit decisions. Model/skill selection, re-analysis
-guidance, history and background activity are expandable. A submitted AI task shows
-its status and a **View suggestions** or **View answer** action when complete;
-results never overwrite an in-progress form automatically. Re-analysis restarts
-review. Reviewed metadata is not a claim of processing completion or scientific QC.
+**Keep unknown and finish** records a reviewed exclusion, not an accepted value.
+**Need information — wait** moves the selected fields to **Waiting**. **Done**
+means a review decision is recorded, not that processing, QC or training eligibility
+has passed. The three lists are rebuilt from persistent current decisions, so
+closing the browser does not lose progress. New evidence invalidates affected
+reviews and returns work to the inbox. Corrections and detailed source inspection
+are available from each task; saving a correction returns to the inbox.
+
+Preparation is one durable batch, bounded to 1,000 selected records, rather than
+one queue slot per record. Each record retains its submitted version. Existing
+proposals and reviews are skipped; reviews made while a batch is running cannot be
+overwritten. Failures are reported per record and do not stop independent records.
+Completed/failed counts and remaining work are saved during preparation. Cancelled
+or interrupted batches retain partial progress and are not automatically replayed.
+A successful batch job means its loop finished; inspect its failed-record count.
+**Prepare my inbox** can retry records without a proposal or human review.
+
+Model settings, full record inspection, history and background activity remain
+available outside the default task list. Exports still include only explicitly
+approved values and enumerate unresolved fields.
 
 1. Upload CSV, TSV or JSON, or fetch a GEO/ENA/SRA accession. Inspect the preview,
    namespace, identifier column and classification before importing. No sequencing
