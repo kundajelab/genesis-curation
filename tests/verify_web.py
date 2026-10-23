@@ -9,6 +9,7 @@ import threading
 from collections.abc import MutableMapping
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 from verify_ai import FakeHandler, configuration, inference, server
 from verify_curation import rejects
@@ -217,6 +218,10 @@ def main() -> None:
         rejects(lambda: catalog.preview('[{"id":NaN}]', "x.json"))
         subject = ids[0]
         state = catalog.get(registry, subject)
+        indexed = catalog.evidence_index(state["sources"])
+        assert any(
+            e["locator"] == "/organism" and e["text"] == "Arabidopsis thaliana" for e in indexed
+        )
         old = state["version"]
         assert catalog.export(registry)["records"][0]["metadata"] == {}
         unknown = next(f for f in state["fields"] if f["status"] == "unknown")
@@ -303,6 +308,40 @@ def main() -> None:
         assert worker.once(root, config_path)
         assert runtime.job(root, key)["status"] == "SUCCEEDED"
         assert not catalog.get(registry, subject)["reviews"]
+        current = catalog.get(registry, subject)
+        sparse = catalog.run_proposal(
+            registry,
+            subject,
+            current["version"],
+            {**config, "mock_response": {"fields": []}},
+            skills.select(root, "none"),
+            "curator",
+        )
+        assert sparse["fields"] == current["fields"] and not sparse["reviews"]
+        print("PASS sparse proposals preserve the complete deterministic review table")
+        key = runtime.enqueue(root, "probe", "curator", {"provider": "test"})
+        entered = threading.Event()
+
+        def blocked_execute(
+            _root: Path,
+            _config: Path,
+            _task: dict[str, Any],
+            cancellation: threading.Event | None = None,
+        ) -> dict[str, Any]:
+            assert cancellation is not None
+            entered.set()
+            assert cancellation.wait(5), "Worker did not observe cancellation"
+            raise ValueError("Request cancelled")
+
+        with patch.object(worker, "execute", blocked_execute):
+            thread = threading.Thread(target=worker.once, args=(root, config_path))
+            thread.start()
+            assert entered.wait(5)
+            runtime.cancel(root, key)
+            thread.join(5)
+            assert not thread.is_alive()
+        assert runtime.job(root, key)["status"] == "CANCELLED"
+        print("PASS cancellation of an already-running durable job")
         key = runtime.enqueue(root, "probe", "curator", {"provider": "test"})
         runtime.cancel(root, key)
         assert not worker.once(root, config_path)

@@ -39,6 +39,31 @@ CASES: list[dict[str, Any]] = [
     },
 ]
 
+for case in CASES:
+    case["split"] = "development"
+CASES.extend(
+    [
+        {
+            "id": "rice_prose",
+            "split": "held-out",
+            "row": {
+                "description": "Source organism: Oryza sativa. "
+                "Leaf tissue was harvested for this library."
+            },
+            "gold": {"organism": ("known", "Oryza sativa"), "tissue": ("known", "leaf")},
+        },
+        {
+            "id": "unspecified_atac",
+            "split": "held-out",
+            "row": {
+                "assay": "ATAC-seq",
+                "title": "Bulk versus single-cell preparation was not documented.",
+            },
+            "gold": {"assay": ("unknown", None), "organism": ("unknown", None)},
+        },
+    ]
+)
+
 
 def evaluate(root: Path, config: dict[str, Any]) -> dict[str, Any]:
     if root.exists():
@@ -68,7 +93,12 @@ def evaluate(root: Path, config: dict[str, Any]) -> dict[str, Any]:
                     "evaluation",
                 )
             start = time.monotonic()
-            result: dict[str, Any] = {"case": case["id"], "skill": guidance, "gold": case["gold"]}
+            result: dict[str, Any] = {
+                "case": case["id"],
+                "split": case["split"],
+                "skill": guidance,
+                "gold": case["gold"],
+            }
             try:
                 state = catalog.run_proposal(
                     root,
@@ -102,7 +132,8 @@ def evaluate(root: Path, config: dict[str, Any]) -> dict[str, Any]:
         "model": config["model"],
         "model_revision": config["model_revision"],
         "results": results,
-        "limits": "Four synthetic cases, no biological accuracy or human correction-rate claim.",
+        "limits": "Six synthetic cases (four development, two held-out), "
+        "no biological accuracy or human correction-rate claim.",
     }
 
 

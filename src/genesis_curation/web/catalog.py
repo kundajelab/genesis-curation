@@ -354,6 +354,30 @@ def examples(root: Path, state: dict[str, Any]) -> list[dict[str, Any]]:
     return result
 
 
+def evidence_index(sources: list[dict[str, Any]]) -> list[dict[str, str]]:
+    """Give inference exact locators rather than asking it to invent source paths."""
+    result = []
+    for source in sources:
+        data = source["data"]
+        if data["media_type"] == "application/json":
+            value = json.loads(data["snapshot"])
+            if isinstance(value, dict):
+                locations = ["/" + k.replace("~", "~0").replace("/", "~1") for k in value]
+            else:
+                locations = ["line:1"]
+        else:
+            locations = [f"line:{i}" for i in range(1, len(data["snapshot"].splitlines()) + 1)]
+        for locator in locations:
+            result.append(
+                {
+                    "source_version": source["version"],
+                    "locator": locator,
+                    "text": harmonize.locate(source, locator),
+                }
+            )
+    return result
+
+
 def run_proposal(
     root: Path,
     subject: str,
@@ -375,11 +399,30 @@ def run_proposal(
         "rules": "Propose only source-supported values; "
         "examples are not evidence about this dataset.",
     }
+    indexed = evidence_index(state["sources"])
     specification = schema("metadata-response-v1")
     properties = specification["properties"]["fields"]["items"]["properties"]
+    properties["value"]["description"] = (
+        "Human-readable metadata value, never an ontology ID. "
+        "For a vocabulary match use its label here and its id in vocabulary_id."
+    )
+    properties["vocabulary_id"] = {
+        "enum": [None]
+        + sorted(
+            {
+                term["id"]
+                for terms in harmonize.vocabulary()["terms"].values()
+                for term in terms.values()
+            }
+        ),
+        "description": "Use a listed ID only for an exact field and label match; otherwise null.",
+    }
     properties["original"] = {"type": ["string", "integer", "null"]}
     properties["field"] = {"enum": sorted(harmonize.FIELDS)}
     properties["vocabulary_version"] = {"enum": [harmonize.vocabulary()["version"]]}
+    citation = properties["evidence"]["items"]["properties"]
+    citation["source_version"] = {"enum": sorted({e["source_version"] for e in indexed})}
+    citation["locator"] = {"enum": sorted({e["locator"] for e in indexed})}
     invocation = providers.invoke(
         root,
         config,
@@ -387,15 +430,22 @@ def run_proposal(
         cancellation=cancellation,
         classification=state["classification"],
         data={
-            "sources": state["sources"],
+            "sources": indexed,
             "current": state["metadata"],
             "guidance": guidance,
             "fields": sorted(harmonize.FIELDS),
             "vocabulary": harmonize.vocabulary(),
             "draft": extracted,
-            "output_rules": "Return one entry per field. Use current[field] or null as original. "
+            "output_rules": "Return only fields with source-supported information "
+            "beyond the draft. "
+            "Omit unchanged and unsupported fields; omitted fields preserve the draft. "
+            "An empty fields array is valid when there is nothing to add. "
+            "Use current[field] or null as original. Values are readable labels, not ontology IDs. "
+            "For example, use value=Arabidopsis thaliana with vocabulary_id=NCBITaxon:3702. "
+            "Use null vocabulary_id for fields or terms absent from the supplied vocabulary. "
             "Unknown fields have null value and empty evidence. Use exact source versions and "
-            "JSON pointer or line:N locators. Never cite guidance or examples as source evidence.",
+            "locators copied from the supplied sources. Quotes must be exact substrings of that "
+            "source entry text. Never cite guidance or examples as source evidence.",
         },
         source_hashes=[s["version"] for s in state["sources"]],
         specification=specification,
