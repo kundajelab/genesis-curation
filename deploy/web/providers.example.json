@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "providers": [
+    {
+      "id": "local-qwen",
+      "mode": "disabled",
+      "endpoint": "http://127.0.0.1:19091/v1",
+      "model": "Qwen/Qwen3-14B",
+      "model_revision": null,
+      "serving_revision": null,
+      "external": false,
+      "credential": {
+        "file": "/config/local-model.key"
+      },
+      "allowed_tasks": [
+        "probe",
+        "metadata",
+        "diagnose",
+        "ask"
+      ],
+      "allowed_classifications": [
+        "public",
+        "internal",
+        "local-only"
+      ],
+      "context_chars": 18000,
+      "max_tokens": 4096,
+      "timeout_seconds": 180,
+      "max_retries": 1,
+      "concurrency": 1,
+      "format_repair": true,
+      "capabilities": {
+        "json_schema": true,
+        "tools": false,
+        "streaming": false
+      },
+      "mock_response": null,
+      "protocol": "openai-chat",
+      "chat_template_kwargs": {
+        "enable_thinking": false
+      }
+    },
+    {
+      "id": "openai",
+      "mode": "disabled",
+      "endpoint": "https://api.openai.com/v1",
+      "model": "REPLACE_WITH_APPROVED_MODEL_ID",
+      "model_revision": null,
+      "serving_revision": null,
+      "external": true,
+      "credential": {
+        "file": "/config/openai.key"
+      },
+      "allowed_tasks": [
+        "probe",
+        "metadata",
+        "diagnose",
+        "ask"
+      ],
+      "allowed_classifications": [
+        "public"
+      ],
+      "context_chars": 18000,
+      "max_tokens": 4096,
+      "timeout_seconds": 180,
+      "max_retries": 1,
+      "concurrency": 1,
+      "format_repair": true,
+      "capabilities": {
+        "json_schema": true,
+        "tools": false,
+        "streaming": false
+      },
+      "mock_response": null,
+      "protocol": "openai-responses"
+    },
+    {
+      "id": "claude",
+      "mode": "disabled",
+      "endpoint": "https://api.anthropic.com/v1",
+      "model": "REPLACE_WITH_APPROVED_MODEL_ID",
+      "model_revision": null,
+      "serving_revision": null,
+      "external": true,
+      "credential": {
+        "file": "/config/claude.key"
+      },
+      "allowed_tasks": [
+        "probe",
+        "metadata",
+        "diagnose",
+        "ask"
+      ],
+      "allowed_classifications": [
+        "public"
+      ],
+      "context_chars": 18000,
+      "max_tokens": 4096,
+      "timeout_seconds": 180,
+      "max_retries": 1,
+      "concurrency": 1,
+      "format_repair": true,
+      "capabilities": {
+        "json_schema": true,
+        "tools": false,
+        "streaming": false
+      },
+      "mock_response": null,
+      "protocol": "anthropic-messages"
+    }
+  ]
+}

@@ -54,3 +54,7 @@ Without `GENESIS_REPO`, the launcher checks report NOT RUN and everything else s
 
 This code was moved from `genesis-preprocessing` (package `genesis_tools`) in October 2026;
 its earlier history is in that repository.
+
+For the optional browser review workspace, evidence-backed field decisions, local
+Hugging Face models and hosted provider APIs, see
+[human-reviewed metadata curation](docs/usage/metadata-web.md).

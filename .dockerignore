@@ -1,0 +1,10 @@
+.git
+.venv
+frontend/node_modules
+**/__pycache__
+**/.ruff_cache
+work
+workspace
+results
+tests/.runs
+.env*

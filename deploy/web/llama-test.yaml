@@ -1,0 +1,51 @@
+# Optional pinned GGUF inference service. Publish only the GUI; inference stays loopback.
+services:
+  model:
+    image: ${LLAMA_IMAGE:?Set an immutable llama.cpp CUDA image digest}
+    user: "${CURATOR_UID:?}:${CURATOR_GID:?}"
+    restart: unless-stopped
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    ports: ["127.0.0.1:19091:8080"]
+    mem_limit: 64g
+    cpus: 8
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - ${MODEL_DIR:?}:/models:ro
+      - ${WEB_ROOT:?}/config:/config:ro
+      - ${WEB_ROOT:?}/tmp:/scratch
+    environment:
+      TMPDIR: /scratch
+      CUDA_CACHE_PATH: /scratch/cuda-cache
+    command:
+      - --model
+      - /models/Qwen3.8-27B-Q8_0.gguf
+      - --alias
+      - Qwen3.8-27B-Q8_0
+      - --host
+      - 0.0.0.0
+      - --port
+      - "8080"
+      - --api-key-file
+      - /config/local-model.key
+      - --ctx-size
+      - "8192"
+      - --parallel
+      - "1"
+      - --threads
+      - "8"
+      - --n-gpu-layers
+      - "99"
+      - --flash-attn
+      - "on"
+      - --jinja
+      - --chat-template-kwargs
+      - '{"enable_thinking":false}'
+      - --no-webui

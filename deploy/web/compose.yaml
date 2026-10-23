@@ -1,0 +1,50 @@
+name: genesis-curation-web
+x-app: &app
+  image: genesis-curation-web:local
+  build:
+    context: ../..
+    dockerfile: deploy/web/Dockerfile
+  user: "${CURATOR_UID:?}:${CURATOR_GID:?}"
+  network_mode: host
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  restart: unless-stopped
+  volumes:
+    - ${WEB_ROOT:?}/data:/data
+    - ${WEB_ROOT:?}/config:/config:ro
+    - ${WEB_ROOT:?}/tmp:/scratch
+  environment:
+    TMPDIR: /scratch
+services:
+  app:
+    <<: *app
+    command: [serve, --root, /data, --providers, /config/providers.json, --origin, "${WEB_ORIGIN:?}"]
+    healthcheck:
+      test: [CMD, python, -c, "import urllib.request; urllib.request.urlopen('http://127.0.0.1:18765/health',timeout=3)"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+  worker:
+    <<: *app
+    command: [worker, --root, /data, --providers, /config/providers.json]
+  nginx:
+    image: nginx:1.28-alpine
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - ${WEB_ROOT:?}/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ${WEB_ROOT:?}/certificates:/etc/letsencrypt:ro
+      - ${WEB_ROOT:?}/challenges:/var/www/acme:ro
+      - ./nginx-entrypoint.sh:/genesis-entrypoint.sh:ro
+    entrypoint: [/bin/sh, /genesis-entrypoint.sh]
+  certbot:
+    image: certbot/certbot:v5.4.0
+    restart: unless-stopped
+    volumes:
+      - ${WEB_ROOT:?}/certificates:/etc/letsencrypt
+      - ${WEB_ROOT:?}/challenges:/var/www/acme
+      - ${WEB_ROOT:?}/certbot-work:/var/lib/letsencrypt
+      - ${WEB_ROOT:?}/certbot-logs:/var/log/letsencrypt
+    entrypoint: /bin/sh
+    command: [-c, 'trap "exit 0" TERM INT; while :; do certbot renew --non-interactive; sleep 21600 & wait $$!; done']

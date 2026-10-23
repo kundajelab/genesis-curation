@@ -1,0 +1,16 @@
+# Optional workaround for hosts where the NVIDIA runtime cannot access restricted
+# device nodes. Uses the curator's existing GPU group, never privileged containers
+# or changed host device permissions. Check driver compatibility before use.
+services:
+  model:
+    deploy: !reset {}
+    environment:
+      LD_LIBRARY_PATH: ${CUDA_COMPAT_LIBRARY_PATH:-/usr/local/cuda/lib64:/app}
+    group_add: ["${GPU_GROUP_ID:?Set the group owning the existing NVIDIA device nodes}"]
+    devices:
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+    volumes:
+      - /lib/x86_64-linux-gnu/libcuda.so.1:/usr/lib/x86_64-linux-gnu/libcuda.so.1:ro
+      - /lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.1:/usr/lib/x86_64-linux-gnu/libnvidia-ptxjitcompiler.so.1:ro

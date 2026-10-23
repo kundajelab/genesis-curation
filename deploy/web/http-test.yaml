@@ -1,0 +1,4 @@
+# Explicit opt-in for public/synthetic test data only. HTTP carries unencrypted traffic.
+services:
+  app:
+    command: [serve, --root, /data, --providers, /config/providers.json, --origin, "${WEB_ORIGIN:?}", --allow-insecure-http]
