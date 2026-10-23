@@ -30,3 +30,7 @@ build/
 *.egg-info/
 *.so
 *.c
+
+frontend/node_modules/
+
+src/genesis_curation/web/assets/

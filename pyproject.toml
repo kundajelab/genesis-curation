@@ -5,6 +5,9 @@ description = "Genesis metadata curation, review, records, studies and method be
 requires-python = ">=3.14"
 dependencies = ["defopt>=7,<8", "pysam>=0.24.1,<0.25", "jsonschema>=4.26,<5"]
 
+[project.optional-dependencies]
+web = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1"]
+
 [project.scripts]
 genesis = "genesis_curation.execution.controller:main"
 
@@ -30,4 +33,4 @@ error-on-warning = true
 exclude = ["tests/fixtures"]
 
 [tool.setuptools.package-data]
-genesis_curation = ["benchmark/report.html", "scatac/assets/*", "contracts/schemas/*.json", "qc_policy/policies/*.json", "llm/schemas/*.json", "llm/prompts/*.txt", "curation/vocabularies/*.json"]
+genesis_curation = ["benchmark/report.html", "scatac/assets/*", "contracts/schemas/*.json", "qc_policy/policies/*.json", "llm/schemas/*.json", "llm/prompts/*.txt", "curation/vocabularies/*.json", "web/assets/*", "web/assets/assets/*"]
