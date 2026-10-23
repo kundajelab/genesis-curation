@@ -154,3 +154,11 @@ unsupported audit operation and an inferred Python type error; both were fixed
 before the passing full run. Grouped review now uses the existing per-field audit
 operation inside one transaction. These tests establish workflow behavior, not
 biological accuracy or measured curator time savings.
+
+The deployed Qwen3.8-27B Q8_0 service also passed a two-record synthetic batch in a
+separate temporary registry: two records prepared, four review tasks, no automatic
+approvals, and missing tissue preserved as unknown. The production app and worker
+were updated after a state backup. Authenticated post-deployment checks confirmed
+the inbox endpoint worked and the complete existing metadata export was unchanged.
+The Qwen model and proxy stayed running. This live fixture does not establish
+biological accuracy or replace scientific pipeline acceptance.
