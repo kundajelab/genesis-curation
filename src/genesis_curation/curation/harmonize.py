@@ -56,13 +56,19 @@ FIELDS = {
     "control_assignment_proposal",
     "dna_context",
     "notes",
+    "cell_type",
+    "inferred_cell_type",
+    "environment",
+    "biosample_accession",
+    "experiment_accession",
+    "study_accession",
 }
 ALIASES = {
     "organism_ch1": "organism",
     "taxid_ch1": "taxon",
     "scientific_name": "organism",
     "tax_id": "taxon",
-    "sample_accession": "accession",
+    "sample_accession": "biosample_accession",
     "run_accession": "accession",
     "library_strategy": "assay",
     "dev_stage": "developmental_stage",
@@ -70,8 +76,12 @@ ALIASES = {
 CLASSIFICATIONS = {"public": 0, "internal": 1, "local-only": 2}
 
 
-def vocabulary() -> dict[str, Any]:
-    return loads(files(__package__).joinpath("vocabularies/plant-v1.json").read_text())
+def vocabulary(version: str | None = None) -> dict[str, Any]:
+    snapshots = {"genesis-plant-terms/1": "plant-v1.json", "genesis-plant-terms/2": "plant-v2.json"}
+    name = snapshots.get(version or "genesis-plant-terms/2")
+    if name is None:
+        raise ValueError("Unknown vocabulary version")
+    return loads(files(__package__).joinpath("vocabularies/" + name).read_text())
 
 
 def source_record(text: str, location: str, media_type: str) -> dict[str, Any]:
@@ -325,6 +335,8 @@ def extract(bundle: dict[str, Any], metadata: dict[str, Any]) -> list[dict[str, 
         # protocols.
         if name in {"assay", "protocol"} and str(candidate["value"]).casefold() in {
             "atac-seq",
+            "other",
+            "unspecified",
             "gro-seq",
             "gro-cap",
             "5-prime",
@@ -376,8 +388,7 @@ def verify_fields(bundle: dict[str, Any], fields: list[dict[str, Any]]) -> None:
                 sources[evidence["source_version"]], evidence["locator"]
             ):
                 raise ValueError("Fabricated or stale field evidence")
-        if field["vocabulary_version"] != vocab["version"]:
-            raise ValueError("Unknown vocabulary version")
+        vocab = vocabulary(field["vocabulary_version"])
         if field["vocabulary_id"] and not any(
             t["id"] == field["vocabulary_id"] and t["label"] == field["value"]
             for t in vocab["terms"].get(field["field"], {}).values()

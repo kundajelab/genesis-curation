@@ -343,6 +343,11 @@ def metadata_checks(root: Path) -> None:
     # Actual prior schema and populated scientific/approval history survive migration and restore.
     with sqlite3.connect(directory / "registry.sqlite") as db:
         for table in (
+            "curation_releases",
+            "curation_study_events",
+            "curation_drafts",
+            "curation_members",
+            "curation_studies",
             "curation_events",
             "curation_subjects",
             "input_heads",
@@ -355,7 +360,7 @@ def metadata_checks(root: Path) -> None:
         db.execute("DROP INDEX records_kind_version")
         db.execute("PRAGMA user_version=2")
     store.initialize(directory)
-    assert list(directory.glob("before-v2-to-v5-*.sqlite"))
+    assert list(directory.glob("before-v2-to-v6-*.sqlite"))
     backup = root / "backup.sqlite"
     store.backup(directory, backup)
     restored = root / "restored"

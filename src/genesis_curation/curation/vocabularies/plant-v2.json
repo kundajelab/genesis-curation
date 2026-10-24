@@ -1,0 +1,60 @@
+{
+  "version": "genesis-plant-terms/2",
+  "description": "Reviewed pilot vocabulary snapshot; unmatched terms remain unmapped. Earlier versions remain valid for historical evidence.",
+  "sources": [
+    {
+      "url": "https://github.com/Planteome/plant-ontology/blob/94750e01c897da6955c2fef97379f4d99cb333a8/po.obo",
+      "revision": "94750e01c897da6955c2fef97379f4d99cb333a8"
+    },
+    {
+      "url": "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/efetch.fcgi?db=taxonomy&id=3702,4530,4577,4558,3694&retmode=xml",
+      "retrieved": "2026-10-24"
+    }
+  ],
+  "terms": {
+    "organism": {
+      "arabidopsis thaliana": {
+        "id": "NCBITaxon:3702",
+        "label": "Arabidopsis thaliana"
+      },
+      "oryza sativa": {
+        "id": "NCBITaxon:4530",
+        "label": "Oryza sativa"
+      },
+      "zea mays": {
+        "id": "NCBITaxon:4577",
+        "label": "Zea mays"
+      },
+      "sorghum bicolor": {
+        "id": "NCBITaxon:4558",
+        "label": "Sorghum bicolor"
+      },
+      "populus trichocarpa": {
+        "id": "NCBITaxon:3694",
+        "label": "Populus trichocarpa"
+      }
+    },
+    "tissue": {
+      "leaf": {
+        "id": "PO:0025034",
+        "label": "leaf"
+      },
+      "root": {
+        "id": "PO:0009005",
+        "label": "root"
+      },
+      "seed": {
+        "id": "PO:0009010",
+        "label": "seed"
+      },
+      "flower": {
+        "id": "PO:0009046",
+        "label": "flower"
+      },
+      "stem": {
+        "id": "PO:0009047",
+        "label": "stem"
+      }
+    }
+  }
+}

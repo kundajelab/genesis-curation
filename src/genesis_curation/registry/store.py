@@ -15,7 +15,7 @@ from typing import Any
 
 from ..contracts.records import canonical, fingerprint, identity, loads, now, record, validate
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 MIGRATIONS = {
     1: [
         "CREATE TABLE meta (key TEXT PRIMARY KEY,value TEXT NOT NULL)",
@@ -121,6 +121,26 @@ MIGRATIONS = {
         "BEGIN SELECT RAISE(ABORT,'immutable curation event'); END",
         "CREATE TRIGGER immutable_curation_events_delete BEFORE DELETE ON curation_events "
         "BEGIN SELECT RAISE(ABORT,'immutable curation event'); END",
+    ],
+    6: [
+        "CREATE TABLE curation_studies (id TEXT PRIMARY KEY, body TEXT NOT NULL)",
+        "CREATE TABLE curation_members (study TEXT REFERENCES curation_studies(id), "
+        "subject TEXT REFERENCES curation_subjects(id), PRIMARY KEY(study,subject))",
+        "CREATE INDEX curation_members_subject ON curation_members(subject)",
+        "CREATE TABLE curation_drafts (actor TEXT, task TEXT, body TEXT NOT NULL, "
+        "PRIMARY KEY(actor,task))",
+        "CREATE TABLE curation_study_events (sequence INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "study TEXT REFERENCES curation_studies(id), body TEXT NOT NULL)",
+        "CREATE TABLE curation_releases (version TEXT PRIMARY KEY, "
+        "study TEXT REFERENCES curation_studies(id), body TEXT NOT NULL)",
+        "CREATE TRIGGER immutable_study_events_update BEFORE UPDATE ON curation_study_events "
+        "BEGIN SELECT RAISE(ABORT,'immutable study event'); END",
+        "CREATE TRIGGER immutable_study_events_delete BEFORE DELETE ON curation_study_events "
+        "BEGIN SELECT RAISE(ABORT,'immutable study event'); END",
+        "CREATE TRIGGER immutable_releases_update BEFORE UPDATE ON curation_releases "
+        "BEGIN SELECT RAISE(ABORT,'immutable study release'); END",
+        "CREATE TRIGGER immutable_releases_delete BEFORE DELETE ON curation_releases "
+        "BEGIN SELECT RAISE(ABORT,'immutable study release'); END",
     ],
 }
 
