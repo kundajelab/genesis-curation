@@ -1,12 +1,71 @@
 # Human-reviewed metadata curation
 
-The optional web application imports metadata independently of sequencing files or
-pipeline execution. It stores original snapshots, proposals, exact citations,
-field-level decisions, conversations and promoted examples in a versioned registry.
-Only explicitly approved fields appear as accepted metadata in exports. New evidence
-or a new proposal invalidates the previous reviews. Unknown and conflicting fields
-need a supported human correction before approval; rejected or information-requested
-fields remain unresolved.
+The default GUI is a study to-do list. Add an accession or upload a table; the
+worker retrieves metadata, prepares evidence-backed suggestions, and groups the
+exceptions that need a reviewer. Resolve those decisions, then sign off once on
+the study summary. Download the signed JSON (with evidence and provenance), CSV,
+or TSV. No sequencing files are downloaded and no scientific pipeline is launched.
+
+## Reviewer workflow
+
+1. **Add studies.** Enter a GEO/ENA/SRA/BioProject accession or upload CSV, TSV or
+   JSON (at most 1,000 records and 2 MiB per upload; split larger tables). A `study_accession` column groups uploaded records into studies. Keep the
+   stable record identifier and import name when retrying an import.
+2. **Let preparation finish.** Public accession intake retrieves individual sample
+   metadata and, for GEO, up to five linked PubMed articles and available PMC text.
+   A local provider is selected by default when configured. Use **AI connection**
+   to explicitly select a permitted hosted provider or source-only preparation.
+3. **Complete the to-do list.** Each decision shows affected samples, a suggested
+   resolution when available, and exact supporting passages. Accept, correct inline,
+   keep unknown, defer, or ask the model to investigate the current field. Corrections
+   require a supporting passage for every affected sample. Additional evidence can
+   be attached in the same panel. Deferred items remain unfinished.
+4. **Return whenever needed.** Notes, correction drafts, evidence drafts, selected
+   study and task are saved on the server per reviewer. Navigation is disabled while
+   a draft is saving. Interrupted preparation can be resumed; completed records and
+   retrieved sources are reused. Failures remain visible and require retry or explicit
+   acknowledgement; they never count as a scientific success.
+5. **Sign off and export.** Check the prepared sample summary and sign off once.
+   This accepts routine supported suggestions and the explicit decisions together.
+   Unknown/rejected values remain excluded. A changed source or new preparation
+   invalidates the current sign-off, while historical signed releases remain immutable.
+
+The **Record history** screen retains the earlier field-review interface and legacy
+exports. Those exports are distinct from a signed study release.
+
+## Evidence and model boundaries
+
+The worker uses deterministic extraction, sample-first evidence selection, controlled
+vocabulary normalization, strict citation checks, and bounded targeted follow-up.
+Prior values come from the version-checked server record, and ontology IDs are
+assigned only by exact registered label/alias matching; the model supplies neither.
+Supported suggestions with model-reported confidence below 0.8 also require an
+explicit decision. This is a conservative review trigger, not calibrated accuracy.
+An unresolved field gets at most two investigation passes for the same source versions;
+new evidence is needed after that. Raw sample conflicts stay visible. General paper
+context cannot become a sample fact without explicit sample attribution or a human
+correction. Evidence omitted to fit the model context is recorded in provenance. A uniquely
+matching citation span may restore whitespace that the model transcribed differently
+(for example a non-breaking space); original model text and the restoration are
+audited, and the restored quote must pass the exact-source validator. Words,
+punctuation, source identifiers and locators are never repaired this way.
+
+Built-in profiles cover general plant metadata, TF binding/DAP controls, and plant
+cell-type metadata. The latter adapts principles from Alex Borowsky's
+[annotation skill](https://github.com/alexborowsky/plant-celltype-annotation), pinned
+in the skill metadata. It distinguishes reported and inferred cell types and does
+not implement the upstream full expression-analysis workflow. Skill/profile hashes,
+provider settings, source hashes and available model revisions accompany proposals.
+User corrections can optionally become scoped examples after study sign-off; this
+is prompt context, not model fine-tuning. Hosted providers never replace a local
+provider silently, and local-only evidence cannot be sent to external APIs.
+
+Study approval establishes a reviewed metadata release. Scientific QC and independently
+measured biological accuracy remain separate and are explicitly marked unevaluated.
+The study list and task API support pagination. Detailed study responses currently
+load all member evidence; very large studies may need splitting for responsive review.
+Public retrieval is bounded to 2 MiB per response, and unavailable text is recorded.
+The metadata pilot limits sample count; ordinary GUI imports do not silently sample.
 
 ## Development
 
@@ -114,65 +173,21 @@ The test configuration uses 8192 context, one concurrent request, eight CPUs,
 8-bit weights, and non-thinking output. Vision, speculative decoding and tools are
 not enabled. It is an evaluation configuration, not a biological validation claim.
 
-### Curator workflow
+### Legacy record tools and custom skills
 
-The default screen is **My to-do list**. Adding records automatically queues AI
-preparation with an available provider allowed for their sharing classification,
-preferring a local provider. The inbox updates as each record is prepared. If no
-provider is available, source-extracted tasks remain available and are explicitly
-identified. Existing imported records can use **Prepare my inbox**.
-
-AI reads the available source evidence and drafts proposals; it does not approve
-metadata. The inbox groups the resulting work into source-supported suggestions,
-conflicting evidence, and missing information. Suggested values and source quotes
-are visible together. Reviewers can uncheck individual suggestions before approving
-the selected group in one action. Each field receives its own immutable decision;
-the entire selection is validated and saved in one transaction.
-
-**Keep unknown and finish** records a reviewed exclusion, not an accepted value.
-**Need information — wait** moves the selected fields to **Waiting**. **Done**
-means a review decision is recorded, not that processing, QC or training eligibility
-has passed. The three lists are rebuilt from persistent current decisions, so
-closing the browser does not lose progress. New evidence invalidates affected
-reviews and returns work to the inbox. Corrections and detailed source inspection
-are available from each task; saving a correction returns to the inbox.
-
-Preparation is one durable batch, bounded to 1,000 selected records, rather than
-one queue slot per record. Each record retains its submitted version. Existing
-proposals and reviews are skipped; reviews made while a batch is running cannot be
-overwritten. Failures are reported per record and do not stop independent records.
-Completed/failed counts and remaining work are saved during preparation. Cancelled
-or interrupted batches retain partial progress and are not automatically replayed.
-A successful batch job means its loop finished; inspect its failed-record count.
-**Prepare my inbox** can retry records without a proposal or human review.
-
-Model settings, full record inspection, history and background activity remain
-available outside the default task list. Exports still include only explicitly
-approved values and enumerate unresolved fields.
-
-1. Upload CSV, TSV or JSON, or fetch a GEO/ENA/SRA accession. Inspect the preview,
-   namespace, identifier column and classification before importing. No sequencing
-   files are downloaded. Original fields remain available in source snapshots.
-2. Review extracted fields or request a model proposal with a selected skill. Each
-   record shows current approved values, proposed values, uncertainty and citations.
-3. Select a field, inspect its exact source quote and locator, and approve, reject or
-   request information with a reason. Corrected values must cite existing evidence.
-   Attach supporting text when evidence is missing; set its classification explicitly.
-4. Ask contextual questions or add re-analysis guidance. Conversation never accepts
-   changes. Jobs survive browser closure; refresh the record when a job completes.
-5. Explicitly promote an approved decision as an example after organism and tissue
-   are approved. It can guide later records in the same context and compatible
-   classification. Invalidated reviews stop contributing examples.
-6. Export JSON with provenance, or CSV/TSV containing approved values and an explicit
-   unresolved-field list. Spreadsheet formula prefixes are escaped in tabular exports.
+The secondary **Record history** screen supports detailed source inspection,
+field-level review, contextual questions and legacy approved-field exports. Use
+**Study decisions** for the default prepare → resolve exceptions → sign-off flow.
+Conversation alone never approves metadata. New source evidence invalidates affected
+reviews; new study preparation preserves human decisions and requires fresh sign-off.
 
 Skills are JSON files under `$WEB_ROOT/data/skills` containing exactly `id`,
 `version`, `title`, `instructions`, and `references`. They are instructions and
 references, never executable code. Each proposal records their content hash and
 selected examples. The built-in plant metadata skill addresses missing evidence,
 TF source versus assayed organism, and distinctions among biological samples and
-technical lanes. Alex's cell-type annotation integration remains separate from this
-metadata release; it is not silently used as metadata evidence.
+technical lanes. The plant cell-type profile uses Alex's guidance as instructions, never as evidence
+about a sample. It is separate from execution of the full annotation workflow.
 
 ### Recovery, passwords and backups
 
@@ -198,8 +213,29 @@ and private provider configuration, then restarts them. Backups contain private 
 and keys; protect them. For recovery, stop the services, restore the data and config
 into a fresh private root owned by the curator UID, and restart the matching image.
 Certificates can be reissued separately. Model weights/caches are not included.
-Do not run old code against a migrated schema. Registry schema 5 preserves existing
+Do not run old code against a migrated schema. Registry schema 6 preserves existing
 pipeline registry tables and creates pre-migration backups through the normal store.
+
+## Study workflow evaluation
+
+Run the isolated synthetic acceptance fixture with a configured local provider:
+
+```bash
+uv run --frozen --extra web python tests/evaluate_study_live.py \
+  --root /absolute/workspace/NEW_STUDY_EVALUATION \
+  --providers /absolute/workspace/providers.json --provider MODEL_ID
+```
+
+For public metadata only, add
+`--public-manifest tests/fixtures/study/public-pilot.json`. This retrieves at most
+five sample metadata records per study and available linked paper text; it does
+not download sequencing files or sign off public studies. The result is stored in
+`evaluation.json` under that isolated root. After a completed run, use the same
+root with `--retry-failures` to retry failed studies and retain previous results.
+Do not run the retry concurrently with the initial evaluation.
+
+See [study workspace validation](study-workspace-validation.md) for the delivered
+checks, pilot results, migration evidence and remaining limitations.
 
 ## Opt-in live synthetic comparison
 
