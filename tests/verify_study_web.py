@@ -185,6 +185,29 @@ def main() -> None:
             ),
             "explicit sample attribution",
         )
+        source = {
+            "version": "q",
+            "data": {"media_type": "text/plain", "snapshot": "kit: QuantSeq 3’\u00a0mRNA"},
+        }
+        response = [
+            {
+                "field": "protocol",
+                "evidence": [
+                    {"source_version": "q", "locator": "line:1", "quote": "QuantSeq 3’ mRNA"}
+                ],
+            }
+        ]
+        restored, repairs = preparation.restore_quote_whitespace(
+            {"data": {"sources": [source]}}, response
+        )
+        assert restored[0]["evidence"][0]["quote"] == "QuantSeq 3’\u00a0mRNA" and len(repairs) == 1
+        assert response[0]["evidence"][0]["quote"] == "QuantSeq 3’ mRNA"
+        response[0]["evidence"][0]["quote"] = "invented kit"
+        unchanged, repairs = preparation.restore_quote_whitespace(
+            {"data": {"sources": [source]}}, response
+        )
+        assert unchanged == response and not repairs
+        print("PASS exact source whitespace restoration; raw response preserved")
         print("PASS grouped correction rollback and wrong-sample evidence rejection")
 
         # Intake failure retains the missing GSM and supports a subsequent retry.

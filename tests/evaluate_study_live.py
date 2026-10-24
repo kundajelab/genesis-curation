@@ -134,14 +134,70 @@ def evaluate(
     return report
 
 
+def retry_failures(root: Path, config_path: Path, provider: str) -> dict[str, Any]:
+    """Retry only failed studies, preserving the previous result and cached sources."""
+    report = load(root / "evaluation.json")
+    config = providers.select(config_path, provider)
+    if report["provider"] != provider or report["model"] != config["model"]:
+        raise ValueError("Retry requires the original provider and model")
+    for entry in report["studies"]:
+        if entry["workflow"] not in {"FAIL", "PREPARED_WITH_FAILURES"} or not entry.get("study"):
+            continue
+        started = time.monotonic()
+        entry.setdefault("previous_attempts", []).append(
+            {
+                "workflow": entry["workflow"],
+                "failures": entry.get("failures", {}),
+                "elapsed_seconds": entry["elapsed_seconds"],
+            }
+        )
+        preparation.run(
+            root,
+            config_path,
+            {
+                "actor": "evaluation-script",
+                "payload": {
+                    "study": entry["study"],
+                    "provider": provider,
+                    "provider_hash": fingerprint(config),
+                },
+            },
+        )
+        current = studies.get(root / "catalog", entry["study"])
+        assert all(not record["reviews"] for record in current["records"])
+        entry.update(
+            failures=current["preparation"]["failures"],
+            pending_decisions=current["pending"],
+            supported_fields=sum(
+                f["status"] == "known" for r in current["records"] for f in r["fields"]
+            ),
+            coverage=[
+                r.get("preparation_provenance", {}).get("coverage") for r in current["records"]
+            ],
+            elapsed_seconds=round(time.monotonic() - started, 2),
+        )
+        entry["workflow"] = "PREPARED_WITH_FAILURES" if entry["failures"] else "PREPARED"
+        dump(root / "evaluation.json", report)
+        print(
+            canonical({k: entry[k] for k in ("accession", "workflow", "elapsed_seconds")}),
+            flush=True,
+        )
+    return report
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--providers", type=Path, required=True)
     parser.add_argument("--provider", required=True)
     parser.add_argument("--public-manifest", type=Path)
+    parser.add_argument("--retry-failures", action="store_true")
     args = parser.parse_args()
-    result = evaluate(args.root, args.providers, args.provider, args.public_manifest)
+    result = (
+        retry_failures(args.root, args.providers, args.provider)
+        if args.retry_failures
+        else evaluate(args.root, args.providers, args.provider, args.public_manifest)
+    )
     if any(s["workflow"] in {"FAIL", "PREPARED_WITH_FAILURES"} for s in result["studies"]):
         raise SystemExit(1)
 

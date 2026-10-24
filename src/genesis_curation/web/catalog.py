@@ -495,6 +495,11 @@ def run_proposal(
         mock={"fields": [f for f in extracted if not target_fields or f["field"] in target_fields]},
     )
     fields = invocation["data"]["response"]["fields"]
+    quote_repairs = []
+    if preserve_reviews:
+        from .preparation import restore_quote_whitespace
+
+        fields, quote_repairs = restore_quote_whitespace(bundle, fields)
     harmonize.verify_fields(bundle, fields)
     if target_fields and any(f["field"] not in target_fields for f in fields):
         raise ValueError("Model changed a field outside the investigation scope")
@@ -533,6 +538,7 @@ def run_proposal(
                 "model_revision": config.get("model_revision"),
                 "serving_revision": config.get("serving_revision"),
                 "coverage": coverage,
+                "quote_restorations": quote_repairs,
                 "source_hashes": [s["version"] for s in current["sources"]],
             }
         current.update(

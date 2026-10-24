@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
+import copy
 import re
 import threading
 from pathlib import Path
 from typing import Any
 
 from ..contracts.records import fingerprint
+from ..curation import harmonize
 from ..llm import providers
 from ..llm.security import redact
 from . import catalog, skills, studies
@@ -58,6 +60,44 @@ def select_evidence(
         "selection": "sample-first field-keyword ranking",
         "character_budget": budget,
     }
+
+
+def restore_quote_whitespace(
+    bundle: dict[str, Any], fields: list[dict[str, Any]]
+) -> tuple[list[dict[str, Any]], list[dict[str, str]]]:
+    """Restore unique source spans after whitespace-only model transcription changes.
+
+    The raw invocation remains immutable. No words, punctuation, source identifiers,
+    or locators are repaired, and the resulting quotes still pass exact validation.
+    """
+    restored, repairs = copy.deepcopy(fields), []
+    sources = {s["version"]: s for s in bundle["data"]["sources"]}
+    for field in restored:
+        for citation in field["evidence"]:
+            source = sources.get(citation["source_version"])
+            if source is None:
+                continue
+            passage = harmonize.locate(source, citation["locator"])
+            quote = citation["quote"]
+            if not quote or quote in passage:
+                continue
+            pattern = "".join(
+                r"\s+" if part.isspace() else re.escape(part) for part in re.split(r"(\s+)", quote)
+            )
+            matches = list(re.finditer(pattern, passage))
+            if len(matches) == 1:
+                citation["quote"] = matches[0].group()
+                repairs.append(
+                    {
+                        "field": field["field"],
+                        "source_version": citation["source_version"],
+                        "locator": citation["locator"],
+                        "model_quote": quote,
+                        "source_quote": citation["quote"],
+                        "method": "unique-whitespace-span",
+                    }
+                )
+    return restored, repairs
 
 
 def verify_scope(state: dict[str, Any], fields: list[dict[str, Any]]) -> None:
