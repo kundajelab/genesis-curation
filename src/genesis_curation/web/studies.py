@@ -385,11 +385,15 @@ def preparation(root: Path, key: str, updates: dict[str, Any], actor: str = "wor
         save(db, study, "preparation", actor, updates)
 
 
-def recover(root: Path) -> None:
+def recover(root: Path, queued_jobs: set[str] | None = None) -> None:
     with store.write(root) as db:
         for row in db.execute("SELECT body FROM curation_studies").fetchall():
             study = loads(row[0])
-            if study["preparation"]["status"] == "RUNNING":
+            if study["preparation"]["status"] == "RUNNING" or (
+                study["preparation"]["status"] == "QUEUED"
+                and queued_jobs is not None
+                and study["preparation"].get("job") not in queued_jobs
+            ):
                 study["preparation"]["status"] = "INTERRUPTED"
                 save(db, study, "interrupted", "worker", {})
 

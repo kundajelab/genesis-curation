@@ -127,7 +127,17 @@ def select_skill(folder: Path, state: dict[str, Any]) -> dict[str, Any]:
             if state.get("source_scopes", {}).get(s["version"]) != "study_context"
         ).lower()
     )
-    if any(term in context for term in ("scrna", "snrna", "single-cell rna", "single-nucleus rna")):
+    if any(
+        term in context
+        for term in (
+            "scrna",
+            "snrna",
+            "single-cell rna",
+            "single-nucleus rna",
+            "single cell rna",
+            "single nucleus rna",
+        )
+    ):
         return skills.select(folder, "plant-celltype-metadata")
     if "chip" in context or "dap" in context:
         return skills.select(folder, "plant-binding-metadata")

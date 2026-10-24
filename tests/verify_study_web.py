@@ -11,6 +11,7 @@ from pathlib import Path
 from unittest.mock import patch
 
 from genesis_curation.contracts.records import canonical, fingerprint
+from genesis_curation.curation import harmonize
 from genesis_curation.registry import store
 from genesis_curation.web import catalog, intake, preparation, runtime, studies, study_api, worker
 
@@ -208,6 +209,24 @@ def main() -> None:
         )
         assert unchanged == response and not repairs
         print("PASS exact source whitespace restoration; raw response preserved")
+        taxonomy_source = harmonize.source_record(
+            "dna_organism: Arabidopsis thaliana\ntf_source_organism: Zea mays",
+            "synthetic binding metadata",
+            "text/plain",
+        )
+        taxonomy_bundle = {"data": {"sources": [taxonomy_source]}}
+        fields = harmonize.extract(taxonomy_bundle, {})
+        harmonize.verify_fields(taxonomy_bundle, fields)
+        for name, taxon in (
+            ("dna_organism", "NCBITaxon:3702"),
+            ("tf_source_organism", "NCBITaxon:4577"),
+        ):
+            field = next(f for f in fields if f["field"] == name)
+            assert field["vocabulary_id"] == taxon
+        assert harmonize.vocabulary("genesis-plant-terms/2")["version"] == "genesis-plant-terms/2"
+        field["vocabulary_id"] = "NCBITaxon:3702"
+        reject(lambda: harmonize.verify_fields(taxonomy_bundle, fields), "mismatched term")
+        print("PASS distinct DNA/TF taxa and historical vocabularies; wrong taxon IDs rejected")
         print("PASS grouped correction rollback and wrong-sample evidence rejection")
 
         # Intake failure retains the missing GSM and supports a subsequent retry.
@@ -235,6 +254,32 @@ def main() -> None:
         studies.preparation(registry, imported, {"status": "RUNNING"})
         studies.recover(registry)
         assert studies.get(registry, imported)["preparation"]["status"] == "INTERRUPTED"
+        queued_job = runtime.enqueue(
+            root, "study-intake", "curator", {"study": imported, "accession": "GSE12345"}
+        )
+        studies.preparation(registry, imported, {"status": "QUEUED", "job": queued_job})
+        studies.recover(registry, {queued_job})
+        assert studies.get(registry, imported)["preparation"]["status"] == "QUEUED"
+        with patch.object(
+            intake, "import_accession", side_effect=ValueError("Unavailable metadata")
+        ):
+            assert worker.once(root, config)
+        assert runtime.job(root, queued_job)["status"] == "FAILED"
+        assert studies.get(registry, imported)["preparation"]["status"] == "FAILED"
+        studies.preparation(registry, imported, {"status": "QUEUED"})
+        studies.recover(registry, set())
+        assert studies.get(registry, imported)["preparation"]["status"] == "INTERRUPTED"
+        assert (
+            preparation.select_skill(
+                root / "skills",
+                {
+                    "fields": [],
+                    "sources": [{"version": "sample", "data": {"snapshot": "single cell RNA-seq"}}],
+                },
+            )["id"]
+            == "plant-celltype-metadata"
+        )
+        print("PASS failed/queued study recovery and cell-type skill selection")
         print("PASS partial public intake preserves failed samples and interrupted preparation")
 
         # Only the linked article's PMC ID is followed, never its cited references.

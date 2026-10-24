@@ -77,8 +77,12 @@ CLASSIFICATIONS = {"public": 0, "internal": 1, "local-only": 2}
 
 
 def vocabulary(version: str | None = None) -> dict[str, Any]:
-    snapshots = {"genesis-plant-terms/1": "plant-v1.json", "genesis-plant-terms/2": "plant-v2.json"}
-    name = snapshots.get(version or "genesis-plant-terms/2")
+    snapshots = {
+        "genesis-plant-terms/1": "plant-v1.json",
+        "genesis-plant-terms/2": "plant-v2.json",
+        "genesis-plant-terms/3": "plant-v3.json",
+    }
+    name = snapshots.get(version or "genesis-plant-terms/3")
     if name is None:
         raise ValueError("Unknown vocabulary version")
     return loads(files(__package__).joinpath("vocabularies/" + name).read_text())

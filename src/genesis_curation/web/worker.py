@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import fcntl
 import json
 import threading
@@ -128,6 +129,15 @@ def once(root: Path, config_path: Path) -> bool:
         result = execute(root, config_path, task, cancellation)
         runtime.finish(root, task["id"], result)
     except Exception as error:
+        if task["kind"] in {"study-intake", "study-prepare"} and task["payload"].get("study"):
+            with contextlib.suppress(ValueError):
+                studies.preparation(
+                    root / "catalog",
+                    task["payload"]["study"],
+                    {
+                        "status": "INTERRUPTED" if cancellation.is_set() else "FAILED",
+                    },
+                )
         runtime.finish(root, task["id"], None, redact(str(error))[:2000])
     finally:
         done.set()
@@ -142,7 +152,9 @@ def run(root: Path, config_path: Path) -> None:
         except BlockingIOError:
             raise ValueError("A worker already owns this application") from None
         runtime.recover(root)
-        studies.recover(root / "catalog")
+        with runtime.connection(root) as db:
+            queued = {row[0] for row in db.execute("SELECT id FROM jobs WHERE status='QUEUED'")}
+        studies.recover(root / "catalog", queued)
         while True:
             if not once(root, config_path):
                 time.sleep(1)
