@@ -95,9 +95,11 @@ def response(protocol: str, raw: str) -> str:
             (b.get("refusal", "Refused") for b in blocks if b.get("type") == "refusal"), None
         )
         stopped = value.get("status") == "completed"
+        limited = (value.get("incomplete_details") or {}).get("reason") == "max_output_tokens"
     else:
         texts = [b.get("text", "") for b in value.get("content", []) if b.get("type") == "text"]
         stopped = value.get("stop_reason") == "end_turn"
+        limited = value.get("stop_reason") == "max_tokens"
         if value.get("stop_reason") == "refusal":
             refusal = "Refused"
     incoming, outgoing = usage.get("input_tokens"), usage.get("output_tokens")
@@ -107,7 +109,7 @@ def response(protocol: str, raw: str) -> str:
             "model": value.get("model"),
             "choices": [
                 {
-                    "finish_reason": "stop" if stopped else "incomplete",
+                    "finish_reason": "stop" if stopped else "length" if limited else "incomplete",
                     "message": {"content": "".join(texts), "refusal": refusal},
                 }
             ],

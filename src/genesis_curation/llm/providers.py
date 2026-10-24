@@ -17,7 +17,7 @@ from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_ope
 
 from ..contracts.records import canonical, dump, fingerprint, load, loads, now, record
 from ..registry import store
-from . import wire
+from . import budget, wire
 from .security import check, credential, endpoint, redact, response_text, schema
 
 MAX_RESPONSE = 1024 * 1024
@@ -245,12 +245,14 @@ def invoke(
     dataset: str | None = None,
     cache: bool = False,
     probe_kind: str | None = None,
+    instruction: str = "",
 ) -> dict[str, Any]:
     """Persist every attempted invocation; failures retain sanitized responses, never secrets."""
     check({"schema_version": 1, "providers": [config]}, schema("providers-v1"))
     check({}, {"type": "object", "$defs": {"output": specification}})
     if probe_kind not in {None, "tools", "streaming"} or probe_kind and task != "probe":
         raise ValueError("Capability probes are restricted to the probe task")
+    system = SYSTEM + ("\n" + instruction if instruction else "")
     started = time.monotonic()
     attempts: list[dict[str, Any]] = []
     usage_samples: list[dict[str, Any]] = []
@@ -266,7 +268,7 @@ def invoke(
             "data": data,
             "task": task,
             "schema": specification,
-            "prompt": [PROMPT_VERSION, fingerprint(SYSTEM)],
+            "prompt": [PROMPT_VERSION, fingerprint(system)],
             "sources": source_hashes,
             "classification": classification,
             "probe_kind": probe_kind,
@@ -298,9 +300,11 @@ def invoke(
         if config["mode"] == "live":
             secret = credential(config["credential"])
         sanitized = redact(canonical(data), (secret,))
-        if len(sanitized) + len(SYSTEM) + len(canonical(specification)) > config["context_chars"]:
+        if not config.get("context_window_tokens") and (
+            len(sanitized) + len(system) + len(canonical(specification)) > config["context_chars"]
+        ):
             raise ValueError("Input exceeds configured context character budget")
-        messages = [{"role": "system", "content": SYSTEM}, {"role": "user", "content": sanitized}]
+        messages = [{"role": "system", "content": system}, {"role": "user", "content": sanitized}]
         payload: dict[str, Any] = {
             "model": config["model"],
             "messages": messages,
@@ -334,6 +338,8 @@ def invoke(
             payload["tool_choice"] = {"type": "function", "function": {"name": "genesis_probe"}}
         if probe_kind == "streaming":
             payload["stream"] = True
+        if config.get("context_window_tokens"):
+            budget.require(config, payload)
         with admission(directory, config):
             if config["mode"] == "mock":
                 response = loads(
@@ -421,7 +427,9 @@ def invoke(
                                     "additional evidence.",
                                 }
                             )
-                            if len(canonical(payload)) > config["context_chars"]:
+                            if config.get("context_window_tokens"):
+                                budget.require(config, payload)
+                            elif len(canonical(payload)) > config["context_chars"]:
                                 raise ValueError("Format repair exceeds context budget") from None
                             continue
                         raise ValueError(attempts[-1]["error"]) from None
@@ -537,3 +545,32 @@ def probe(directory: Path, config: dict[str, Any]) -> dict[str, Any]:
         store.put(db, snapshot)
     result["capability_record"] = snapshot["version"]
     return result
+
+
+def failure_kind(invocation: dict[str, Any]) -> str:
+    """Preserve refusal/transport failures as distinct from capacity or format errors."""
+    data = invocation["data"]
+    for attempt in reversed(data["attempts"]):
+        if attempt["status"] in {"0", "429", "500", "502", "503", "504"}:
+            return "unavailable"
+        if attempt["status"] in {"401", "403", "404"}:
+            return "access"
+        try:
+            value = loads(attempt["response"])
+            if str(value.get("error", {}).get("code", "")) in {
+                "context_length_exceeded",
+                "n_ctx_exceeded",
+                "exceed_context_size_error",
+            }:
+                return "context"
+            choice = value.get("choices", [{}])[0]
+            if (
+                choice.get("message", {}).get("refusal")
+                or choice.get("finish_reason") == "content_filter"
+            ):
+                return "refused"
+            if choice.get("finish_reason") == "length":
+                return "length"
+        except ValueError, TypeError, KeyError, IndexError, AttributeError:
+            continue
+    return "invalid"

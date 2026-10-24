@@ -38,7 +38,10 @@
       "protocol": "openai-chat",
       "chat_template_kwargs": {
         "enable_thinking": false
-      }
+      },
+      "context_window_tokens": 8192,
+      "max_input_tokens": 8192,
+      "token_counter": "conservative"
     },
     {
       "id": "openai",
@@ -72,7 +75,10 @@
         "streaming": false
       },
       "mock_response": null,
-      "protocol": "openai-responses"
+      "protocol": "openai-responses",
+      "context_window_tokens": 8192,
+      "max_input_tokens": 8192,
+      "token_counter": "openai-responses"
     },
     {
       "id": "claude",
@@ -106,7 +112,10 @@
         "streaming": false
       },
       "mock_response": null,
-      "protocol": "anthropic-messages"
+      "protocol": "anthropic-messages",
+      "context_window_tokens": 8192,
+      "max_input_tokens": 8192,
+      "token_counter": "anthropic-messages"
     }
   ]
 }
