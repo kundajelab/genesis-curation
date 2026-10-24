@@ -135,6 +135,12 @@ def required_fields(state: dict[str, Any]) -> set[str]:
     return required
 
 
+def low_confidence(field: dict[str, Any]) -> bool:
+    # A conservative review trigger, not a calibrated probability of correctness.
+    value = field.get("confidence")
+    return field["status"] == "known" and isinstance(value, (int, float)) and value < 0.8
+
+
 def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     grouped: dict[str, dict[str, Any]] = {}
     preparation = study["preparation"]
@@ -166,14 +172,16 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
         for field in state["fields"]:
             name = field["field"]
             decision = state["reviews"].get(name)
-            prior_issue = decision and decision["original_proposal"]["status"] in {
-                "unknown",
-                "conflicting",
-            }
+            uncertain = low_confidence(field)
+            prior_issue = decision and (
+                decision["original_proposal"]["status"] in {"unknown", "conflicting"}
+                or low_confidence(decision["original_proposal"])
+            )
             if (
                 field["status"] != "conflicting"
                 and not (name in required and field["status"] == "unknown")
                 and not prior_issue
+                and not uncertain
             ):
                 continue
             status = (
@@ -183,11 +191,19 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
                 if decision
                 else "open"
             )
-            kind = "conflict" if field["status"] == "conflicting" else "missing"
+            kind = (
+                "conflict"
+                if field["status"] == "conflicting"
+                else "uncertain"
+                if uncertain
+                else "missing"
+            )
             recommendation = state.get("recommendations", {}).get(name)
             # Conflicts with distinct evidence stay separate; missing fields share a question,
             # but every target still needs its own supported correction.
-            scope = fingerprint(field["evidence"]) if kind == "conflict" else "missing"
+            scope = (
+                fingerprint(field["evidence"]) if kind in {"conflict", "uncertain"} else "missing"
+            )
             key = identity("study-task", study["id"], name, kind, scope, status)
             task = grouped.setdefault(
                 key,
@@ -202,7 +218,13 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
                     else 2
                     if kind == "conflict"
                     else 3,
-                    "title": ("Resolve conflicting " if kind == "conflict" else "Confirm ")
+                    "title": (
+                        "Resolve conflicting "
+                        if kind == "conflict"
+                        else "Check uncertain "
+                        if kind == "uncertain"
+                        else "Confirm "
+                    )
                     + name.replace("_", " "),
                     "reason": field["rationale"],
                     "targets": [],

@@ -123,6 +123,17 @@ def main() -> None:
             "sign-off, invalidation and immutable exports"
         )
 
+        # Low model confidence is an exception even when a value has a valid quote.
+        sample = catalog.get(registry, ids[0])
+        sample["reviews"] = {}
+        next(f for f in sample["fields"] if f["field"] == "tissue")["confidence"] = 0.4
+        routed = studies.tasks(studies.get(registry, key), [sample])
+        assert any(
+            t["field"] == "tissue" and t["kind"] == "uncertain" and t["status"] == "open"
+            for t in routed
+        )
+        print("PASS low-confidence supported values require an explicit decision")
+
         # Grouped corrections validate all members before committing any mutation.
         missing = catalog.import_rows(
             registry,
