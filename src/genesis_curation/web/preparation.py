@@ -196,7 +196,7 @@ def run(
                     reusable = (
                         not field
                         and not data.get("restart")
-                        and provenance.get("workflow_version") == "study-1"
+                        and provenance.get("workflow_version") == "study-2"
                         and provenance.get("provider_hash") == fingerprint(config)
                         and provenance.get("skill_hash") == skill["sha256"]
                         and provenance.get("source_hashes")

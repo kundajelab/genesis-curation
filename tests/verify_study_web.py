@@ -106,6 +106,11 @@ def main() -> None:
         digest = release["integrity"]["sha256"]
         assert fingerprint({k: v for k, v in release.items() if k != "integrity"}) == digest
         assert len(release["records"]) == 2
+        assert all(
+            r["annotations"]["organism"]["vocabulary_id"] == "NCBITaxon:3702"
+            for r in release["records"]
+        )
+        assert all(r["annotations"]["organism"]["original"] is None for r in release["records"])
         assert all(r["metadata"]["organism"] == "Arabidopsis thaliana" for r in release["records"])
         assert "tissue" not in next(r for r in release["records"] if r["id"] == ids[1])["metadata"]
         state = catalog.get(registry, ids[1])
