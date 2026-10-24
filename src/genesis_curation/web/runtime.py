@@ -117,7 +117,15 @@ def logout(root: Path, token: str) -> None:
 
 
 def enqueue(root: Path, kind: str, actor: str, payload: dict[str, Any]) -> str:
-    if kind not in {"propose", "chat", "accession", "probe", "prepare"}:
+    if kind not in {
+        "propose",
+        "chat",
+        "accession",
+        "probe",
+        "prepare",
+        "study-prepare",
+        "study-intake",
+    }:
         raise ValueError("Unknown job type")
     key = str(uuid.uuid4())
     with connection(root) as db:

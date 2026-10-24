@@ -15,7 +15,7 @@ from starlette.types import ASGIApp
 
 from ..contracts.records import canonical, fingerprint, loads
 from ..llm import providers
-from . import catalog, inbox, runtime, skills
+from . import catalog, inbox, runtime, skills, studies, study_api
 
 LIMIT = 3 * 1024 * 1024
 
@@ -260,6 +260,7 @@ def create_app(
                         "public",
                         request.state.account["actor"],
                     )
+        studies.bootstrap(registry)
         return {"subjects": ids}
 
     @app.post("/api/subjects/{subject}/evidence")
@@ -338,7 +339,10 @@ def create_app(
 
     @app.post("/api/jobs/{key}/cancel")
     def cancel(key: str) -> dict[str, bool]:
+        job = runtime.job(root, key)
         runtime.cancel(root, key)
+        if job["status"] == "QUEUED" and job["payload"].get("study"):
+            studies.preparation(registry, job["payload"]["study"], {"status": "INTERRUPTED"})
         return {"ok": True}
 
     @app.get("/api/export")
@@ -378,6 +382,8 @@ def create_app(
             media_type=media,
             headers={"Content-Disposition": f'attachment; filename="curated-metadata.{format}"'},
         )
+
+    study_api.mount(app, root, config_path)
 
     @app.get("/{path:path}")
     def frontend(path: str) -> FileResponse:

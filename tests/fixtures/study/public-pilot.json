@@ -1,0 +1,55 @@
+{
+  "purpose": "Workflow smoke test only; no independent biological labels. First five samples in repository order; mixed studies remain mixed.",
+  "studies": [
+    {
+      "accession": "GSE255301",
+      "assay": "RNA-seq",
+      "split": "development"
+    },
+    {
+      "accession": "GSE216351",
+      "assay": "RNA-seq",
+      "split": "reserved"
+    },
+    {
+      "accession": "GSE101940",
+      "assay": "ATAC-seq",
+      "split": "development"
+    },
+    {
+      "accession": "GSE142613",
+      "assay": "ATAC/RNA mixed",
+      "split": "reserved"
+    },
+    {
+      "accession": "GSE60141",
+      "assay": "DAP-seq",
+      "split": "development"
+    },
+    {
+      "accession": "GSE275897",
+      "assay": "DAP-seq",
+      "split": "reserved"
+    },
+    {
+      "accession": "GSE197357",
+      "assay": "ChIP-seq",
+      "split": "development"
+    },
+    {
+      "accession": "GSE60554",
+      "assay": "ChIP-seq",
+      "split": "reserved"
+    },
+    {
+      "accession": "GSE245960",
+      "assay": "WGBS/BS-PCR mixed",
+      "split": "development"
+    },
+    {
+      "accession": "GSE255302",
+      "assay": "WGBS",
+      "split": "reserved"
+    }
+  ]
+}

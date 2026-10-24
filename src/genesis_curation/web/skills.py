@@ -7,7 +7,7 @@ from typing import Any
 
 from ..contracts.records import fingerprint, load
 
-BUILTIN = {
+BUILTIN: dict[str, Any] = {
     "id": "plant-metadata",
     "version": "1",
     "title": "Plant metadata evidence",
@@ -21,7 +21,36 @@ BUILTIN = {
 
 
 def available(folder: Path) -> list[dict[str, Any]]:
-    result = [BUILTIN]
+    result = [
+        BUILTIN,
+        {
+            **BUILTIN,
+            "id": "plant-binding-metadata",
+            "title": "Plant TF-binding metadata",
+            "instructions": BUILTIN["instructions"]
+            + " Distinguish TF tags, TF donors and assayed DNA species. "
+            "and input/IgG/empty-vector controls from untreated biological conditions. "
+            "Control assignment needs explicit sample relationships; no majority-label filling.",
+        },
+        {
+            **BUILTIN,
+            "id": "plant-celltype-metadata",
+            "title": "Plant single-cell metadata",
+            "instructions": BUILTIN["instructions"]
+            + " Preserve author-reported cell_type separately from inferred_cell_type. "
+            "A new inferred label requires supplied RNA marker/expression evidence, anatomical "
+            "plausibility and uncertainty. Distinguish cell identity from stress or cell state; "
+            "homology is a hypothesis, not marker validation. Missing expression evidence means "
+            "abstain. Never treat ATAC gene activity as measured RNA expression.",
+            "references": [
+                {
+                    "title": "Alex Borowsky: plant-celltype-annotation v0.2.1",
+                    "id": "https://github.com/alexborowsky/plant-celltype-annotation/tree/"
+                    "7c99b333b60e235b57e2a45efba42c032544037b",
+                }
+            ],
+        },
+    ]
     if folder.exists():
         for path in sorted(folder.glob("*.json")):
             value = load(path)

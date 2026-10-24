@@ -13,13 +13,19 @@ from ..contracts.records import canonical, fingerprint
 from ..curation import harmonize
 from ..llm import providers
 from ..llm.security import redact
-from . import catalog, runtime, skills
+from . import catalog, intake, preparation, runtime, skills, studies
 
 
 def execute(
     root: Path, config_path: Path, task: dict[str, Any], cancellation: threading.Event | None = None
 ) -> dict[str, Any]:
     data, kind = task["payload"], task["kind"]
+    if kind == "study-intake":
+        key = intake.import_accession(root, data["accession"], task["actor"], cancellation)
+        task = {**task, "payload": {**data, "study": key, "versions": {}}}
+        return preparation.run(root, config_path, task, cancellation)
+    if kind == "study-prepare":
+        return preparation.run(root, config_path, task, cancellation)
     if kind == "accession":
         text, url, media = harmonize.retrieve(data["accession"])
         if media == "application/json":
@@ -136,6 +142,7 @@ def run(root: Path, config_path: Path) -> None:
         except BlockingIOError:
             raise ValueError("A worker already owns this application") from None
         runtime.recover(root)
+        studies.recover(root / "catalog")
         while True:
             if not once(root, config_path):
                 time.sleep(1)
