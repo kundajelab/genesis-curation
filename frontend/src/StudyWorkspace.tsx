@@ -8,6 +8,7 @@ type RecordRow = {id: string; name: string; version: string; classification: str
 type Target = {subject: string; name: string; version: string; field: Field | null; recommendation: Field | null; review?: {reason: string; actor: string}};
 type Task = {id: string; study: string; version: string; title: string; reason: string; kind: string; field: string; status: string; targets: Target[]};
 type Study = {id: string; name: string; version: string; status: string; member_count: number; pending: number; completed_tasks: number; approval_current: boolean; approval: string | null; records: RecordRow[]; tasks: Task[]; preparation: {status: string; mode?: string; job?: string; completed: Record<string,string>; failures: Record<string,string>; retrieval: {url: string; status: string; reason?: string}[]}};
+type Progress = {study:string; status:string; phase:string; total:number; prepared:number; failed:number; batches_done:number; active_rows:number; elapsed_seconds:number; eta_seconds:number|null; updated:string; budget:Record<string,unknown>|null};
 type Provider = {id: string; model: string; external: boolean; mode: string; allowed_classifications: string[]};
 type Draft = {reason: string; remember?: boolean; evidence?: {text:string;label:string;subject:string}; corrections: Record<string, {value: string; citation: string}>};
 const nice = (value: string) => value.replaceAll('_', ' ');
@@ -31,6 +32,9 @@ export function StudyWorkspace({api, provider, providers, setProvider, onDirty}:
     const [selected,setSelected] = useState(''), [study,setStudy] = useState<Study|null>(null), [taskId,setTaskId] = useState('');
     const [error,setError] = useState(''), [notice,setNotice] = useState(''), [busy,setBusy] = useState(false), [adding,setAdding] = useState(false), [dirty,setDirty] = useState(false);
     const [tab,setTab] = useState('open'), [importJob,setImportJob] = useState(''), [samplePage,setSamplePage] = useState(0);
+    const [progress,setProgress] = useState<Progress|null>(null);
+    const dirtyRef = useRef(dirty); dirtyRef.current = dirty;
+    const [readyStudy,setReadyStudy] = useState('');
     const [history,setHistory] = useState<unknown[]|null>(null);
     useEffect(()=>{onDirty(dirty);return ()=>onDirty(false);},[dirty]);
     const moreLoaded = useRef(false);
@@ -50,12 +54,17 @@ export function StudyWorkspace({api, provider, providers, setProvider, onDirty}:
             if(live){if(saved.study){setSelected(saved.study);setTaskId(saved.task||'');}if(saved.import_job)setImportJob(saved.import_job);}
         }).catch(e=>setError(String(e)));
         void refresh().catch(e=>setError(String(e)));
-        const timer = setInterval(()=>void refresh().catch(e=>setError(String(e))),3000);
+        const timer = setInterval(()=>{
+            if(selectedRef.current) void api<Progress>('/studies/'+selectedRef.current+'/progress').then(p=>{
+                if(p.study!==selectedRef.current)return;
+                setProgress(p);
+            }).catch(e=>setError(String(e)));
+        },3000);
         return () => {live=false;clearInterval(timer);};
     },[]);
     useEffect(() => {
         if (!selected) return;
-        setStudy(null); setHistory(null); setSamplePage(0);
+        setStudy(null); setProgress(null); setHistory(null); setSamplePage(0);
         void api<Study>('/studies/'+selected).then(s=>{if(selectedRef.current===s.id)setStudy(s);}).catch(e=>setError(String(e)));
     },[selected]);
     useEffect(() => {
@@ -67,7 +76,12 @@ export function StudyWorkspace({api, provider, providers, setProvider, onDirty}:
         const poll = async () => {
             const j = await api<{status:string;error:string|null;result?:{study:string}}>('/jobs/'+importJob);
             if (!live) return;
-            if (j.status==='SUCCEEDED' && j.result) {setSelected(j.result.study);setImportJob('');setNotice('Study prepared. Review the decisions below.');await refresh();}
+            if(j.result?.study && !selectedRef.current && !dirtyRef.current) setSelected(j.result.study);
+            if (j.status==='SUCCEEDED' && j.result) {
+                if(!dirtyRef.current)setSelected(j.result.study);else setReadyStudy(j.result.study);
+                setImportJob('');setNotice('Study prepared. Your decisions are ready.');
+                if(!dirtyRef.current)await refresh();
+            }
             else if (['FAILED','CANCELLED','INTERRUPTED'].includes(j.status)) {setError(j.error || 'Import interrupted. Retrying reuses cached metadata.');setImportJob('');await refresh();}
         };
         void poll().catch(e=>setError(String(e)));
@@ -77,7 +91,10 @@ export function StudyWorkspace({api, provider, providers, setProvider, onDirty}:
     async function work(fn:()=>Promise<void>) {setBusy(true);setError('');try{await fn();}catch(e){setError(e instanceof Error?e.message:String(e));}finally{setBusy(false);}}
     const visible = study?.tasks.filter(t=>t.status===tab) || [];
     const task = visible.find(t=>t.id===taskId) || visible[0];
-    const running = study?.status==='preparing';
+    const running = progress ? ['RUNNING','QUEUED'].includes(progress.status) : study?.status==='preparing';
+    useEffect(()=>{
+        if(progress?.status==='COMPLETED' && study?.status==='preparing' && !dirty) void refresh().catch(e=>setError(String(e)));
+    },[progress?.status,dirty]);
     async function resolved(updated: Study) {
         setStudy(updated);setTaskId('');setDirty(false);setNotice('Decision saved. Your next task is ready.');await refresh();
     }
@@ -87,9 +104,10 @@ export function StudyWorkspace({api, provider, providers, setProvider, onDirty}:
     }
     return <section className="study-workspace">
         <div className="study-intro"><div><p>AI prepares the metadata. You resolve the exceptions and sign off once.</p><small>Signed metadata and scientific QC are tracked separately.</small></div><button disabled={dirty} onClick={()=>setAdding(!adding)}>＋ Add studies</button></div>
+        {readyStudy && <button disabled={dirty} onClick={()=>{setSelected(readyStudy);setReadyStudy('');void refresh();}}>Open prepared study</button>}
         {error && <p role="alert" className="error">{error}</p>}{notice && <p role="status" className="notice">{notice}</p>}
-        {importJob && <div className="preparation"><strong>Retrieving and preparing your study…</strong><span>Samples and linked publications are cached as they arrive.</span><button className="secondary" onClick={()=>void work(async()=>{await api('/jobs/'+importJob+'/cancel',{});})}>Cancel import</button></div>}
-        {adding && <AddStudy api={api} provider={provider} onAdded={async result=>{setAdding(false);if(result.job)setImportJob(result.job);if(result.studies?.[0])setSelected(result.studies[0]);await refresh();}}/>}
+        {importJob && <div className="preparation"><strong>{progress ? (progress.phase==='followup' ? 'Checking uncertain fields…' : 'Reviewing your metadata table…') : 'Retrieving metadata…'}</strong><span>{progress ? `${progress.prepared} of ${progress.total} samples prepared` : 'Samples and linked publications are cached as they arrive.'}</span><button className="secondary" onClick={()=>void work(async()=>{await api('/jobs/'+importJob+'/cancel',{});})}>Cancel import</button></div>}
+        {adding && <AddStudy api={api} provider={provider} onAdded={async result=>{setAdding(false);if(result.job){setImportJob(result.job);setSelected('');setProgress(null);}if(result.studies?.[0])setSelected(result.studies[0]);await refresh();}}/>}
         <details className="advanced"><summary>AI connection</summary><label>Provider<select value={provider} onChange={e=>setProvider(e.target.value)}><option value="">Source-only preparation</option>{providers.filter(p=>p.mode!=='disabled').map(p=><option key={p.id} value={p.id}>{p.id} · {p.model}{p.external?' · external API':''}</option>)}</select></label><p>Hosted providers require an explicit selection and permitted data classification. Skills are selected automatically for the assay.</p></details>
         <div className="study-layout"><aside className="panel study-sidebar"><div className="section-title"><h2>Studies</h2><span>{total}</span></div>
             {!items.length && <p>Add an accession or metadata table to begin.</p>}
@@ -99,7 +117,7 @@ export function StudyWorkspace({api, provider, providers, setProvider, onDirty}:
             <section className="panel study-progress"><div className="section-title"><div><p className="eyebrow">{statusLabel[study.status]}</p><h2>{study.name}</h2></div><span>{study.member_count} records</span></div>
                 <div className="progress-line"><strong>{study.pending} decisions remaining</strong><span>{study.completed_tasks} completed</span></div>
                 <progress aria-label="Review progress" value={study.completed_tasks} max={Math.max(1,study.completed_tasks+study.pending)}/>
-                {running ? <div className="preparation"><span>AI preparing · {Object.keys(study.preparation.completed).length} records prepared · {Object.keys(study.preparation.failures).length} failures</span>{study.preparation.job && <button className="secondary" onClick={()=>void work(async()=>{await api('/jobs/'+study.preparation.job+'/cancel',{});})}>Stop preparation</button>}</div> : study.preparation.status!=='COMPLETED' && <button disabled={busy} onClick={()=>void work(prepare)}>{study.preparation.status==='NOT_STARTED'?'Prepare study':'Resume preparation'}</button>}
+                {running ? <div className="preparation"><div role="status"><strong>{progress?.phase==='followup'?'Checking uncertain fields':'AI reviewing table'}</strong><p>{progress?.prepared ?? Object.keys(study.preparation.completed).length} / {progress?.total ?? study.member_count} samples prepared · {progress?.failed ?? Object.keys(study.preparation.failures).length} failures</p>{progress && <><p>{progress.active_rows===progress.total?'Whole table in one request':progress.active_rows?`Current batch: ${progress.active_rows} samples`:`${progress.batches_done} batches completed`} · {Math.floor(progress.elapsed_seconds/60)}m elapsed · {progress.eta_seconds===null?'Estimating remaining time…':`About ${Math.ceil(progress.eta_seconds/60)}m remaining`}</p><details><summary>Processing details</summary><pre>{JSON.stringify(progress.budget,null,2)}</pre></details></>}</div>{study.preparation.job && <button className="secondary" onClick={()=>void work(async()=>{await api('/jobs/'+study.preparation.job+'/cancel',{});})}>Stop preparation</button>}</div> : study.preparation.status!=='COMPLETED' && <button disabled={busy} onClick={()=>void work(prepare)}>{study.preparation.status==='NOT_STARTED'?'Prepare study':'Resume preparation'}</button>}
                 {study.preparation.mode==='source-only' && <p className="notice">Source-only preparation: no model was used. Select an AI connection and prepare again to request suggestions.</p>}
             </section>
             <div className="inbox-toolbar"><div role="tablist" aria-label="Decision status">{[['open','To do'],['waiting','Deferred'],['done','Completed']].map(([key,label])=><button role="tab" aria-selected={tab===key} disabled={dirty} className={tab===key?'current':''} key={key} onClick={()=>{setTab(key);setTaskId('');}}>{label} <b>{study.tasks.filter(t=>t.status===key).length}</b></button>)}</div><span>{dirty?'Saving your draft…':'Progress saved'}</span></div>

@@ -23,7 +23,9 @@ def execute(
     data, kind = task["payload"], task["kind"]
     if kind == "study-intake":
         key = intake.import_accession(root, data["accession"], task["actor"], cancellation)
-        task = {**task, "payload": {**data, "study": key, "versions": {}}}
+        task["payload"] = {**data, "study": key, "versions": {}}
+        if task.get("id"):
+            runtime.progress(root, task["id"], {"study": key, "phase": "preparing"})
         return preparation.run(root, config_path, task, cancellation)
     if kind == "study-prepare":
         return preparation.run(root, config_path, task, cancellation)
@@ -127,7 +129,11 @@ def once(root: Path, config_path: Path) -> bool:
         if runtime.job(root, task["id"])["cancel"]:
             raise ValueError("Request cancelled")
         result = execute(root, config_path, task, cancellation)
-        runtime.finish(root, task["id"], result)
+        if result.get("pending"):
+            if runtime.yield_job(root, task, result):
+                studies.preparation(root / "catalog", result["study"], {"status": "INTERRUPTED"})
+        else:
+            runtime.finish(root, task["id"], result)
     except Exception as error:
         if task["kind"] in {"study-intake", "study-prepare"} and task["payload"].get("study"):
             with contextlib.suppress(ValueError):

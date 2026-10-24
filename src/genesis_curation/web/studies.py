@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import contextlib
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -518,3 +519,44 @@ def export(root: Path, key: str, version: str = "") -> dict[str, Any]:
         if not row:
             raise ValueError("Unknown signed release")
         return loads(row[0])
+
+
+def progress(root: Path, key: str) -> dict[str, Any]:
+    """Small progress payload; source snapshots and drafts are never polled here."""
+    with contextlib.closing(store.connect(root)) as db:
+        study = read(db, key)
+        total = db.execute(
+            "SELECT count(*) FROM curation_members WHERE study=?", (key,)
+        ).fetchone()[0]
+    prep = study["preparation"]
+    run = prep.get("table_run", {})
+    started = run.get("started", study["created"])
+    elapsed = max(
+        0, (datetime.fromisoformat(now()) - datetime.fromisoformat(started)).total_seconds()
+    )
+    batches = run.get("batches_done", 0)
+    remaining = sum(len(unit["ids"]) for unit in run.get("queue", []))
+    prepared = len(prep["completed"])
+    # A single large request has no measured throughput yet; do not invent an ETA.
+    eta = None
+    if batches >= 2 and prepared and remaining:
+        eta = round(run["seconds"] / prepared * remaining)
+    if prep["status"] == "COMPLETED":
+        eta = 0
+    return {
+        "study": key,
+        "status": prep["status"],
+        "updated": study["updated"],
+        "phase": run.get("phase", "initial"),
+        "total": total,
+        "prepared": prepared,
+        "failed": len(prep["failures"]),
+        "batches_done": batches,
+        "active_rows": run.get("active_rows", 0),
+        "remaining_rows": remaining,
+        "elapsed_seconds": round(elapsed),
+        "eta_seconds": eta,
+        "budget": run.get("last_budget"),
+        "usage": run.get("usage", {}),
+        "job": prep.get("job"),
+    }

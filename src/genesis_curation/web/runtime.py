@@ -171,7 +171,9 @@ def claim(root: Path) -> dict[str, Any] | None:
     with connection(root) as db:
         db.execute("BEGIN IMMEDIATE")
         row = db.execute(
-            "SELECT * FROM jobs WHERE status='QUEUED' AND cancel=0 ORDER BY created LIMIT 1"
+            "SELECT * FROM jobs WHERE status='QUEUED' AND cancel=0 "
+            "ORDER BY CASE WHEN kind IN ('propose','chat','probe') "
+            "OR json_extract(payload,'$.field') IS NOT NULL THEN 0 ELSE 1 END,updated LIMIT 1"
         ).fetchone()
         if not row:
             return None
@@ -212,6 +214,19 @@ def recover(root: Path) -> None:
     with connection(root) as db:
         db.execute(
             "UPDATE jobs SET status='INTERRUPTED',error='Worker restarted; inspect history "
-            "before manually starting a new job',updated=? WHERE status='RUNNING'",
+            "before manually starting a new job',updated=? WHERE status='RUNNING' "
+            "OR (status='QUEUED' AND json_extract(result,'$.pending')=1)",
             (now(),),
         )
+
+
+def yield_job(root: Path, task: dict[str, Any], result: dict[str, Any]) -> bool:
+    """Checkpoint a study job and release the worker between inference batches."""
+    payload = {**task["payload"], "study": result["study"]}
+    with connection(root) as db:
+        db.execute(
+            "UPDATE jobs SET status=CASE WHEN cancel=1 THEN 'CANCELLED' ELSE 'QUEUED' END,"
+            "kind='study-prepare',payload=?,result=?,updated=? WHERE id=?",
+            (canonical(payload), canonical(result), now(), task["id"]),
+        )
+        return bool(db.execute("SELECT cancel FROM jobs WHERE id=?", (task["id"],)).fetchone()[0])

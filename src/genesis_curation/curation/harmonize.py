@@ -300,6 +300,20 @@ def extract(bundle: dict[str, Any], metadata: dict[str, Any]) -> list[dict[str, 
                     if name == "characteristics_ch1" and ":" in value:
                         name, value = value.split(":", 1)
                         name, value = name.strip().replace(" ", "_"), value.strip()
+                    if name == "relation":
+                        relation = re.fullmatch(
+                            r"(BioSample|SRA):\s+https://(?:www\.)?ncbi\.nlm\.nih\.gov/"
+                            r"(?:biosample/|sra\?term=)(SAM[NED]\d+|[SED]RX\d+)",
+                            value,
+                        )
+                        if relation:
+                            accession = relation[2]
+                            name = (
+                                "biosample_accession"
+                                if accession.startswith("SAM")
+                                else "experiment_accession"
+                            )
+                            value = accession
                     items.append((name, value, f"line:{index}", line))
         for raw_name, value, locator, quoted in items:
             name = ALIASES.get(raw_name.lower(), raw_name.lower())

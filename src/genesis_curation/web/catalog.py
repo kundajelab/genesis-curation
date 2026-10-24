@@ -405,7 +405,6 @@ def run_proposal(
 ) -> dict[str, Any]:
     state = get(root, subject)
     expect(state, version)
-    bundle = {"data": {"sources": state["sources"]}}
     extracted = harmonize.extract(
         {
             "data": {
@@ -507,7 +506,41 @@ def run_proposal(
         specification=specification,
         mock={"fields": mock_fields},
     )
-    fields = invocation["data"]["response"]["fields"]
+    return publish_proposal(
+        root,
+        state,
+        extracted,
+        invocation,
+        invocation["data"]["response"]["fields"],
+        config,
+        skill,
+        actor,
+        guidance,
+        coverage,
+        cancellation,
+        target_fields=target_fields,
+        preserve_reviews=preserve_reviews,
+    )
+
+
+def publish_proposal(
+    root: Path,
+    state: dict[str, Any],
+    extracted: list[dict[str, Any]],
+    invocation: dict[str, Any],
+    fields: list[dict[str, Any]],
+    config: dict[str, Any],
+    skill: dict[str, Any],
+    actor: str,
+    guidance: dict[str, Any],
+    coverage: dict[str, Any],
+    cancellation: threading.Event | None = None,
+    *,
+    target_fields: list[str] | None = None,
+    preserve_reviews: bool = True,
+) -> dict[str, Any]:
+    subject, version = state["id"], state["version"]
+    bundle = {"data": {"sources": state["sources"]}}
     quote_repairs = []
     if preserve_reviews:
         from .preparation import restore_quote_whitespace
@@ -558,7 +591,7 @@ def run_proposal(
                 "skill_hash": skill["sha256"],
                 "provider": config["id"],
                 "provider_hash": fingerprint(config),
-                "workflow_version": "study-2",
+                "workflow_version": coverage.get("workflow_version", "study-2"),
                 "model": config.get("model"),
                 "model_revision": config.get("model_revision"),
                 "serving_revision": config.get("serving_revision"),

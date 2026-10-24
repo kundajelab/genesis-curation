@@ -143,7 +143,18 @@ def create_app(
         return [
             {
                 k: p.get(k)
-                for k in ("id", "model", "mode", "external", "protocol", "allowed_classifications")
+                for k in (
+                    "id",
+                    "model",
+                    "mode",
+                    "external",
+                    "protocol",
+                    "allowed_classifications",
+                    "context_window_tokens",
+                    "max_input_tokens",
+                    "max_tokens",
+                    "token_counter",
+                )
             }
             for p in providers.configurations(config_path)
         ]
@@ -341,7 +352,7 @@ def create_app(
     def cancel(key: str) -> dict[str, bool]:
         job = runtime.job(root, key)
         runtime.cancel(root, key)
-        if job["status"] == "QUEUED" and job["payload"].get("study"):
+        if runtime.job(root, key)["status"] == "CANCELLED" and job["payload"].get("study"):
             studies.preparation(registry, job["payload"]["study"], {"status": "INTERRUPTED"})
         return {"ok": True}
 

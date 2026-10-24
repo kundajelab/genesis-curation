@@ -144,6 +144,10 @@ def mount(app: FastAPI, root: Path, config_path: Path) -> None:
     def detail(key: str) -> dict[str, Any]:
         return studies.get(registry, key)
 
+    @app.get("/api/studies/{key}/progress")
+    def progress(key: str) -> dict[str, Any]:
+        return studies.progress(registry, key)
+
     @app.post("/api/studies/{key}/prepare")
     async def prepare(key: str, request: Request) -> dict[str, str]:
         return queue(root, config_path, key, request.state.account["actor"], await request.json())

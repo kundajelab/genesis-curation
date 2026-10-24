@@ -158,6 +158,10 @@ def run(
     ):
         studies.preparation(registry, key, {"status": "FAILED"})
         raise ValueError("Skills changed after submission; submit preparation again")
+    if config and config.get("context_window_tokens"):
+        from . import table
+
+        return table.run(root, config, task, cancellation)
     studies.preparation(registry, key, {"status": "RUNNING"})
     study = studies.get(registry, key)
     completed = dict(study["preparation"]["completed"])
