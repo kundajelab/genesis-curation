@@ -1,0 +1,46 @@
+{
+  "context": 32768,
+  "rows": 57,
+  "elapsed_seconds": 184.70876581899938,
+  "measured": {
+    "failed_invocations": 0,
+    "http_attempts": 5,
+    "invocations": 5,
+    "usage": {
+      "completion_tokens": 3733,
+      "prompt_tokens": 80366,
+      "total_tokens": 84099
+    }
+  },
+  "baseline": {
+    "calls": 57,
+    "inference_seconds": 1582.9243563809723,
+    "usage": {
+      "completion_tokens": 48593,
+      "prompt_tokens": 198258
+    }
+  },
+  "failures": {},
+  "pending_decisions": 0,
+  "accuracy": "NOT_INDEPENDENTLY_VALIDATED",
+  "sequencing_downloads": "NOT_RUN",
+  "prepared": 57,
+  "required_values_lost_vs_baseline": [],
+  "field_difference_counts": {
+    "biosample_accession": 57,
+    "chemistry": 33,
+    "dna_context": 16,
+    "dna_organism": 8,
+    "experiment_accession": 57,
+    "protocol": 57,
+    "notes": 15,
+    "library_layout": 4,
+    "assay": 17
+  },
+  "notes": [
+    "Frozen GSE274557 metadata; human spatial transcriptomics, not a plant accuracy benchmark.",
+    "Baseline timing is inference only; optimized timing includes preparation and validation.",
+    "Five invocations include recovery and follow-up; no failed invocations.",
+    "No live user review or sign-off was changed by evaluation."
+  ]
+}

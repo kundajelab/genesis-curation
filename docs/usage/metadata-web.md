@@ -273,3 +273,48 @@ The optional model is a separate service: `manage.sh stop` stops the web stack.
 Stop the model with the same Compose file stack used to start it, ending in
 `stop model`. Do not use `--remove-orphans` while managing just the web stack; the
 separately selected model may be reported as an orphan by that narrower command.
+
+## Token-budgeted table preparation
+
+Set `context_window_tokens` on a provider to enable table preparation. Configure
+`max_input_tokens`, `max_tokens` (the output ceiling), and `token_counter` alongside
+it. Supported counters are `llama`, `openai-responses`, `anthropic-messages`, and
+`conservative`. The local llama counter checks the running server's context window;
+a larger configured number cannot override a smaller server window. Set
+`LLAMA_CONTEXT` when starting that model service, after measuring GPU headroom.
+
+The scheduler first attempts the entire table. It reserves output capacity and a
+10% context margin (at least 512 tokens), and splits automatically when either
+input or output limits require it. Exact repeated evidence is sent once, with
+sample-specific citation bindings retained in an immutable batch manifest. No
+source passages are silently dropped. A single oversized sample becomes a visible
+failure requiring a focused excerpt. If a native token counter fails, the budget
+uses an explicitly labelled conservative UTF-8 byte estimate.
+
+The model returns only changed fields, with explicit row IDs and evidence IDs.
+Every row must be acknowledged. Unknown, missing, duplicate or wrong-sample
+citations are rejected. Invalid rows receive at most two smaller recovery rounds;
+successful rows are retained. Unresolved evidence receives one combined automatic
+follow-up round. Refusals do not retry; access/service failures stop preparation.
+Human decisions remain authoritative and final sign-off remains manual.
+
+A durable checkpoint is saved after each batch. Interactive reviewer requests have
+priority between batches. Cancellation preserves completed rows; a worker restart
+requires explicit resume of an interrupted preparation. Reuse requires matching
+record, provider, skill, vocabulary and workflow revisions. The GUI polls lightweight
+progress, displays preparation/follow-up phase and elapsed time, and refreshes full
+evidence after completion without overwriting an open unsaved review.
+
+Providers without `context_window_tokens` retain the existing per-sample workflow.
+Hosted provider token counting has offline contract coverage; live hosted API
+validation requires separately provisioned credentials.
+
+For a frozen metadata benchmark, use `tests/evaluate_table_live.py --help`. It
+requires a new isolated root, a source snapshot, provider configuration and skills.
+It never writes the source registry, downloads sequencing files or signs off rows.
+Its report includes all invocation attempts, failures, token usage, value differences
+and elapsed time. Value differences against an earlier model run are not an
+independent biological accuracy score.
+
+See [table preparation validation](table-preparation-validation.md) for the frozen
+57-row replay, exact checks, rejected compression experiments and deployment results.
