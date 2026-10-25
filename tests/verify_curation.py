@@ -388,7 +388,7 @@ def catalog(root: Path, checked: dict[str, Any]) -> None:
         db.execute("INSERT INTO meta VALUES('registry_id','older-fixture')")
         db.execute("PRAGMA user_version=1")
     assert store.initialize(old)["registry_id"] == "older-fixture"
-    assert list(old.glob("before-v1-to-v6-*.sqlite"))
+    assert list(old.glob(f"before-v1-to-v{store.SCHEMA_VERSION}-*.sqlite"))
 
 
 def policies(checked: dict[str, Any]) -> None:

@@ -334,7 +334,7 @@ def main() -> None:
             db.execute("PRAGMA user_version=5")
             db.commit()
         store.initialize(old)
-        assert list(old.glob("before-v5-to-v6-*.sqlite"))
+        assert list(old.glob(f"before-v5-to-v{store.SCHEMA_VERSION}-*.sqlite"))
         print("PASS schema v5 migration creates a recoverable backup")
 
         # Cursor pagination returns every study without the former global cap.
