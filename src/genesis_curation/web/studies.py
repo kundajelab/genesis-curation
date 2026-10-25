@@ -173,7 +173,9 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
         for field in state["fields"]:
             name = field["field"]
             decision = state["reviews"].get(name)
-            uncertain = low_confidence(field)
+            assessment = state.get("assessments", {}).get(name, {})
+            evidence_issue = bool(assessment.get("issues") or assessment.get("needs_verification"))
+            uncertain = low_confidence(field) or evidence_issue
             prior_issue = decision and (
                 decision["original_proposal"]["status"] in {"unknown", "conflicting"}
                 or low_confidence(decision["original_proposal"])
@@ -203,8 +205,22 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
             # Conflicts with distinct evidence stay separate; missing fields share a question,
             # but every target still needs its own supported correction.
             scope = (
-                fingerprint(field["evidence"]) if kind in {"conflict", "uncertain"} else "missing"
+                fingerprint(
+                    [
+                        field["value"],
+                        [recommendation.get("value"), recommendation.get("status")]
+                        if recommendation
+                        else None,
+                        assessment.get("issues"),
+                        sorted(c["quote"] for c in field["evidence"]),
+                    ]
+                )
+                if kind in {"conflict", "uncertain"}
+                else "missing"
             )
+            if not assessment and kind in {"conflict", "uncertain"}:
+                # Preserve legacy task identities/drafts until explicit re-analysis.
+                scope = fingerprint(field["evidence"])
             key = identity("study-task", study["id"], name, kind, scope, status)
             task = grouped.setdefault(
                 key,
@@ -227,7 +243,12 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
                         else "Confirm "
                     )
                     + name.replace("_", " "),
-                    "reason": field["rationale"],
+                    "reason": "; ".join(assessment.get("issues", []))
+                    or (
+                        "Check the interpretation against the source"
+                        if evidence_issue
+                        else field["rationale"]
+                    ),
                     "targets": [],
                 },
             )
@@ -239,6 +260,7 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
                     "field": field,
                     "recommendation": recommendation,
                     "review": decision,
+                    "assessment": assessment,
                 }
             )
     result = list(grouped.values())
@@ -326,7 +348,7 @@ def draft(
         if body is not None:
             if len(canonical(body)) > 32000:
                 raise ValueError("Draft exceeds 32,000 characters")
-            if task_id != "workspace":
+            if task_id not in {"workspace", "guided"}:
                 find_task(db, body["study"], task_id, body["version"])
             db.execute(
                 "INSERT INTO curation_drafts VALUES(?,?,?) ON CONFLICT(actor,task) "
@@ -455,7 +477,10 @@ def approve(root: Path, key: str, version: str, actor: str) -> dict[str, Any]:
                     state["metadata"][name] = field["value"]
                     catalog.save(db, state, "decision", actor, decision)
                     accepted[name] = field
-            context = {name: accepted.get(name, {}).get("value") for name in ("organism", "tissue")}
+            context = {
+                name: accepted.get(name, {}).get("value")
+                for name in ("organism", "tissue", "assay")
+            }
             if all(context.values()):
                 for decision in state["reviews"].values():
                     if decision.get("remember") and decision["action"] == "approve":

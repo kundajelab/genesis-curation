@@ -329,9 +329,9 @@ def promote(root: Path, subject: str, version: str, field: str, actor: str) -> d
         decision = state["reviews"].get(field)
         if not decision or decision["action"] != "approve":
             raise ValueError("Only an approved correction can become an example")
-        context = {k: state["metadata"].get(k) for k in ("organism", "tissue")}
+        context = {k: state["metadata"].get(k) for k in ("organism", "tissue", "assay")}
         if not all(context.values()):
-            raise ValueError("Approve organism and tissue before promoting a scoped example")
+            raise ValueError("Approve organism, tissue and assay before promoting a scoped example")
         payload = {
             "context": context,
             "classification": state["classification"],
@@ -342,7 +342,8 @@ def promote(root: Path, subject: str, version: str, field: str, actor: str) -> d
 
 def examples(root: Path, state: dict[str, Any]) -> list[dict[str, Any]]:
     context = {
-        k: state["metadata"].get(k) or state["original"].get(k) for k in ("organism", "tissue")
+        k: state["metadata"].get(k) or state["original"].get(k)
+        for k in ("organism", "tissue", "assay")
     }
     with contextlib.closing(store.connect(root)) as db:
         rows = db.execute(
@@ -578,7 +579,11 @@ def publish_proposal(
         expect(current, version)
         if preserve_reviews:
             merged.update({name: review["field"] for name, review in current["reviews"].items()})
-            current.setdefault("recommendations", {}).update(
+            recommendations = current.setdefault("recommendations", {})
+            for name in target_fields if target_fields is not None else harmonize.FIELDS:
+                if name not in current["reviews"]:
+                    recommendations.pop(name, None)
+            recommendations.update(
                 {
                     f["field"]: f
                     for f in fields
@@ -604,6 +609,15 @@ def publish_proposal(
                 },
                 "source_hashes": [s["version"] for s in current["sources"]],
             }
+        from . import assessments
+
+        current["assessments"] = assessments.assess(current, list(merged.values()))
+        if target_fields:
+            proposed_names = {f["field"] for f in fields}
+            for name, assessment in current["assessments"].items():
+                if name in target_fields and name in proposed_names:
+                    assessment["verification"] = invocation["version"]
+                    assessment["needs_verification"] = bool(assessment["issues"])
         current.update(
             fields=list(merged.values()),
             reviews=current["reviews"] if preserve_reviews else {},

@@ -372,7 +372,16 @@ def main() -> None:
         runtime.initialize(root, "curator", "a long test password")
         registry = root / "catalog"
         native_http(registry)
-        text = canonical([{"id": "sample1", "organism": "Arabidopsis thaliana", "tissue": "leaf"}])
+        text = canonical(
+            [
+                {
+                    "id": "sample1",
+                    "organism": "Arabidopsis thaliana",
+                    "tissue": "leaf",
+                    "assay": "RNA-seq",
+                }
+            ]
+        )
         ids = catalog.import_rows(registry, text, "samples.json", "test", "id", "public", "curator")
         assert (
             catalog.import_rows(registry, text, "samples.json", "test", "id", "public", "curator")
@@ -408,6 +417,10 @@ def main() -> None:
         assert (
             set(export["metadata"]) == {"organism", "tissue"}
             and export["review_status"] == "PARTIAL"
+        )
+        rejects(lambda: catalog.promote(registry, subject, state["version"], "tissue", "curator"))
+        state = catalog.decide(
+            registry, subject, state["version"], "assay", "approve", "Assay checked", "curator"
         )
         state = catalog.promote(registry, subject, state["version"], "tissue", "curator")
         assert len(catalog.examples(registry, state)) == 1

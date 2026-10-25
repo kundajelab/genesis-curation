@@ -205,6 +205,44 @@ def main() -> None:
         assert len(seen) == 3 and seen[1:] == [["two"], ["two"]]
         print("PASS invalid-row isolation; successful rows are never regenerated")
 
+        capacity = studies.link(registry, ids, "Capacity", "curator", group="capacity")
+        reservations: list[int] = []
+
+        def truncated_once(
+            directory: Path,
+            provider_config: dict[str, Any],
+            *,
+            data: dict[str, Any],
+            **options: Unpack[InvokeOptions],
+        ) -> dict[str, Any]:
+            reservations.append(provider_config["max_tokens"])
+            if len(reservations) == 1:
+                raise providers.InferenceFailure(
+                    {
+                        "data": {
+                            "status": "FAILED",
+                            "error": "truncated",
+                            "usage": {"completion_tokens": provider_config["max_tokens"]},
+                            "attempts": [
+                                {
+                                    "status": "200",
+                                    "response": canonical(
+                                        {"choices": [{"finish_reason": "length"}]}
+                                    ),
+                                }
+                            ],
+                        }
+                    }
+                )
+            return real_invoke(directory, provider_config, data=data, **options)
+
+        with patch.object(providers, "invoke", side_effect=truncated_once):
+            result = table.run(root, config, {"actor": "curator", "payload": {"study": capacity}})
+        assert result["prepared"] == 3 and result["failed"] == 0
+        assert reservations[1] > reservations[0]
+        assert all(value <= config["max_tokens"] for value in reservations)
+        print("PASS truncated replies increase the bounded output reservation before recovery")
+
         # A checkpointed QUEUED job must not restart itself after a worker crash.
         resume_job = runtime.enqueue(root, "study-prepare", "curator", {"study": key})
         claimed = runtime.claim(root)

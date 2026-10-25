@@ -13,9 +13,9 @@ from ..contracts.records import canonical, dump, fingerprint, now
 from ..curation import harmonize
 from ..llm import budget, providers
 from ..llm.security import check, redact
-from . import catalog, preparation, skills, studies
+from . import assessments, catalog, preparation, skills, studies
 
-WORKFLOW = "study-table-1"
+WORKFLOW = "study-table-2"
 CHANGE = {
     "type": "object",
     "properties": {
@@ -175,7 +175,20 @@ def compile_table(
         "data": data,
         "bindings": bindings,
         "originals": originals,
-        "output_estimate": math.ceil(1.25 * (256 + 48 * len(states) + 160 * len(candidates))),
+        "output_estimate": math.ceil(
+            1.25
+            * (
+                256
+                + 48 * len(states)
+                + 160
+                * max(
+                    len(candidates),
+                    sum(len(fields.get(state["id"], [])) for state in states)
+                    if fields is not None
+                    else 0,
+                )
+            )
+        ),
     }
 
 
@@ -215,13 +228,14 @@ def plan(
     fields: dict[str, list[str]] | None,
     guidance: str,
     output_per_row: int = 0,
+    minimum_output: int = 2048,
 ) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
     """Try the entire table, then binary-search the largest fitting stable prefix."""
 
     def attempt(size: int) -> tuple[dict[str, Any], dict[str, Any], dict[str, Any]]:
         compiled = compile_table(root, states[:size], fields, guidance)
         predicted = max(compiled["output_estimate"], output_per_row * size)
-        reserve = max(2048, predicted)
+        reserve = max(minimum_output, predicted)
         actual = {**config, "max_tokens": min(reserve, config["max_tokens"])}
         limits = budget.inspect(actual, payload(actual, compiled["data"]))
         limits["fits"] = limits["fits"] and (
@@ -313,10 +327,16 @@ def unresolved(state: dict[str, Any]) -> list[str]:
     return [
         f["field"]
         for f in state["fields"]
-        if f["status"] in {"unknown", "conflicting"}
+        if (
+            f["status"] in {"unknown", "conflicting"}
+            or state.get("assessments", {}).get(f["field"], {}).get("needs_verification")
+        )
         and f["evidence"]
         and f["field"] not in state["reviews"]
-        and f["field"] not in state.get("recommendations", {})
+        and (
+            f["field"] not in state.get("recommendations", {})
+            or state.get("assessments", {}).get(f["field"], {}).get("needs_verification")
+        )
     ]
 
 
@@ -417,6 +437,29 @@ def step(
         run["phase"] = "followup"
         run["queue"] = [{"ids": list(run["followup"]), "fields": run["followup"], "retry": 0}]
     if not run["queue"]:
+        # Only a new/restarted preparation can add assessments to existing records.
+        cross = assessments.cross_sample(current["records"])
+        from ..registry import store
+
+        with store.write(registry) as db:
+            for sid, issues in cross.items():
+                if sid not in completed:
+                    continue
+                state = catalog.read(db, sid)
+                if not state.get("assessments"):
+                    continue
+                changed = False
+                for field, reasons in issues.items():
+                    assessment = state["assessments"][field]
+                    for reason in reasons:
+                        if reason not in assessment["issues"]:
+                            assessment["issues"].append(reason)
+                            changed = True
+                if changed:
+                    updated = catalog.save(
+                        db, state, "assessment", task["actor"], {"cross_sample": issues}
+                    )
+                    completed[sid] = updated["version"]
         run["finished"] = True
         studies.preparation(
             registry,
@@ -462,8 +505,18 @@ def step(
             same,
             admitted,
             unit.get("fields"),
-            data.get("guidance", ""),
+            (
+                data.get("guidance", "")
+                + (
+                    " Verify each requested field independently against sample evidence. "
+                    "Return the supported value even if unchanged; use unknown with null "
+                    "value if unsupported. Do not use confidence to dismiss conflicting evidence."
+                    if run["phase"] == "followup"
+                    else ""
+                )
+            ),
             run.get("output_per_row", 0),
+            run.get("minimum_output", 2048),
         )
         selected = [v["state"]["id"] for v in compiled["originals"].values()]
         run["last_budget"] = limits
@@ -542,6 +595,11 @@ def step(
         message = str(error)
         category = providers.failure_kind(error.invocation)
         retryable = category in {"length", "context", "invalid"}
+        if category == "length":
+            run["minimum_output"] = min(
+                config["max_tokens"],
+                2 * run.get("last_budget", {}).get("output_tokens_reserved", 2048),
+            )
         if category in {"unavailable", "access"}:
             studies.preparation(
                 registry,
