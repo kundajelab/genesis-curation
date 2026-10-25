@@ -40,7 +40,7 @@ def assess(state: dict[str, Any], fields: list[dict[str, Any]]) -> dict[str, Any
                 expected = (
                     r"dna|genomic|substrate"
                     if name == "dna_organism"
-                    else r"transcription factor|\btf\b|protein|donor"
+                    else r"transcription factor|\btf\b|tf_source|protein|donor"
                 )
                 if not re.search(expected, text + " " + " ".join(c["locator"] for c in citations)):
                     issues.append("Evidence does not distinguish TF donor from assayed DNA species")

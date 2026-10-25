@@ -58,6 +58,8 @@ def main() -> None:
         key = studies.link(registry, ids, "Quality", "curator")
         old = [catalog.get(registry, sid) for sid in ids]
         assert all(not r.get("assessments") for r in old)
+        assert review_queue.listing(registry)["total"] == 0
+        assert review_queue.listing(registry)["waiting"][0]["id"] == key
         assert all(t["field"] != "chemistry" for t in studies.get(registry, key)["tasks"])
         config = providers.select(
             Path(__file__).parents[1] / "examples/curation/providers.mock.json", "mock"
@@ -88,6 +90,19 @@ def main() -> None:
         chemistry = next(f for f in fields if f["field"] == "chemistry")
         chemistry["confidence"] = 0.999
         assert assessments.assess(current["records"][0], fields)["chemistry"]["issues"]
+        explicit_tf = {
+            **chemistry,
+            "field": "tf_source_organism",
+            "value": "Arabidopsis thaliana",
+            "evidence": [
+                {
+                    "source_version": "synthetic",
+                    "locator": "/tf_source_organism",
+                    "quote": "Arabidopsis thaliana",
+                }
+            ],
+        }
+        assert not assessments.assess({}, [explicit_tf])["tf_source_organism"]["issues"]
         print("PASS concrete evidence issues override confidence; one bounded verification round")
 
         queue = review_queue.listing(registry, limit=1)

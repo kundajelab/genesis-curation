@@ -98,6 +98,11 @@ def main() -> None:
         crossed["changes"][0]["rows"].append("r2")
         good, bad = table.validate_rows(compiled, crossed)
         assert set(good) == {"r1", "r3"} and set(bad) == {"r2"}
+        excessive: dict[str, Any] = copy.deepcopy(response)
+        excessive["changes"][0]["rows"] = ["r1"]
+        excessive["changes"][0]["evidence"] = [leaf] * 4
+        good, bad = table.validate_rows(compiled, excessive)
+        assert set(good) == {"r2", "r3"} and set(bad) == {"r1"}
         missing = {**response, "reviewed_rows": ["r1", "r3"]}
         assert "r2" in table.validate_rows(compiled, missing)[1]
         duplicate = {**response, "changes": [change, change]}

@@ -248,7 +248,9 @@ def report(root: Path, key: str) -> dict[str, Any]:
                 label["status"] == "known" and model["status"] != "known"
             )
             counts["errors_without_task"] += int(
-                not equal and name not in sample.get("task_fields", [])
+                not equal
+                and name not in sample.get("task_fields", [])
+                and "__preparation" not in sample.get("task_fields", [])
             )
             if not equal:
                 differences.append(
@@ -289,7 +291,9 @@ def report(root: Path, key: str) -> dict[str, Any]:
                     label["status"] == "known" and model["status"] != "known"
                 ),
                 "errors_without_task": int(
-                    not equal and name not in sample.get("candidate_task_fields", [])
+                    not equal
+                    and name not in sample.get("candidate_task_fields", [])
+                    and "__preparation" not in sample.get("candidate_task_fields", [])
                 ),
             }
             for metric, amount in deltas.items():

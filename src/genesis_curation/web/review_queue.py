@@ -15,6 +15,7 @@ def listing(root: Path, cursor: int = 0, limit: int = 25, status: str = "open") 
         raise ValueError("Invalid queue page")
     rows = []
     ready = []
+    waiting = []
     preparing = 0
     with contextlib.closing(store.connect(root)) as db:
         db.execute("BEGIN")
@@ -24,6 +25,11 @@ def listing(root: Path, cursor: int = 0, limit: int = 25, status: str = "open") 
                 continue
             if study["status"] == "preparing":
                 preparing += 1
+                continue
+            if study["preparation"]["status"] != "COMPLETED":
+                waiting.append(
+                    {"id": key, "name": study["name"], "status": study["preparation"]["status"]}
+                )
                 continue
             if study["status"] == "ready":
                 ready.append({"id": key, "name": study["name"], "version": study["version"]})
@@ -51,6 +57,7 @@ def listing(root: Path, cursor: int = 0, limit: int = 25, status: str = "open") 
         "total": len(rows),
         "next_cursor": cursor + limit if cursor + limit < len(rows) else None,
         "ready": ready,
+        "waiting": waiting,
         "preparing": preparing,
     }
 

@@ -23,7 +23,12 @@ CHANGE = {
         "field": {"enum": sorted(harmonize.FIELDS)},
         "value": {"type": ["string", "integer", "null"], "maxLength": 512},
         "status": {"enum": ["known", "unknown", "not_applicable", "conflicting"]},
-        "evidence": {"type": "array", "items": {"type": "string"}},
+        "evidence": {
+            "type": "array",
+            "items": {"type": "string"},
+            "maxItems": 3,
+            "uniqueItems": True,
+        },
         "rationale": {"type": "string", "maxLength": 240},
         "confidence": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
     },
@@ -159,7 +164,8 @@ def compile_table(
             "documented values merely because they are absent from the vocabulary. "
             "Review every row and list its id exactly once in reviewed_rows. Return only changes "
             "beyond the draft; do not repeat unchanged fields. Group identical changes using an "
-            "explicit rows list. Cite evidence IDs, never invented sources. Every cited ID must "
+            "explicit rows list. Cite at most three directly supporting evidence IDs per change, "
+            "never the entire evidence list or invented sources. Every cited ID must "
             "belong to EACH target row. Background is not a sample fact without explicit sample "
             "attribution. Never copy facts between samples. Omit unsupported fields; an empty "
             "changes array is valid. Use readable values; the server supplies prior values and "
@@ -269,10 +275,16 @@ def validate_rows(
     invalid = {row: "Model omitted this row" for row in originals if row not in acknowledged}
     proposals: dict[str, list[dict[str, Any]]] = {row: [] for row in acknowledged}
     for change in response["changes"]:
-        check(change, CHANGE)
-        targets = change["rows"]
+        targets = change.get("rows") if isinstance(change, dict) else None
+        if not isinstance(targets, list) or not all(isinstance(row, str) for row in targets):
+            raise ValueError("Change requires explicit row IDs")
         if not targets or len(set(targets)) != len(targets) or set(targets) - originals.keys():
             raise ValueError("Change targets unknown or duplicate rows")
+        try:
+            check(change, CHANGE)
+        except ValueError as error:
+            invalid.update({row: str(error) for row in targets})
+            continue
         for row in targets:
             if row not in proposals:
                 continue
@@ -376,6 +388,7 @@ def step(
     if (
         not run
         or run["finished"]
+        or run.get("workflow") != WORKFLOW
         or run["config"] != fingerprint(config)
         or run.get("skill_catalog") != skill_catalog
         or run.get("vocabulary") != vocabulary
@@ -399,6 +412,7 @@ def step(
         ]
         run = {
             "config": fingerprint(config),
+            "workflow": WORKFLOW,
             "skill_catalog": skill_catalog,
             "vocabulary": vocabulary,
             "started": now(),
