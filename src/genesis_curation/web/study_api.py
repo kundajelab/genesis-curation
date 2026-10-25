@@ -13,7 +13,7 @@ from fastapi.responses import Response
 from ..contracts.records import canonical, fingerprint, loads
 from ..llm import providers
 from ..registry import store
-from . import catalog, intake, runtime, skills, studies
+from . import audit, catalog, intake, review_queue, runtime, skills, studies
 
 
 def provider(
@@ -84,6 +84,39 @@ def mount(app: FastAPI, root: Path, config_path: Path) -> None:
     registry = root / "catalog"
     store.initialize(registry)
     studies.bootstrap(registry)
+
+    @app.get("/api/review-queue")
+    def queue_page(cursor: int = 0, limit: int = 25, status: str = "open") -> dict[str, Any]:
+        return review_queue.listing(registry, cursor, limit, status)
+
+    @app.get("/api/review-queue/{study}/{task}")
+    def queue_task(study: str, task: str) -> dict[str, Any]:
+        return review_queue.detail(registry, study, task)
+
+    @app.get("/api/audits")
+    def audits() -> list[dict[str, Any]]:
+        return audit.listing(registry)
+
+    @app.get("/api/audits/{key}")
+    def audit_detail(key: str) -> dict[str, Any]:
+        return audit.detail(registry, key)
+
+    @app.get("/api/audits/{key}/report")
+    def audit_report(key: str) -> dict[str, Any]:
+        return audit.report(registry, key)
+
+    @app.get("/api/audits/{key}/samples/{sid}")
+    def audit_sample(key: str, sid: str, request: Request) -> dict[str, Any]:
+        return audit.view(registry, key, sid, request.state.account["actor"])
+
+    @app.post("/api/audits/{key}/samples/{sid}/draft")
+    async def audit_draft(key: str, sid: str, request: Request) -> dict[str, bool]:
+        audit.save_draft(registry, key, sid, request.state.account["actor"], await request.json())
+        return {"saved": True}
+
+    @app.post("/api/audits/{key}/samples/{sid}/answer")
+    async def audit_answer(key: str, sid: str, request: Request) -> dict[str, Any]:
+        return audit.save(registry, key, sid, request.state.account["actor"], await request.json())
 
     @app.get("/api/studies")
     def listing(cursor: str = "", limit: int = 50) -> dict[str, Any]:
