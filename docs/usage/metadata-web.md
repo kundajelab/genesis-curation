@@ -318,3 +318,10 @@ independent biological accuracy score.
 
 See [table preparation validation](table-preparation-validation.md) for the frozen
 57-row replay, exact checks, rejected compression experiments and deployment results.
+
+## Guided review and reference audit
+
+The default view now offers **Start review / Continue review** across studies.
+The **Plant reference audit** provides a separate, resumable evidence-first quality
+check. See [guided review and audit](trustworthy-review.md) for the workflow,
+assessment limits, APIs, validation commands and schema-7 recovery procedure.

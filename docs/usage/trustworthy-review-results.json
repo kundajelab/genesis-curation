@@ -1,0 +1,227 @@
+{
+  "manifest_hash": "80972fab96e7f69d70a8bc0c6328040c3d1bd7e61d8e4cf66c167bcfed5954b8",
+  "human_accuracy": "AWAITING_REFERENCE_AUDIT",
+  "studies": [
+    {
+      "accession": "GSE255301",
+      "rows": 5,
+      "elapsed_seconds": 19.711149529000977,
+      "result": {
+        "failed": 0,
+        "prepared": 5
+      },
+      "measured": {
+        "failed_invocations": 0,
+        "http_attempts": 1,
+        "invocations": 1,
+        "usage": {
+          "completion_tokens": 51,
+          "prompt_tokens": 21089,
+          "total_tokens": 21140
+        }
+      },
+      "pending_decisions": 0
+    },
+    {
+      "accession": "GSE216351",
+      "rows": 5,
+      "elapsed_seconds": 2.7764146229892503,
+      "result": {
+        "failed": 5,
+        "prepared": 0
+      },
+      "measured": {
+        "failed_invocations": 0,
+        "http_attempts": 0,
+        "invocations": 0,
+        "usage": {
+          "completion_tokens": 0,
+          "prompt_tokens": 0,
+          "total_tokens": 0
+        }
+      },
+      "pending_decisions": 5
+    },
+    {
+      "accession": "GSE101940",
+      "rows": 5,
+      "elapsed_seconds": 31.73364478998701,
+      "result": {
+        "failed": 0,
+        "prepared": 5
+      },
+      "measured": {
+        "failed_invocations": 0,
+        "http_attempts": 2,
+        "invocations": 2,
+        "usage": {
+          "completion_tokens": 725,
+          "prompt_tokens": 10080,
+          "total_tokens": 10805
+        }
+      },
+      "pending_decisions": 1
+    },
+    {
+      "accession": "GSE142613",
+      "rows": 5,
+      "elapsed_seconds": 59.343780806986615,
+      "result": {
+        "failed": 0,
+        "prepared": 5
+      },
+      "measured": {
+        "failed_invocations": 0,
+        "http_attempts": 2,
+        "invocations": 2,
+        "usage": {
+          "completion_tokens": 1658,
+          "prompt_tokens": 10627,
+          "total_tokens": 12285
+        }
+      },
+      "pending_decisions": 0
+    },
+    {
+      "accession": "GSE60141",
+      "rows": 5,
+      "elapsed_seconds": 85.23373244301183,
+      "result": {
+        "failed": 0,
+        "prepared": 5
+      },
+      "measured": {
+        "failed_invocations": 0,
+        "http_attempts": 5,
+        "invocations": 5,
+        "usage": {
+          "completion_tokens": 2156,
+          "prompt_tokens": 21978,
+          "total_tokens": 24134
+        }
+      },
+      "pending_decisions": 6
+    },
+    {
+      "accession": "GSE275897",
+      "rows": 5,
+      "elapsed_seconds": 45.69271831802325,
+      "result": {
+        "failed": 0,
+        "prepared": 5
+      },
+      "measured": {
+        "failed_invocations": 0,
+        "http_attempts": 2,
+        "invocations": 2,
+        "usage": {
+          "completion_tokens": 1270,
+          "prompt_tokens": 9251,
+          "total_tokens": 10521
+        }
+      },
+      "pending_decisions": 5
+    },
+    {
+      "accession": "GSE197357",
+      "rows": 5,
+      "elapsed_seconds": 145.38765091597452,
+      "result": {
+        "failed": 0,
+        "prepared": 5
+      },
+      "measured": {
+        "failed_invocations": 1,
+        "http_attempts": 5,
+        "invocations": 5,
+        "usage": {
+          "completion_tokens": 4303,
+          "prompt_tokens": 22434,
+          "total_tokens": 26737
+        }
+      },
+      "pending_decisions": 6
+    },
+    {
+      "accession": "GSE60554",
+      "rows": 2,
+      "elapsed_seconds": 44.12527290399885,
+      "result": {
+        "failed": 0,
+        "prepared": 2
+      },
+      "measured": {
+        "failed_invocations": 0,
+        "http_attempts": 2,
+        "invocations": 2,
+        "usage": {
+          "completion_tokens": 1286,
+          "prompt_tokens": 7384,
+          "total_tokens": 8670
+        }
+      },
+      "pending_decisions": 1
+    },
+    {
+      "accession": "GSE245960",
+      "rows": 5,
+      "elapsed_seconds": 143.55477584101027,
+      "result": {
+        "failed": 0,
+        "prepared": 5
+      },
+      "measured": {
+        "failed_invocations": 0,
+        "http_attempts": 7,
+        "invocations": 7,
+        "usage": {
+          "completion_tokens": 849,
+          "prompt_tokens": 136221,
+          "total_tokens": 137070
+        }
+      },
+      "pending_decisions": 1
+    },
+    {
+      "accession": "GSE255302",
+      "rows": 5,
+      "elapsed_seconds": 20.583831931988243,
+      "result": {
+        "failed": 0,
+        "prepared": 5
+      },
+      "measured": {
+        "failed_invocations": 0,
+        "http_attempts": 1,
+        "invocations": 1,
+        "usage": {
+          "completion_tokens": 51,
+          "prompt_tokens": 21160,
+          "total_tokens": 21211
+        }
+      },
+      "pending_decisions": 0
+    }
+  ],
+  "timing_57": {
+    "rows": 57,
+    "elapsed_seconds": 215.92488092600252,
+    "measured": {
+      "failed_invocations": 0,
+      "http_attempts": 8,
+      "invocations": 8,
+      "usage": {
+        "completion_tokens": 4008,
+        "prompt_tokens": 99268,
+        "total_tokens": 103276
+      }
+    },
+    "pending_decisions": 1,
+    "required_values_lost_vs_baseline": [],
+    "result": {
+      "prepared": 57,
+      "failed": 0
+    },
+    "previous_seconds": 184.70876581899938
+  }
+}
