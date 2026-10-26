@@ -22,7 +22,6 @@ from unittest.mock import patch
 from verify_curation import altered as revised
 from verify_curation import fixture, rejects
 
-from genesis_curation.atac.inputs import FIELDS, digest
 from genesis_curation.contracts.records import dump, fingerprint, identity, load, loads, record
 from genesis_curation.contracts.validation import bundle
 from genesis_curation.curation import cli as review_cli
@@ -34,73 +33,45 @@ from genesis_curation.registry import store
 from genesis_curation.study import collector, inputs, planning, staging, workflow
 
 
-def prepared(root: Path, assay: str = "bulk-ATAC") -> tuple[Path, Path]:
+def prepared(root: Path, *, shared_control: bool = False) -> tuple[Path, Path]:
+    """A DAP sheet: two independent libraries, or two TFs sharing one control."""
     root.mkdir(parents=True)
     fasta = root / "tiny.fa.gz"
     fasta.write_bytes(gzip.compress(b">chr1\n" + b"A" * 100 + b"\n", mtime=0))
-    sheet = root / "samples.tsv"
-    if assay == "DAP-seq":
-        sheet.write_text(
-            "sample_id\tspecies\tread1_url\tread2_url\tcontrol_sample\treference_fasta\n"
-            + "".join(
-                f"{name}\tplant\thttps://example.invalid/{name}.fq.gz\t-\t{control}\ttiny.fa.gz\n"
-                for name, control in (
-                    ("TF1", "control"),
-                    ("TF2", "control"),
-                    ("control", "-"),
-                )
-            )
-        )
-        return sheet, root
-    tss = root / "tss.bed"
-    tss.write_text("chr1\t20\t+\n")
-    registry = root / "references.json"
-    dump(
-        registry,
-        {
-            "schema_version": 1,
-            "references": [
-                {
-                    "reference_id": "tiny",
-                    "species": "synthetic plant",
-                    "assembly": "synthetic-v1",
-                    "annotation_release": "synthetic-v1",
-                    "genome_size_method": "fixture length",
-                    "genome_size": 100,
-                    "fasta": str(fasta),
-                    "fasta_sha256": digest(fasta),
-                    "tss": str(tss),
-                    "tss_sha256": digest(tss),
-                    "mitochondrial_contigs": [],
-                    "plastid_contigs": [],
-                }
-            ],
-        },
+    libraries = (
+        (("TF1", "control"), ("TF2", "control"), ("control", "-"))
+        if shared_control
+        else (("lib-a", "-"), ("lib-b", "-"))
     )
-    rows = []
-    for name, lanes in (("lib-a", ("lane1", "lane2")), ("lib-b", ("lane1",))):
-        for lane in lanes:
-            row = {
-                "library_id": name,
-                "sample_id": name,
-                "biological_replicate": name,
-                "lane_id": lane,
-                "reference_id": "tiny",
-                "mapq": "30",
-                "duplicates": "exclude",
-                "adapter_r1": "-",
-                "adapter_r2": "-",
-            }
-            for mate in ("read1", "read2"):
-                path = root / f"{name}-{lane}-{mate}.fq.gz"
-                path.write_bytes(gzip.compress(b"@read\nAAAA\n+\nIIII\n", mtime=0))
-                row[mate], row[mate + "_sha256"] = str(path), digest(path)
-            rows.append(row)
-    with sheet.open("w", newline="") as stream:
-        writer = csv.DictWriter(stream, fieldnames=sorted(FIELDS), delimiter="\t")
-        writer.writeheader()
-        writer.writerows(rows)
-    return sheet, registry
+    sheet = root / "samples.tsv"
+    sheet.write_text(
+        "sample_id\tspecies\tread1_url\tread2_url\tcontrol_sample\treference_fasta\n"
+        + "".join(
+            f"{name}\tplant\thttps://example.invalid/{name}.fq.gz\t-\t{control}\ttiny.fa.gz\n"
+            for name, control in libraries
+        )
+    )
+    return sheet, root
+
+
+def dap_exception() -> dict[str, Any]:
+    """Export profile for synthetic DAP runs, whose provenance is never complete."""
+    return revised(
+        review.profile(),
+        lambda d: d.update(
+            name="synthetic-DAP-provenance-exception", require_full_validation=False
+        ),
+    )
+
+
+def provenance_gap_only(catalog: Path, datasets: list[dict[str, Any]]) -> None:
+    """Full scans pass everything except provenance, which synthetic DAP runs never complete."""
+    with contextlib.closing(store.connect(catalog)) as db:
+        for item in datasets:
+            row = store.current(db, item["dataset_id"])
+            findings = store.get(db, "validation", row["validation"])["data"]["findings"]
+            failing = {f["data"]["rule_id"] for f in findings if f["data"]["result"] != "PASS"}
+            assert failing == {"provenance.complete"}, (item["name"], failing)
 
 
 def approve_inputs(catalog: Path, dataset: str, root: Path) -> dict[str, Any]:
@@ -129,8 +100,8 @@ def approve_inputs(catalog: Path, dataset: str, root: Path) -> dict[str, Any]:
 def input_checks(root: Path) -> None:
     sheet, refs = prepared(root / "raw")
     study = root / "study"
-    first = inputs.initialize(study, "test", "bulk-ATAC", sheet, refs)
-    assert inputs.initialize(study, "test", "bulk-ATAC", sheet, refs) == first
+    first = inputs.initialize(study, "test", "DAP-seq", sheet, refs)
+    assert inputs.initialize(study, "test", "DAP-seq", sheet, refs) == first
     catalog = inputs.catalog(study)
     dataset = first["datasets"][0]["id"]
     with contextlib.closing(store.connect(catalog)) as db:
@@ -176,10 +147,11 @@ def input_checks(root: Path) -> None:
     with contextlib.closing(store.connect(catalog, scope="inputs")) as db:
         assert review.effective(db, dataset, "metadata") == "APPROVED"
         assert loads(store.current(db, dataset)["metadata"])["tissue"] == "leaf"
-    assert revision["data"]["compiled_inputs"]["parameters"]["mapq"] == 30
+    compiled = revision["data"]["compiled_inputs"]
+    assert compiled["assay"] == "DAP-seq" and compiled["original_metadata"]["layout"] == "SE"
     before = sheet.read_text()
-    sheet.write_text(before.replace("\t30\t", "\t31\t"))
-    second = inputs.initialize(study, "test", "bulk-ATAC", sheet, refs)
+    sheet.write_text(before.replace("/lib-a.fq.gz", "/lib-a.lane2.fq.gz"))
+    second = inputs.initialize(study, "test", "DAP-seq", sheet, refs)
     assert second["study"]["version"] != first["study"]["version"]
     with contextlib.closing(store.connect(catalog, scope="inputs")) as db:
         assert review.effective(db, dataset, "metadata") == "STALE"
@@ -197,7 +169,7 @@ def input_checks(root: Path) -> None:
     store.restore(backup, root / "restored")
     with contextlib.closing(store.connect(root / "restored", scope="inputs")) as db:
         assert review.effective(db, dataset, "metadata") == "STALE"
-    dap_sheet, dap_refs = prepared(root / "dap-raw", "DAP-seq")
+    dap_sheet, dap_refs = prepared(root / "dap-raw", shared_control=True)
     dap = inputs.initialize(root / "dap", "dap-test", "DAP-seq", dap_sheet, dap_refs)
     assert len(dap["datasets"]) == 3
     assert load(study / "study.json") == second["study"]
@@ -385,7 +357,7 @@ def workflow_checks(root: Path, bigwig_python: Path | None = None) -> None:
     root.mkdir()
     sheet, refs = prepared(root / "raw")
     study = root / "study"
-    value = inputs.initialize(study, "integration", "bulk-ATAC", sheet, refs)
+    value = inputs.initialize(study, "integration", "DAP-seq", sheet, refs)
     catalog = inputs.catalog(study)
     dataset = value["datasets"][0]["id"]
     approve_inputs(catalog, dataset, root)
@@ -406,9 +378,7 @@ def workflow_checks(root: Path, bigwig_python: Path | None = None) -> None:
     compiled_rows = list(
         csv.DictReader(io.StringIO(job["payload"]["study"]["documents"][0]["text"]), delimiter="\t")
     )
-    assert len(compiled_rows) == 2
-    assert {r["library_id"] for r in compiled_rows} == {"lib-a"}
-    assert {r["mapq"] for r in compiled_rows} == {"30"}
+    assert [(r["sample_id"], r["control_sample"]) for r in compiled_rows] == [("lib-a", "-")]
     remote = copy.deepcopy(config)
     remote["workers"]["a"].update(transport="ssh", host="existing-alias")
     blocked = planning.build(study, remote)
@@ -462,10 +432,16 @@ def workflow_checks(root: Path, bigwig_python: Path | None = None) -> None:
             text=True,
         )
         result = wait_study(study, collect_only=True)
-        assert all(r["structural"] == "PASS" for r in result["datasets"]), result
+        provenance_gap_only(catalog, result["datasets"])
     with contextlib.closing(store.connect(catalog)) as db:
         count = db.execute("SELECT COUNT(*) FROM study_collections").fetchone()[0]
-    reviewed_output(study, dataset, root, complete=bool(bigwig_python))
+    reviewed_output(
+        study,
+        dataset,
+        root,
+        complete=bool(bigwig_python),
+        export_profile=dap_exception() if bigwig_python else None,
+    )
     workflow.advance(study)
     with contextlib.closing(store.connect(catalog)) as db:
         assert db.execute("SELECT COUNT(*) FROM study_collections").fetchone()[0] == count
@@ -505,7 +481,7 @@ def workflow_checks(root: Path, bigwig_python: Path | None = None) -> None:
         before = store.current(db, dataset)
     # Restoring an artifact's original bytes must be a new, attributable observation.
     contract = plan["data"]["jobs"][job["id"]]
-    output = Path(contract["root"]) / "manifest.json"
+    output = Path(contract["root"]) / "output/multiqc/multiqc_data/genesis_provenance.json"
     original = output.read_bytes()
     output.write_bytes(original + b"\n")
     workflow.configure_collection(study, scan, True)
@@ -557,7 +533,7 @@ def workflow_checks(root: Path, bigwig_python: Path | None = None) -> None:
 
 def dap_checks(root: Path, bigwig_python: Path | None = None) -> None:
     root.mkdir()
-    sheet, refs = prepared(root / "raw", "DAP-seq")
+    sheet, refs = prepared(root / "raw", shared_control=True)
     study = root / "study"
     initial = inputs.initialize(study, "dap-integration", "DAP-seq", sheet, refs)
     dataset = initial["datasets"][0]["id"]
@@ -583,19 +559,8 @@ def dap_checks(root: Path, bigwig_python: Path | None = None) -> None:
         r["execution"] == "SUCCEEDED" and r["collection"] == "COLLECTED" for r in result["datasets"]
     ), result
     if bigwig_python:
-        with contextlib.closing(store.connect(inputs.catalog(study))) as db:
-            row = store.current(db, dataset)
-            findings = store.get(db, "validation", row["validation"])["data"]["findings"]
-            assert {f["data"]["rule_id"] for f in findings if f["data"]["result"] != "PASS"} == {
-                "provenance.complete"
-            }
-        exception = revised(
-            review.profile(),
-            lambda d: d.update(
-                name="synthetic-DAP-provenance-exception", require_full_validation=False
-            ),
-        )
-        reviewed_output(study, dataset, root, complete=True, export_profile=exception)
+        provenance_gap_only(inputs.catalog(study), result["datasets"])
+        reviewed_output(study, dataset, root, complete=True, export_profile=dap_exception())
     print("PASS: shared-control DAP grouping and three separately cataloged libraries")
 
 
@@ -603,7 +568,7 @@ def failure_checks(root: Path) -> None:
     root.mkdir()
     sheet, refs = prepared(root / "raw")
     study = root / "study"
-    inputs.initialize(study, "failure-isolation", "bulk-ATAC", sheet, refs)
+    inputs.initialize(study, "failure-isolation", "DAP-seq", sheet, refs)
     config = execution(root, two=True)
     replica = root / "failed-repo"
     subprocess.run(

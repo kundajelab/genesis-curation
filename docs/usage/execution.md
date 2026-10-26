@@ -27,17 +27,17 @@ alive for the run; on NERSC use an approved workflow allocation and project
 scratch, not a short-lived login session or home filesystem for work files.
 
 ```bash
-# Bulk ATAC on Sherlock
-genesis pipeline-atac samples.tsv --references references.json \
-  --profile sherlock,apptainer --config /path/site.config --outdir /scratch/run
+# DAP-seq on Sherlock
+genesis pipeline -p sherlock,apptainer /path/samples.tsv --references /path/references \
+  -c /path/site.config
 
 # NERSC: the adapter path must be visible from compute nodes
-GENESIS_RUNTIME_DIR=/scratch/run/runtime scripts/nersc-podman.sh genesis pipeline-atac samples.tsv \
-  --references references.json --profile nersc \
-  --config /path/site.config --outdir /scratch/run
+GENESIS_RUNTIME_DIR=/scratch/run/runtime scripts/nersc-podman.sh genesis pipeline -p nersc \
+  /path/samples.tsv --references /path/references -c /path/site.config
 
-# DAP-seq uses the same scheduler profiles (run in the genesis-preprocessing checkout)
-pixi run pipeline -p slurm,apptainer /path/samples.tsv -c /path/site.config
+# Bulk ATAC uses the same scheduler profiles (run in the genesis-preprocessing checkout)
+pixi run pipeline-atac -p slurm,apptainer /path/atac-samples.tsv --references /path/references \
+  -c /path/site.config
 ```
 
 NERSC submissions are capped at 15 outstanding tasks with five-minute scheduler
@@ -54,7 +54,7 @@ cannot establish scheduler access or site performance.
 
 ## Independent workers and isolated datasets
 
-For prepared DAP/ATAC sheets, use the [study workflow](studies.md) to compile these
+For prepared DAP sheets, use the [study workflow](studies.md) to compile these
 campaigns, stage checksummed documents, resume workers and collect results into the
 scientific registry automatically. To configure individual jobs directly, use the
 campaign format below.
@@ -66,8 +66,7 @@ and checksummed inputs already staged at the declared paths. Use approved site
 transfer tools; Genesis verifies inputs on the worker before starting analysis.
 It does not distribute credentials or copy private datasets automatically.
 
-Use one ATAC library per job, including all its technical lanes. For DAP-seq,
-keep each treatment with its control; treatments sharing a control should share
+For DAP-seq, keep each treatment with its control; treatments sharing a control should share
 one job. A job's sample sheet must describe a complete, valid analysis unit.
 Healthy jobs continue if an unrelated job fails.
 
@@ -92,15 +91,15 @@ A campaign is a versioned JSON file with `workers` and `jobs`:
     "payload": {
       "git_sha": "REPLACE_WITH_FULL_40_CHARACTER_COMMIT",
       "inputs": [{"path": "/data/samples.tsv", "sha256": "REPLACE_WITH_SHA256"}],
-      "argv": ["/home/user/.pixi/bin/pixi", "run", "pipeline-atac", "/data/samples.tsv",
-               "--references", "/data/references.json", "--outdir", "/scratch/library-1", "--resume"]
+      "argv": ["/home/user/.pixi/bin/pixi", "run", "pipeline", "-w", "/scratch", "-n", "library-1",
+               "-p", "local,docker", "/data/samples.tsv", "--references", "/data/references",
+               "-resume"]
     }
   }]
 }
 ```
 
-Include the sample sheet, registry and configuration in `inputs`; the ATAC
-runner additionally checks every referenced FASTQ, FASTA and TSS checksum.
+Include the sample sheet, reference FASTA and configuration in `inputs`.
 Commands are trusted configuration: keep credentials out of arguments and files
 submitted to the controller. `transport: local` uses the same worker protocol
 without SSH and is suitable for a single server. `slots` caps concurrent jobs,

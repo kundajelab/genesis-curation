@@ -5,6 +5,10 @@ input templates. It uses separate outputs from normal Genesis runs. Package
 comparisons, complete-workflow acceptance and biological evidence are reported
 separately.
 
+The workflow comparison below used the old bulk ATAC runner (`genesis pipeline-atac` and
+`genesis_curation.atac.inputs`), which genesis-curation no longer has. To rerun it, use a
+genesis-curation checkout at `b88cb91` or earlier.
+
 ## Data and questions
 
 | Cohort | Libraries | Question |

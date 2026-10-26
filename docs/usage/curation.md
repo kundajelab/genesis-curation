@@ -1,7 +1,7 @@
 # Validate, catalog and review published datasets
 
 Use these commands to check output files, find datasets in a local catalog and
-record metadata or QC reviews. Start with a completed DAP or bulk ATAC run. If you
+record metadata or QC reviews. Start with a completed DAP run. If you
 want to manage inputs and processing as well, follow the [study workflow](studies.md),
 which collects results into the same catalog automatically. No AI service is needed.
 
@@ -53,8 +53,6 @@ execution retry; it does not approve scientific quality or curation.
 Validate the sample sheet and reference before starting a run:
 
 ```bash
-genesis validate inputs samples.tsv --assay bulk-ATAC \
-  --references references.json --json
 genesis validate inputs dap.tsv --assay DAP-seq \
   --references /data/references --json
 ```
@@ -66,28 +64,24 @@ Internal dataset IDs are separate from accessions, library names, lanes and jobs
 
 ```bash
 # Execute on the machine that holds these artifacts.
-genesis validate run /data/atac-run --assay bulk-ATAC \
-  --source-id study-A --study study-A --worker local \
-  --output atac-inspection-v1.json --json
-
-# Explicit full inspection with a separately installed bigWig reader.
-genesis validate run /data/atac-run --assay bulk-ATAC \
-  --source-id study-A --study study-A --worker local --level full \
-  --bigwig-python /path/to/track-environment/bin/python \
-  --max-bytes 10737418240 --max-records 10000000 --max-seconds 1800 \
-  --output atac-validation-v1.json --json
-
 genesis validate run /data/dap-run --assay DAP-seq \
   --source-id study-B --study study-B --worker local \
   --sheet /data/dap.tsv --references /data/references \
   --output dap-inspection-v1.json --json
+
+# Explicit full inspection with a separately installed bigWig reader.
+genesis validate run /data/dap-run --assay DAP-seq \
+  --source-id study-B --study study-B --worker local --level full \
+  --sheet /data/dap.tsv --references /data/references \
+  --bigwig-python /path/to/track-environment/bin/python \
+  --max-bytes 10737418240 --max-records 10000000 --max-seconds 1800 \
+  --output dap-validation-v1.json --json
 ```
 
 The DAP run directory is the directory containing `output/`, not the pipeline
-workspace above it. ATAC uses its runner directory containing `manifest.json`,
-`provenance.json` and `output/`. Adapters preserve lanes, shared-control assignments,
-raw source snapshots and available QC definitions. DAP controls have no required
-treatment peak outputs. ATAC provenance must match the stored run manifest digest.
+workspace above it. The adapter preserves shared-control assignments, raw source
+snapshots and available QC definitions. DAP controls have no required treatment peak
+outputs.
 
 DAP runs record their image pins and Git status in `output/dap-images.lock` and
 `output/git-status.txt` (see [DAP run records](https://github.com/kundajelab/genesis-preprocessing/blob/main/docs/usage/dapseq-reference.md#run-records)).
@@ -164,9 +158,9 @@ projections change only through explicit import, assessment or review operations
 
 ```bash
 genesis registry init /local/catalog --json
-genesis registry import /local/catalog --bundle atac-validation-v1.json --json
+genesis registry import /local/catalog --bundle dap-validation-v1.json --json
 genesis registry import /local/catalog --campaign /local/campaign --json
-genesis registry search /local/catalog --filter assay=bulk-ATAC \
+genesis registry search /local/catalog --filter assay=DAP-seq \
   --filter availability=available --limit 100 --json
 genesis registry search /local/catalog --text 'leaf' --format tsv
 genesis registry show /local/catalog DATASET_ID --json
@@ -218,8 +212,9 @@ Approve only after inspecting evidence. Put selected references in an evidence
 file using their exact recorded location, worker and digest:
 
 ```json
-{"evidence":[{"location":"/data/atac-run/output/lib/qc/enrichment.json",
-  "worker":"local","sha256":"REPLACE_WITH_RECORDED_SHA256","locator":"/FRiP"}]}
+{"evidence":[{"location":"/data/dap-run/output/multiqc/multiqc_data/genesis_flagstat.json",
+  "worker":"local","sha256":"REPLACE_WITH_RECORDED_SHA256",
+  "locator":"/TF1.qc.report.flagstat.txt/mapped_passed"}]}
 ```
 
 Locators are JSON pointers into stored sources, `line:N` with one-based line
@@ -411,11 +406,11 @@ and explicit individual review still apply.
 Collect a small explicit selection of logs from an approved run/work root:
 
 ```bash
-genesis ai diagnose /local/catalog --root /scratch/atac-run \
+genesis ai diagnose /local/catalog --root /scratch/dap-run \
   --log .nextflow.log --log work/ab/task/.command.err \
   --facts diagnostic-facts.json --dataset DATASET_ID --output diagnosis.json
 # Optional explanation, with the same deterministic classifier:
-genesis ai diagnose /local/catalog --root /scratch/atac-run \
+genesis ai diagnose /local/catalog --root /scratch/dap-run \
   --log .nextflow.log --config /local/providers.json --provider private
 ```
 

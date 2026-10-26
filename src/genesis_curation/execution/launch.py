@@ -13,7 +13,6 @@ from pathlib import Path
 
 COMMANDS = {
     "pipeline": "Run DAP-seq on one sample sheet",
-    "pipeline-atac": "Run paired-end bulk ATAC-seq",
     "benchmark": "Plan, run and compare benchmark experiments",
 }
 TOOLS = ("nextflow", "genesis-tools", "uv", "micromamba", "docker", "apptainer", "sbatch", "ssh")
@@ -32,7 +31,6 @@ def checkout() -> Path:
         "pixi.toml",
         "pixi.lock",
         "workflows/dap-seq.nf",
-        "workflows/atac.nf",
         "scripts/run-pipeline.sh",
         "genesis_tools/pyproject.toml",
     )
@@ -118,9 +116,6 @@ def command(action: str, arguments: list[str]) -> list[str]:
     root = checkout()
     if action == "pipeline":
         executable = [str(root / "scripts/run-pipeline.sh")]
-    elif action == "pipeline-atac":
-        # The ATAC runner ships with the pipeline checkout and runs in its environment.
-        executable = [str(python(root)), "-m", "genesis_tools.atac.run"]
     else:
         executable = [sys.executable, "-m", "genesis_curation.benchmark"]
     return managed_command(root, [*executable, *arguments])
@@ -135,12 +130,10 @@ def configure(commands: argparse._SubParsersAction) -> None:
 def execute(action: str, arguments: list[str]) -> None:
     env = dict(os.environ)
     # Help does not need a scientific environment or start Pixi. The DAP wrapper
-    # ships with the checkout; the Python parsers also ship in standalone wheels.
+    # ships with the checkout; the benchmark parser also ships in standalone wheels.
     if "--help" in arguments or "-h" in arguments:
         if action == "pipeline":
             argv = [str(checkout() / "scripts/run-pipeline.sh"), "--help"]
-        elif action == "pipeline-atac":
-            argv = [str(python(checkout())), "-m", "genesis_tools.atac.run", *arguments]
         else:
             argv = [sys.executable, "-m", "genesis_curation.benchmark", *arguments]
     elif action == "benchmark" and arguments and arguments[0] == "reference":

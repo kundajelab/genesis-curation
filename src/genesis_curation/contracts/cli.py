@@ -20,7 +20,7 @@ def scan_options(parser: argparse.ArgumentParser) -> None:
 
 
 def run_options(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--assay", choices=("DAP-seq", "bulk-ATAC"), required=True)
+    parser.add_argument("--assay", choices=("DAP-seq",), required=True)
     parser.add_argument("--source-id", required=True)
     parser.add_argument("--worker", required=True)
     parser.add_argument("--study")
@@ -61,7 +61,7 @@ def configure(parser: argparse.ArgumentParser) -> None:
         child.add_argument("--json", action="store_true")
         child.set_defaults(curation_handler=execute)
         if name == "inputs":
-            child.add_argument("--assay", choices=("DAP-seq", "bulk-ATAC"), required=True)
+            child.add_argument("--assay", choices=("DAP-seq",), required=True)
             child.add_argument("--references", type=Path, required=True)
         else:
             child.add_argument("--output", type=Path)
@@ -77,14 +77,9 @@ def configure(parser: argparse.ArgumentParser) -> None:
 
 def execute(args: argparse.Namespace) -> tuple[Any, int]:
     if args.operation == "inputs":
-        if args.assay == "bulk-ATAC":
-            from ..atac.inputs import libraries, references
+        from ..samples import load_samples
 
-            rows = libraries(args.path, references(args.references))
-        else:
-            from ..samples import load_samples
-
-            rows = load_samples(args.path, args.references)
+        rows = load_samples(args.path, args.references)
         return {
             "schema_version": 1,
             "result": "PASS",

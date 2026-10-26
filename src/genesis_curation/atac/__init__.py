@@ -1,1 +1,1 @@
-"""Read-only copies of the pipeline's ATAC input contracts, used to plan and validate studies."""
+"""ATAC fragment selection used by the method benchmarks."""

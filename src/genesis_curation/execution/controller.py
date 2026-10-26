@@ -17,7 +17,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from ..atac.inputs import identifier
+from ..contracts.records import identifier
 
 
 def connect(folder: Path) -> sqlite3.Connection:
