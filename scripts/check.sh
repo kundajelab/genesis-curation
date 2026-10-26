@@ -11,7 +11,7 @@ run=(uv run --frozen --project "$root")
 for test in verify_publication verify_benchmark verify_benchmark_spec verify_benchmark_methods \
     verify_benchmark_references verify_execution verify_cli verify_curation verify_curation_artifacts \
     verify_curation_adapters verify_ai verify_llm_deployment evaluate_metadata verify_study \
-    verify_scatac_inventory verify_scatac_fragments verify_scatac_pseudobulk verify_scatac_exports \
+    verify_scatac_inventory verify_scatac_exports \
     verify_scatac_inspection verify_macs3_launcher; do
     "${run[@]}" python "$root/tests/$test.py"
 done

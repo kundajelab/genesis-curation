@@ -55,7 +55,8 @@ ATAC cut convention. Do not run an additional fragment-to-track shift on them.
 
 ## Reproduce loader acceptance
 
-The real-tool fixture generator is `tests/validate_scatac_products.py`. Export its
+The real-tool fixture generator was `tests/validate_scatac_products.py`, removed with
+the pseudobulk commands; run it from a checkout at `ac36afc` or earlier. Export its
 products with a config naming the exact target SHA, input window 2114, output
 window 1000, jitter 0, no controls, `nonoverlapping-genome-tiles-v1` background,
 and folds `chr1` / `chr2` / `chr3`. For ChromBPNet declare the unsupplied fixture

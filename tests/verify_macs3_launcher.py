@@ -5,12 +5,9 @@ from __future__ import annotations
 import importlib.util
 import json
 import os
-import subprocess
 import tempfile
 from pathlib import Path
 from unittest.mock import patch
-
-from genesis_curation.scatac import products
 
 ROOT = Path(__file__).resolve().parents[1]
 SPEC = importlib.util.spec_from_file_location(
@@ -253,22 +250,6 @@ def main() -> None:
             execute.assert_not_called()
             assert not receipt.exists()
     check_thread_budget()
-    with tempfile.TemporaryDirectory() as directory:
-        folder = Path(directory)
-        scientific = ["macs3", "callpeak", "-f", "BEDPE", "--keep-dup", "all"]
-        with patch.object(
-            products.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)
-        ) as run:
-            products.command(products.IMAGES["peaks"], scientific, folder, "peaks")
-            argv = run.call_args.args[0]
-            # scATAC calls MACS3 directly, with --threads equal to the container's CPU quota.
-            assert argv[-len(scientific) - 2 :] == [*scientific, "--threads", "2"]
-            assert argv[argv.index("--cpus") + 1] == "2"
-            assert argv[argv.index("--memory") + 1] == "8g"
-            assert argv[argv.index("--network") + 1] == "none"
-            assert not any("genesis-macs3" in arg for arg in argv)
-            products.command(products.IMAGES["peaks"], ["macs3", "--version"], folder, "version")
-            assert "--threads" not in run.call_args.args[0]
     print(
         "PASS MACS3 launcher: restricted affinity, MACS3 thread budget, inherited limits, "
         "thread caps, unchanged arguments and exclusive provenance"

@@ -6,27 +6,11 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from . import evidence, ingest, inventory, model, products, pseudobulk, registry
+from . import evidence, inventory, model, registry
 
 
 def configure(parser: argparse.ArgumentParser) -> None:
     commands = parser.add_subparsers(dest="scatac_command", required=True)
-    child = commands.add_parser("ingest")
-    child.add_argument("--manifest", type=Path, required=True)
-    child.add_argument("--output", type=Path, required=True)
-    child.add_argument("--resume", action="store_true")
-    child.set_defaults(curation_handler=execute, operation="ingest")
-    for name in ("pseudobulk", "products"):
-        child = commands.add_parser(name)
-        child.add_argument("--output", type=Path, required=True)
-        child.add_argument("--resume", action="store_true")
-        if name == "pseudobulk":
-            child.add_argument("--input", type=Path, action="append", required=True)
-            child.add_argument("--annotations", type=Path, required=True)
-            child.add_argument("--policy", type=Path, required=True)
-        else:
-            child.add_argument("--input", type=Path, required=True)
-        child.set_defaults(curation_handler=execute)
     child = commands.add_parser("register")
     child.add_argument("--input", type=Path, required=True)
     child.add_argument("--registry", type=Path, required=True)
@@ -76,14 +60,6 @@ def execute(args: argparse.Namespace) -> tuple[Any, int]:
 
         value = verify_output(args.input, "scatac-group")
         return {"qc": value["data"]["qc"], "review_status": "UNREVIEWED"}, 0
-    if args.scatac_command == "ingest":
-        return ingest.run(args.manifest, args.output, resume=args.resume), 0
-    if args.scatac_command == "pseudobulk":
-        return pseudobulk.aggregate(
-            args.input, args.annotations, args.policy, args.output, resume=args.resume
-        ), 0
-    if args.scatac_command == "products":
-        return products.run(args.input, args.output, resume=args.resume), 0
     if args.scatac_command == "model":
         if args.model_action == "inspect":
             from .inspection import command
