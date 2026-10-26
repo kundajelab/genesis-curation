@@ -111,7 +111,7 @@ complete Nextflow workflows or include FastQC, SPP, MultiQC and track generation
 in its timings. Use separate end-to-end acceptance to test those integrations.
 The [legacy benchmark guide](legacy.md) documents post-alignment policy matrices
 and pinned historical Genesis/nf-core adapters. Its `genesis-atac` adapter is the
-frozen prototype, not the current `genesis pipeline-atac` workflow.
+frozen prototype, not the bulk ATAC workflow in genesis-preprocessing.
 
 ## Read the measurements
 

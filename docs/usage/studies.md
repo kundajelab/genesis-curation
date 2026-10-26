@@ -3,12 +3,12 @@
 Use `genesis study` when you want to track a study from its prepared sample sheet
 through processing, review and export. The commands save the input version, run
 jobs on your chosen workers and collect results into a catalog. AI is optional.
-For a single analysis without a catalog, run `pixi run pipeline` (DAP-seq) or
-`pixi run pipeline-atac` in your genesis-preprocessing checkout instead.
+Studies run DAP-seq. For bulk ATAC, or a single DAP analysis without a catalog, run
+`pixi run pipeline-atac` or `pixi run pipeline` in your genesis-preprocessing checkout
+instead.
 
 Before starting, prepare the sample sheet and choose the reference, controls and
-analysis settings. See the [DAP](https://github.com/kundajelab/genesis-preprocessing/blob/main/docs/usage/dapseq-reference.md) and
-[bulk ATAC](https://github.com/kundajelab/genesis-preprocessing/blob/main/docs/usage/bulk-atac.md) guides for input formats and output definitions.
+analysis settings. See the [DAP guide](https://github.com/kundajelab/genesis-preprocessing/blob/main/docs/usage/dapseq-reference.md) for input formats and output definitions.
 
 | Command | Purpose |
 | --- | --- |
@@ -27,14 +27,10 @@ controller-local storage outside the checkout. Workers need a clean checkout of
 the selected commit and their installed environment. Use absolute input paths.
 
 ```bash
-# Bulk ATAC: local files or supported public HTTPS FASTQs; explicit reference registry.
-genesis study init /local/studies/atac-A --study-id atac-A --assay bulk-ATAC \
-  --sheet /data/atac-A.tsv --references /data/references.json
-
-# DAP: existing public FASTQ URL sheet; directory containing exact named FASTA files.
-genesis study init /local/studies/dap-B --study-id dap-B --assay DAP-seq \
-  --sheet /data/dap-B.tsv --references /data/dap-references
-genesis study status /local/studies/atac-A
+# Existing public FASTQ URL sheet; directory containing exact named FASTA files.
+genesis study init /local/studies/dap-A --study-id dap-A --assay DAP-seq \
+  --sheet /data/dap-A.tsv --references /data/dap-references
+genesis study status /local/studies/dap-A
 ```
 
 The default registry is `STUDY_DIRECTORY/registry`; `init --registry /local/catalog`
@@ -64,13 +60,13 @@ Only metadata review is applicable before processing. QC and export eligibility
 require actual result evidence.
 
 ```bash
-genesis review queue /local/studies/atac-A/registry --scope inputs
-genesis review show /local/studies/atac-A/registry DATASET_ID --scope inputs
-genesis metadata ingest /local/studies/atac-A/registry DATASET_ID \
+genesis review queue /local/studies/dap-A/registry --scope inputs
+genesis review show /local/studies/dap-A/registry DATASET_ID --scope inputs
+genesis metadata ingest /local/studies/dap-A/registry DATASET_ID \
   --scope inputs --source /data/curator-source.json --classification local-only
-genesis metadata propose /local/studies/atac-A/registry DATASET_ID \
+genesis metadata propose /local/studies/dap-A/registry DATASET_ID \
   --scope inputs --output /local/proposal-v1.json
-genesis metadata diff /local/studies/atac-A/registry DATASET_ID \
+genesis metadata diff /local/studies/dap-A/registry DATASET_ID \
   --scope inputs --target PROPOSAL_VERSION
 ```
 
@@ -86,12 +82,12 @@ selected evidence as `{"evidence": [...]}` in `/local/input-evidence.json`. Copy
 the proposal's top-level `version` and a **fresh** `status.token` from `review show`:
 
 ```bash
-genesis review approve /local/studies/atac-A/registry DATASET_ID \
+genesis review approve /local/studies/dap-A/registry DATASET_ID \
   --scope inputs --category metadata --target PROPOSAL_VERSION --token CURRENT_TOKEN \
   --reason 'State the actual source review and judgment' --evidence /local/input-evidence.json
-genesis metadata apply /local/studies/atac-A/registry DATASET_ID \
+genesis metadata apply /local/studies/dap-A/registry DATASET_ID \
   --scope inputs --target PROPOSAL_VERSION --output /local/canonical-input-v1.json
-genesis review history /local/studies/atac-A/registry DATASET_ID --scope inputs
+genesis review history /local/studies/dap-A/registry DATASET_ID --scope inputs
 ```
 
 Approval of a rich proposal is `PENDING_APPLY` until apply succeeds. Applying creates
@@ -136,20 +132,17 @@ For SSH, extend `workers` with the same fields and, for example:
 ```
 
 This is a fragment, not a complete execution configuration. Provide explicit mappings
-for all local FASTQ/reference/TSS paths on SSH workers, even if the physical path is
+for all local reference paths on SSH workers, even if the physical path is
 identical. Large files must already be staged using approved transfer tools; Genesis
 does not assume a shared worker filesystem or copy credentials. Public input URLs
 retain the existing pipeline's download behavior. Planning does not contact workers.
 
-Each ATAC library compiles to one job containing all its technical lanes. DAP
-treatments sharing a control compile to one job with that control, while each library
+DAP treatments sharing a control compile to one job with that control, while each library
 retains a distinct catalog identity. Assign the whole DAP group to one worker.
-No reference selection, control pairing, threshold or lane merging policy is inferred.
+No reference selection, control pairing or threshold policy is inferred.
 
 ```bash
-genesis study plan /local/studies/atac-A \
-  --execution /local/study-execution.json --output /local/atac-plan-v1.json
-genesis study plan /local/studies/dap-B \
+genesis study plan /local/studies/dap-A \
   --execution /local/study-execution.json --output /local/dap-plan-v1.json
 ```
 
@@ -164,12 +157,9 @@ so it does not reread large FASTQs every two seconds.
 ## 4. Execute and reconnect
 
 ```bash
-genesis study run /local/studies/atac-A --plan /local/atac-plan-v1.json
-genesis study status /local/studies/atac-A
-genesis study resume /local/studies/atac-A
-
-# DAP uses exactly the same orchestration interface.
-genesis study run /local/studies/dap-B --plan /local/dap-plan-v1.json
+genesis study run /local/studies/dap-A --plan /local/dap-plan-v1.json
+genesis study status /local/studies/dap-A
+genesis study resume /local/studies/dap-A
 ```
 
 `run` and `resume` poll until no confirmed active work remains, emitting JSON progress
@@ -206,15 +196,15 @@ validation or default export eligibility.** For full inspection, set `--level fu
 and appropriate budgets during planning, or revalidate after processing:
 
 ```bash
-genesis study collect /local/studies/atac-A --level full \
+genesis study collect /local/studies/dap-A --level full \
   --reader local=/path/to/track-environment/bin/python \
   --max-bytes 10737418240 --max-records 10000000 --max-seconds 1800
-genesis study status /local/studies/atac-A
+genesis study status /local/studies/dap-A
 
 # Poll/reconnect an interrupted collection without creating a new scientific attempt.
-genesis study collect /local/studies/atac-A --once
+genesis study collect /local/studies/dap-A --once
 # After investigating a confirmed collection failure, start a new collection generation.
-genesis study collect /local/studies/atac-A --retry
+genesis study collect /local/studies/dap-A --retry
 ```
 
 `--reader WORKER=/absolute/python` can be repeated for multiple workers. It chooses
@@ -241,9 +231,9 @@ replacing history or launching another scientific attempt.
 ## 6. Review and export a selected catalog
 
 ```bash
-genesis registry search /local/studies/atac-A/registry --filter study=atac-A
-genesis review show /local/studies/atac-A/registry DATASET_ID
-genesis review history /local/studies/atac-A/registry DATASET_ID --scope inputs
+genesis registry search /local/studies/dap-A/registry --filter study=dap-A
+genesis review show /local/studies/dap-A/registry DATASET_ID
+genesis review history /local/studies/dap-A/registry DATASET_ID --scope inputs
 ```
 
 An approved input metadata revision can satisfy result metadata review only when the
@@ -259,16 +249,16 @@ worker/location/hash/locator, and fetch a fresh `status.token` before **each** d
 
 ```bash
 # Skip this decision only if metadata is already APPROVED through matching input review.
-genesis review approve /local/studies/atac-A/registry DATASET_ID --category metadata \
+genesis review approve /local/studies/dap-A/registry DATASET_ID --category metadata \
   --token CURRENT_TOKEN --reason 'State the actual metadata review' --evidence /local/evidence.json
-genesis review show /local/studies/atac-A/registry DATASET_ID
-genesis review approve /local/studies/atac-A/registry DATASET_ID --category qc \
+genesis review show /local/studies/dap-A/registry DATASET_ID
+genesis review approve /local/studies/dap-A/registry DATASET_ID --category qc \
   --token FRESH_TOKEN --reason 'State the actual QC judgment or exception' --evidence /local/evidence.json
-genesis review show /local/studies/atac-A/registry DATASET_ID
-genesis review approve /local/studies/atac-A/registry DATASET_ID --category eligibility \
+genesis review show /local/studies/dap-A/registry DATASET_ID
+genesis review approve /local/studies/dap-A/registry DATASET_ID --category eligibility \
   --token NEWEST_TOKEN --reason 'State the reviewed catalog purpose' --evidence /local/evidence.json
-genesis study export /local/studies/atac-A --dataset DATASET_ID \
-  --output /local/reviewed-atac-v1.json
+genesis study export /local/studies/dap-A --dataset DATASET_ID \
+  --output /local/reviewed-dap-v1.json
 ```
 
 Select multiple explicit IDs with repeated `--dataset`, or save a registry search's
@@ -288,9 +278,9 @@ review, QC and provenance. Workers never write controller SQLite files over NFS.
 
 ```bash
 # Use campaign_directory reported by study status, not the outer study directory.
-genesis serve /local/studies/atac-A/campaigns/CAMPAIGN_HASH \
-  --registry /local/studies/atac-A/registry --port 8765
-genesis registry backup /local/studies/atac-A/registry --output /local/catalog-backup.sqlite
+genesis serve /local/studies/dap-A/campaigns/CAMPAIGN_HASH \
+  --registry /local/studies/dap-A/registry --port 8765
+genesis registry backup /local/studies/dap-A/registry --output /local/catalog-backup.sqlite
 genesis registry restore /local/restored-catalog --backup /local/catalog-backup.sqlite
 ```
 
@@ -322,7 +312,7 @@ These local tests do not establish SSH/scheduler access or biological accuracy.
 ## Real-tool acceptance on synthetic inputs
 
 Use this opt-in check on a development server with a **clean committed checkout**,
-installed Pixi/Nextflow, the existing digest-pinned DAP/ATAC Docker images, and an existing
+installed Pixi/Nextflow, the existing digest-pinned DAP Docker images, and an existing
 separate Python environment containing `pyBigWig`. It does not build or pull images,
 install a reader, download public sequencing datasets, or use AI. All input reads and
 references are generated from the repository's deterministic fixtures.
@@ -340,8 +330,7 @@ synthetic DAP reads over a temporary HTTP endpoint reachable from its containers
 
 The runner creates fresh fixture-only registries and records explicit synthetic review
 decisions. It has no option to approve an existing study. It runs SE/PE DAP (five libraries,
-including a shared control) and bulk ATAC (two libraries, each with two lanes), assigned
-to two local worker identities with separate staged data, attempts and output roots.
+including a shared control), assigned to two local worker identities with separate staged data, attempts and output roots.
 It exercises controller reconnect, metadata-only versus full scans, standard reviewed
 exports, idempotent collection, budget exhaustion, stale decisions, corrupt artifacts,
 failed collection and recovery without sequencing resubmission.

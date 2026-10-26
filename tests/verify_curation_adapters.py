@@ -1,9 +1,8 @@
-"""Legacy DAP/ATAC import boundaries and controller-local provenance observations."""
+"""Legacy DAP import boundaries and controller-local provenance observations."""
 
 from __future__ import annotations
 
 import contextlib
-import hashlib
 import json
 import sqlite3
 import sys
@@ -12,12 +11,11 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any
 
-from verify_curation import altered, fixture, rejects
+from verify_curation import altered, fixture
 
 from genesis_curation.contracts.adapters import (
     DAP_PROVENANCE_NOTE,
     dap_run_record,
-    from_atac,
     from_dap,
 )
 from genesis_curation.contracts.records import dump, fingerprint, record
@@ -28,70 +26,6 @@ from genesis_curation.registry import store
 
 
 def legacy(root: Path) -> None:
-    run = root / "atac"
-    run.mkdir()
-    library = {
-        "library_id": "lib",
-        "sample_id": "sample",
-        "biological_replicate": "rep1",
-        "reference": {"reference_id": "ref", "species": "plant"},
-        "lanes": [{"lane_id": "one"}, {"lane_id": "two"}],
-        "mapq": 30,
-        "duplicates": "exclude",
-        "adapter_r1": "-",
-        "adapter_r2": "-",
-    }
-    dump(run / "manifest.json", {"schema_version": 1, "libraries": [library]})
-    digest = hashlib.sha256((run / "manifest.json").read_bytes()).hexdigest()
-    dump(
-        run / "provenance.json",
-        {
-            "manifest_sha256": digest,
-            "containers": {"synthetic": "test-only"},
-            "source_sha256": {"fixture": "0" * 64},
-            "git_sha": "0" * 40,
-            "exit_code": 0,
-        },
-    )
-    dump(
-        run / "output/lib/fragments/metrics.json",
-        {
-            "counts": {
-                "total_templates": 20,
-                "eligible_before_dedup": 10,
-                "usable_fragments": 9,
-                "secondary_or_supplementary_records": 2,
-            },
-            "NRF": 0.9,
-            "duplicate_fraction": 0.1,
-            "PBC1": None,
-            "PBC2": None,
-            "metric_version": 1,
-        },
-    )
-    dump(
-        run / "output/lib/qc/enrichment.json",
-        {
-            "FRiP": 0,
-            "peak_count": 0,
-            "usable_fragments": 9,
-            "fragments_in_peaks": 0,
-            "metric_version": 1,
-        },
-    )
-    before = (run / "manifest.json").read_bytes()
-    manifests = from_atac(run, "accession-study", "remote-a", "study")
-    data = manifests[0]["data"]
-    assert len(data["lanes"]) == 2 and data["run"]["execution_state"] == "SUCCEEDED"
-    measured = {m["data"]["metric"]: m["data"] for m in data["measurements"]}
-    assert measured["FRiP"]["value"] == 0 and measured["FRiP"]["denominator_value"] == 9
-    assert measured["secondary_or_supplementary_records"]["units"] == "records"
-    assert measured["usable_fragments"]["units"] == "fragments"
-    assert any(a["role"] == "fastqc" and a["required"] for a in data["artifacts"])
-    assert (run / "manifest.json").read_bytes() == before
-    dump(run / "provenance.json", {"manifest_sha256": "f" * 64})
-    rejects(lambda: from_atac(run, "study", "local", None), "does not match")
-
     dap = root / "dap"
     provenance = {
         "run": {"git_sha": "0" * 40},

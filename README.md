@@ -9,15 +9,16 @@ inside them:
   and status pages; a person accepts or rejects each decision.
 - **Records and sources** (`contracts`, `registry`, `publication`): versioned record schemas, a
   controller-local catalog, and sanitized exports of evidence.
-- **Studies** (`study`, `execution`): plan, launch and collect multi-library studies on local or
-  remote workers.
+- **Studies** (`study`, `execution`): plan, launch and collect multi-library DAP-seq studies on
+  local or remote workers.
 - **scATAC** (`scatac`): discovery, inventory and fragment-first products.
 - **Method benchmarks** (`benchmark`, `benchmarks/`): explicit, reproducible comparisons of
   processing choices. They never change pipeline defaults.
 
 The Nextflow pipelines (DAP-seq, bulk ATAC-seq) live in
 [genesis-preprocessing](https://github.com/kundajelab/genesis-preprocessing). Commands that run a
-pipeline need a checkout of it: set `GENESIS_REPO` to that checkout.
+pipeline need a checkout of it: set `GENESIS_REPO` to that checkout. Bulk ATAC runs there
+directly (`pixi run pipeline-atac`); this repository does not launch it.
 
 ## Install
 
@@ -37,7 +38,6 @@ genesis --help
 ```bash
 export GENESIS_REPO=/path/to/genesis-preprocessing   # installed with `pixi run install-all`
 genesis pipeline --help
-genesis pipeline-atac --help
 ```
 
 ## Checks
@@ -47,7 +47,7 @@ GENESIS_REPO=/path/to/genesis-preprocessing scripts/check.sh
 ```
 
 Without `GENESIS_REPO`, the launcher checks report NOT RUN and everything else still runs.
-`tests/validate_study.py` (real DAP/ATAC studies) and `tests/accept_*_live.py` (live model
+`tests/validate_study.py` (real DAP studies) and `tests/accept_*_live.py` (live model
 services) are opt-in and run separately.
 
 ## Documentation

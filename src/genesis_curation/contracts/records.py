@@ -6,6 +6,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import tempfile
 import uuid
 from dataclasses import asdict, dataclass
@@ -20,6 +21,7 @@ from jsonschema.protocols import Validator
 
 VERSION = "genesis-curation/1"
 MAX_DOCUMENT = 32 * 1024 * 1024
+ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}\Z")
 Result = Literal["PASS", "WARN", "ERROR", "NOT_EVALUATED", "NOT_APPLICABLE"]
 
 
@@ -39,6 +41,19 @@ def fingerprint(value: object) -> str:
 
 def identity(kind: str, *parts: str) -> str:
     return str(uuid.uuid5(uuid.NAMESPACE_URL, canonical(["genesis", kind, *parts])))
+
+
+def digest(path: Path) -> str:
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha256").hexdigest()
+
+
+def identifier(value: str) -> str:
+    if not ID.fullmatch(value) or value in {".", ".."}:
+        raise ValueError(
+            "Identifiers must contain only letters, digits, dots, underscores or dashes"
+        )
+    return value
 
 
 def reject_constant(value: str) -> None:

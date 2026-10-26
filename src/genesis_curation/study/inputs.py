@@ -8,13 +8,14 @@ import sqlite3
 from pathlib import Path
 from typing import Any
 
-from ..atac import inputs as atac
 from ..contracts.adapters import reference, snapshot
 from ..contracts.records import (
     ArtifactManifest,
     canonical,
+    digest,
     dump,
     fingerprint,
+    identifier,
     identity,
     load,
     loads,
@@ -43,7 +44,7 @@ def input_head(db: sqlite3.Connection, dataset: str) -> dict[str, Any]:
 
 
 def asset(path: Path) -> dict[str, str]:
-    return {"path": str(path.resolve()), "sha256": atac.digest(path)}
+    return {"path": str(path.resolve()), "sha256": digest(path)}
 
 
 def prepare(
@@ -55,7 +56,7 @@ def prepare(
     classification: str,
 ) -> list[dict[str, Any]]:
     """Read-only input validation; HTTP FASTQs retain the assay's existing handling."""
-    atac.identifier(study_id)
+    identifier(study_id)
     if classification not in {"public", "internal", "local-only"}:
         raise ValueError("Explicit source classification is required")
     source_id = study_id + ":" + assay
@@ -64,56 +65,31 @@ def prepare(
         sheet_rows = list(csv.DictReader(stream, delimiter="\t"))
     if len(sheet_rows) > 10000:
         raise ValueError("Split studies larger than 10,000 sheet rows")
+    # Bulk ATAC runs through genesis-preprocessing directly; studies launch DAP-seq only.
+    if assay != "DAP-seq":
+        raise ValueError("Supported study assay: DAP-seq")
     libraries: list[tuple[str, list[dict[str, str]], dict[str, Any], dict[str, Any]]] = []
-    if assay == "bulk-ATAC":
-        refs = atac.references(references)
-        for library in atac.libraries(sheet, refs):
-            rows = [r for r in sheet_rows if r["library_id"] == library["library_id"]]
-            # Normalize only filesystem locations, retaining all scientific columns verbatim.
-            lane_by_id = {r["lane_id"]: r for r in library["lanes"]}
-            rows = [
-                {
-                    **r,
-                    "read1": lane_by_id[r["lane_id"]]["read1"],
-                    "read2": lane_by_id[r["lane_id"]]["read2"],
-                }
-                for r in rows
-            ]
-            ref = library["reference"]
-            libraries.append((library["library_id"], rows, ref, library))
-    elif assay == "DAP-seq":
-        rows = load_samples(sheet, references)
-        for row in rows:
-            ref = {
-                "reference_id": re.sub(r"\.(fa|fasta|fna)\.gz$", "", row["reference_fasta"]),
-                "species": row["species"],
-                "fasta": str(references / row["reference_fasta"]),
-                "fasta_sha256": atac.digest(references / row["reference_fasta"]),
-            }
-            libraries.append((row["sample_id"], [row], ref, row))
-    else:
-        raise ValueError("Supported study assays: DAP-seq and bulk-ATAC")
+    for row in load_samples(sheet, references):
+        ref = {
+            "reference_id": re.sub(r"\.(fa|fasta|fna)\.gz$", "", row["reference_fasta"]),
+            "species": row["species"],
+            "fasta": str(references / row["reference_fasta"]),
+            "fasta_sha256": digest(references / row["reference_fasta"]),
+        }
+        libraries.append((row["sample_id"], [row], ref, row))
     result = []
     for name, rows, ref, library in libraries:
         dataset = identity("dataset", source_id, name)
         metadata = {
             "organism": ref["species"],
             "protocol": assay,
-            "role": "control"
-            if assay == "DAP-seq" and library["control_sample"] == "-"
-            else "assay",
+            "role": "control" if library["control_sample"] == "-" else "assay",
+            "control": library["control_sample"],
+            "layout": "SE" if library["read2_url"] == "-" else "PE",
         }
-        if assay == "bulk-ATAC":
-            metadata["biological_replicate"] = library["biological_replicate"]
-            parameters = {k: library[k] for k in ("mapq", "duplicates", "adapter_r1", "adapter_r2")}
-            lanes = library["lanes"]
-            biosample = library["sample_id"]
-        else:
-            metadata.update(
-                control=library["control_sample"],
-                layout="SE" if library["read2_url"] == "-" else "PE",
-            )
-            parameters, lanes, biosample = {}, [], None
+        parameters: dict[str, Any] = {}
+        lanes: list[dict[str, Any]] = []
+        biosample = None
         evidence = source_record(
             canonical(
                 {
@@ -155,12 +131,6 @@ def prepare(
             [],
         ).export()
         assets = [asset(sheet), asset(Path(ref["fasta"]))]
-        if assay == "bulk-ATAC":
-            assets += [asset(references), asset(Path(ref["tss"]))]
-            for lane in lanes:
-                for mate in ("read1", "read2"):
-                    if not lane[mate].startswith("https://"):
-                        assets.append({"path": lane[mate], "sha256": lane[mate + "_sha256"]})
         result.append(
             record(
                 "input_manifest",

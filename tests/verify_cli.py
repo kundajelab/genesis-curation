@@ -13,8 +13,6 @@ import time
 from pathlib import Path
 from unittest.mock import patch
 
-from study_fixture import create_study_fixture
-
 from genesis_curation.execution import launch
 from genesis_curation.execution.install import install_cli
 
@@ -170,27 +168,6 @@ def check_launchers(work: Path) -> None:
     run([str(CLI), "pipeline", "missing.tsv"], work, env, 2)
     assert tool_log.read_bytes() == before
 
-    atac = work / "atac inputs"
-    atac.mkdir()
-    atac_sheet, references, _ = create_study_fixture(atac)
-    atac_args = [
-        "pipeline-atac",
-        str(atac_sheet.relative_to(work)),
-        "--references",
-        str(references.relative_to(work)),
-        "--outdir",
-        "atac results",
-    ]
-    failed_env = {**env, "CLI_EXIT": "23"}
-    run([str(CLI), *atac_args], work, failed_env, 23)
-    manifest = (work / "atac results/manifest.json").read_bytes()
-    fresh_atac = json.loads(tool_log.read_text())
-    run([str(CLI), *atac_args, "--resume"], work, failed_env, 23)
-    resumed_atac = json.loads(tool_log.read_text())
-    assert resumed_atac["argv"] == [*fresh_atac["argv"], "-resume"]
-    assert resumed_atac["cwd"] == str(work / "atac results")
-    assert (work / "atac results/manifest.json").read_bytes() == manifest
-    assert json.loads((work / "atac results/provenance.json").read_text())["exit_code"] == 23
     run([str(CLI), "benchmark", "plan", "missing.json"], work, env, 2)
     delegated = json.loads(Path(env["CLI_PIXI_LOG"]).read_text())["argv"]
     assert delegated[-3:] == ["genesis_curation.benchmark", "plan", "missing.json"]
@@ -236,8 +213,9 @@ def check_offline_and_runtime(work: Path) -> None:
     bare_env = {**os.environ, "PATH": "/usr/bin:/bin", "GENESIS_REPO": str(work / "missing")}
     run([str(CLI), "--help"], work, bare_env)
     run([str(CLI), "registry", "init", str(work / "catalog")], work, bare_env)
-    # The ATAC runner ships with the pipeline checkout, so even its help needs GENESIS_REPO.
-    run([str(CLI), "pipeline-atac", "--help"], work, bare_env, 2)
+    # Bulk ATAC runs from a genesis-preprocessing checkout; this CLI no longer launches it.
+    removed = run([str(CLI), "pipeline-atac", "--help"], work, bare_env, 2)
+    assert "invalid choice" in removed.stderr, removed.stderr
     run([str(CLI), "benchmark", "run", "--help"], work, bare_env)
     reference = work / "offline-reference.fa"
     reference.write_text(">synthetic\nACGTacgtNN\n")
@@ -292,7 +270,7 @@ def main() -> None:
         check_launchers(work)
         check_offline_and_runtime(work)
     print(
-        "PASS: CLI installation, conflicts, independent cwd, DAP/ATAC forwarding, resume, exits, "
+        "PASS: CLI installation, conflicts, independent cwd, DAP forwarding, resume, exits, "
         "interrupts, benchmark delegation and offline core commands"
     )
 

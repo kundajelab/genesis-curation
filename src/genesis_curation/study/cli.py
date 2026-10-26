@@ -34,7 +34,7 @@ def configure(parser: argparse.ArgumentParser) -> None:
         child.set_defaults(curation_handler=execute)
         if name == "init":
             child.add_argument("--study-id", required=True)
-            child.add_argument("--assay", choices=("DAP-seq", "bulk-ATAC"), required=True)
+            child.add_argument("--assay", choices=("DAP-seq",), required=True)
             child.add_argument("--sheet", type=Path, required=True)
             child.add_argument("--references", type=Path, required=True)
             child.add_argument("--registry", type=Path)

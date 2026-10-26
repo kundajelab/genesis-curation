@@ -1,4 +1,4 @@
-"""Opt-in real DAP/ATAC study acceptance on fresh, explicitly synthetic fixtures."""
+"""Opt-in real DAP study acceptance on fresh, explicitly synthetic fixtures."""
 
 from __future__ import annotations
 
@@ -23,8 +23,6 @@ from genesis_curation.study import inputs, workflow
 # whose pipelines run here, and its DAP test fixture and package are borrowed for the inputs.
 PIPELINE = Path(os.environ.get("GENESIS_REPO", "")).expanduser().resolve()
 sys.path[:0] = [str(PIPELINE / "tests"), str(PIPELINE / "genesis_tools/src")]
-
-from study_fixture import create_study_fixture  # noqa: E402
 
 # The pipeline checkout provides this module at run time (see PIPELINE above).
 from verify_pipeline import create_fixture, serve  # noqa: E402  # ty: ignore[unresolved-import]
@@ -213,14 +211,13 @@ class Acceptance:
         config: Path,
         assignments: dict[str, str],
     ) -> dict[str, Any]:
-        tag = "dap" if assay == "DAP-seq" else "atac"
-        study = self.root / (tag + "-study")
+        study = self.root / "dap-study"
         registered = self.call(
             "study",
             "init",
             study,
             "--study-id",
-            "synthetic-" + tag,
+            "synthetic-dap",
             "--assay",
             assay,
             "--sheet",
@@ -231,7 +228,7 @@ class Acceptance:
         self.review_inputs(inputs.catalog(study), registered["datasets"])
         workers = {}
         for name in ("a", "b"):
-            node = self.root / (tag + "-node-" + name)
+            node = self.root / ("dap-node-" + name)
             shutil.copytree(fixture, node / "data")
             workers[name] = {
                 "transport": "local",
@@ -241,12 +238,12 @@ class Acceptance:
                 "pixi": shutil.which("pixi"),
                 "root": str(node / "attempts"),
                 "run_root": str(node / "runs"),
-                "profile": "local,test,docker" if tag == "dap" else "local,docker",
+                "profile": "local,test,docker",
                 "config": str(config),
                 "path_map": {str(fixture): str(node / "data")},
                 "bigwig_python": str(self.reader),
             }
-        execution = self.root / (tag + "-execution.json")
+        execution = self.root / "dap-execution.json"
         dump(
             execution,
             {
@@ -274,15 +271,14 @@ class Acceptance:
         self.export(study, "metadata-only", 0)
         complete = self.call("study", "collect", study, *BUDGET)
         assert all(d["structural"] == "PASS" for d in complete["datasets"]), complete
-        if tag == "dap":
-            for job in plan["data"]["jobs"].values():
-                # DAP runs record image pins and the checkout beside their outputs.
-                output = Path(job["root"]) / "output"
-                status = (output / "git-status.txt").read_text().splitlines()
-                assert status[1] == "commit: " + self.revision, status
-                assert (output / "dap-images.lock").read_bytes() == (
-                    PIPELINE / "conf/dap-images.lock"
-                ).read_bytes()
+        for job in plan["data"]["jobs"].values():
+            # DAP runs record image pins and the checkout beside their outputs.
+            output = Path(job["root"]) / "output"
+            status = (output / "git-status.txt").read_text().splitlines()
+            assert status[1] == "commit: " + self.revision, status
+            assert (output / "dap-images.lock").read_bytes() == (
+                PIPELINE / "conf/dap-images.lock"
+            ).read_bytes()
         self.review_results(study)
         self.export(study, "approved", len(state["datasets"]))
         # Reconnecting/recollecting the same generation imports nothing new and keeps decisions.
@@ -311,13 +307,9 @@ class Acceptance:
         target.write_bytes(original)
         self.call("study", "collect", study, "--retry")
         # An invalid run sidecar causes a collection failure, never a sequencing retry.
-        sidecar = root / (
-            "output/multiqc/multiqc_data/genesis_provenance.json"
-            if tag == "dap"
-            else "provenance.json"
-        )
+        sidecar = root / "output/multiqc/multiqc_data/genesis_provenance.json"
         before = sidecar.read_bytes()
-        sidecar.write_text('{"schema_version":999}\n' if tag != "dap" else "not JSON\n")
+        sidecar.write_text("not JSON\n")
         failed = self.call("study", "collect", study, "--retry", expected=(3,))
         assert any(d["collection"] == "FAILED" for d in failed["datasets"]), failed
         assert any(d["collection"] == "COLLECTED" for d in failed["datasets"]), failed
@@ -336,7 +328,7 @@ class Acceptance:
             "status": "PASS",
             "scientific_execution_retries": 0,
         }
-        dump(self.root / (tag + "-result.json"), evidence)
+        dump(self.root / "dap-result.json", evidence)
         print(
             f"PASS: {assay}: processing, reconnect, full collection, review, export and recovery",
             flush=True,
@@ -362,7 +354,6 @@ def preflight(reader: Path) -> str:
         for line in (PIPELINE / "conf/dap-images.lock").read_text().splitlines()
         if "_IMAGE=" in line and not line.startswith("#")
     }
-    images.update(load(PIPELINE / "conf/atac-images.json").values())
     for image in sorted(images):
         subprocess.run(["docker", "image", "inspect", image], check=True, capture_output=True)
     return revision
@@ -412,17 +403,6 @@ def main() -> None:
                     "pe_control": "b",
                 },
             )
-        atac = root / "atac-fixture"
-        atac.mkdir()
-        sheet, references, _ = create_study_fixture(atac)
-        config = atac / "limits.config"
-        config.write_text(
-            "executor.cpus = 4\nexecutor.memory = '8 GB'\n"
-            "process.resourceLimits = [cpus: 2, memory: 2.GB, time: 5.m]\n"
-        )
-        acceptance.scenario(
-            "bulk-ATAC", sheet, references, atac, config, {"first": "a", "second": "b"}
-        )
         dump(
             root / "result.json",
             {

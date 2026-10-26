@@ -10,11 +10,12 @@ import re
 from pathlib import Path
 from typing import Any
 
-from ..atac.inputs import digest, identifier
 from ..contracts.records import (
     canonical,
+    digest,
     dump,
     fingerprint,
+    identifier,
     identity,
     load,
     loads,
@@ -131,15 +132,10 @@ def text_document(name: str, text: str) -> dict[str, str]:
     return {"name": name, "text": text, "sha256": hashlib.sha256(text.encode()).hexdigest()}
 
 
-def sheet_text(rows: list[dict[str, str]], *, dap: bool = False) -> str:
+def sheet_text(rows: list[dict[str, str]]) -> str:
     stream = io.StringIO()
     # Stored JSON sorts object keys. DAP's public six-column interface has a fixed order.
-    writer = csv.DictWriter(
-        stream,
-        fieldnames=SAMPLE_HEADER if dap else sorted(rows[0]),
-        delimiter="\t",
-        lineterminator="\n",
-    )
+    writer = csv.DictWriter(stream, fieldnames=SAMPLE_HEADER, delimiter="\t", lineterminator="\n")
     writer.writeheader()
     writer.writerows(rows)
     return stream.getvalue()
@@ -168,15 +164,9 @@ def build_job(
     out = Path(worker["run_root"]) / generation / job_id
     rows, assets, refs = [], {}, {}
     for item in members:
-        for original in item["data"]["rows"]:
-            row = dict(original)
-            for key in ("read1", "read2") if study["assay"] == "bulk-ATAC" else ():
-                row[key] = mapped(row[key], worker)
-            rows.append(row)
+        rows.extend(dict(original) for original in item["data"]["rows"])
         ref = dict(item["data"]["reference_record"])
         ref["fasta"] = mapped(ref["fasta"], worker)
-        if study["assay"] == "bulk-ATAC":
-            ref["tss"] = mapped(ref["tss"], worker)
         refs[ref["reference_id"]] = ref
         # Original sheet/registry are replaced by exact generated documents; large assets stay put.
         for asset in item["data"]["assets"]:
@@ -187,59 +177,34 @@ def build_job(
                 raise ValueError("Worker path mapping aliases different input bytes")
             assets[target] = asset["sha256"]
     docs = [
-        text_document("samples.tsv", sheet_text(rows, dap=study["assay"] == "DAP-seq")),
+        text_document("samples.tsv", sheet_text(rows)),
         text_document(
             "metadata.json", canonical({i["id"]: metadata[i["id"]] for i in members}) + "\n"
         ),
     ]
-    if study["assay"] == "bulk-ATAC":
-        references = str(input_root / "references.json")
-        docs.append(
-            text_document(
-                "references.json",
-                canonical({"schema_version": 1, "references": list(refs.values())}) + "\n",
-            )
-        )
-        argv = [
-            worker["pixi"],
-            "run",
-            "pipeline-atac",
-            str(input_root / "samples.tsv"),
-            "--references",
-            references,
-            "--outdir",
-            str(out),
-            "--profile",
-            worker["profile"],
-            "--resume",
-        ]
-    else:
-        parents = {str(Path(r["fasta"]).parent) for r in refs.values()}
-        if len(parents) != 1:
-            raise ValueError("DAP reference files must share one worker-local reference directory")
-        references = parents.pop()
-        argv = [
-            worker["pixi"],
-            "run",
-            "pipeline",
-            "-w",
-            str(out.parent),
-            "-n",
-            out.name,
-            "-p",
-            worker["profile"],
-            str(input_root / "samples.tsv"),
-            "--references",
-            references,
-            "-resume",
-        ]
+    parents = {str(Path(r["fasta"]).parent) for r in refs.values()}
+    if len(parents) != 1:
+        raise ValueError("DAP reference files must share one worker-local reference directory")
+    references = parents.pop()
+    argv = [
+        worker["pixi"],
+        "run",
+        "pipeline",
+        "-w",
+        str(out.parent),
+        "-n",
+        out.name,
+        "-p",
+        worker["profile"],
+        str(input_root / "samples.tsv"),
+        "--references",
+        references,
+        "-resume",
+    ]
     if worker.get("config"):
         content = read_config(worker["config"])
         docs.append(text_document("site.config", content))
-        argv += [
-            "--config" if study["assay"] == "bulk-ATAC" else "-c",
-            str(input_root / "site.config"),
-        ]
+        argv += ["-c", str(input_root / "site.config")]
     for doc in docs:
         assets[str(input_root / doc["name"])] = doc["sha256"]
     contract = {
@@ -313,13 +278,8 @@ def build(
     groups: dict[str, list[dict[str, Any]]] = {}
     for item in items:
         meta = item["data"]["manifest"]["data"]
-        group = (
-            meta["name"]
-            if study["assay"] == "bulk-ATAC"
-            else (
-                meta["metadata"]["control"] if meta["metadata"]["control"] != "-" else meta["name"]
-            )
-        )
+        # A DAP library runs with its control.
+        group = meta["metadata"]["control"] if meta["metadata"]["control"] != "-" else meta["name"]
         groups.setdefault(group, []).append(item)
     generation = fingerprint(
         {
