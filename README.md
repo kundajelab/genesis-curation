@@ -11,7 +11,8 @@ inside them:
   controller-local catalog, and sanitized exports of evidence.
 - **Studies** (`study`, `execution`): plan, launch and collect multi-library DAP-seq studies on
   local or remote workers.
-- **scATAC** (`scatac`): discovery, inventory and fragment-first products.
+- **scATAC** (`scatac`): discovery, inventory and model export. Pseudobulks come from
+  the `scatac-seq` workflow in genesis-preprocessing.
 - **Method benchmarks** (`benchmark`, `benchmarks/`): explicit, reproducible comparisons of
   processing choices. They never change pipeline defaults.
 

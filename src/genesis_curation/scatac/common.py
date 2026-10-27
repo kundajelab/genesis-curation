@@ -41,13 +41,6 @@ def text_file(path: Path) -> TextIO:
     return gzip.open(path, "rt", encoding="utf-8") if compressed else path.open(encoding="utf-8")
 
 
-def bounded_lines(stream: TextIO, limit: int = 1024 * 1024) -> Iterator[str]:
-    while line := stream.readline(limit + 1):
-        if len(line) > limit:
-            raise ValueError("Input line exceeds the 1 MiB record limit")
-        yield line
-
-
 def reference(value: dict[str, Any], base: Path) -> tuple[Path, dict[str, int]]:
     if not all(
         isinstance(value.get(k), str) and value[k].strip()

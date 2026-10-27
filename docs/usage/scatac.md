@@ -1,9 +1,9 @@
-# Single-cell ATAC fragments and pseudobulks
+# Single-cell ATAC inventory and model export
 
-Genesis can import existing 10x ATAC or ARC fragments, keep biological replicates
-separate, and produce cell-group fragments, cut-count tracks and peaks. It does
-not process single-cell FASTQs. Run these commands on a standalone Linux server;
-track and peak generation uses the existing pinned Docker images.
+This repository keeps the scATAC study inventory and the model export. Pseudobulk
+processing, from published fragment files to peaks, cut-count tracks and QC, is the
+`scatac-seq` workflow in
+[genesis-preprocessing](https://github.com/kundajelab/genesis-preprocessing/blob/main/docs/usage/scatac-seq.md).
 
 ## Discover studies
 
@@ -27,49 +27,21 @@ replicate evidence and metadata completeness. The first four components earn
 points only with approved evidence. This is a processing-priority score, not a
 biological quality score. A named reviewer is required for approved evidence.
 
-## Process known libraries
+## Earlier pseudobulk bundles
+
+The `genesis scatac ingest`, `pseudobulk` and `products` commands that made
+fragment and pseudobulk bundles were removed after preprocessing gained the
+`scatac-seq` workflow. To make new bundles of that kind, use a checkout at `ac36afc`
+or earlier. Bundles already made remain readable:
 
 ```bash
-genesis scatac ingest --manifest library.json --output fragments/library-1
-genesis scatac ingest --manifest library.json --output fragments/library-1 --resume
-genesis scatac pseudobulk --input fragments/library-1 --input fragments/library-2 --annotations cells.jsonl --policy policy.json --output pseudobulk
-genesis scatac products --input pseudobulk/TASK_ID --output products/TASK_ID
 genesis scatac qc --input products/TASK_ID
 genesis scatac register --input products/TASK_ID --registry catalog
 ```
 
-Each library manifest declares its biological identity, producer/version, exact
-FASTA SHA256, chromosome lengths, organellar contigs and source-fragment checksum.
-Source offsets must be explicit. The supported 10x adapters require BED0 half-open
-intervals and already-applied +4/−5 offsets. Ingestion never shifts coordinates.
-Five-column support counts and optional sixth-column strand are preserved.
-Duplicate library/barcode/interval rows are rejected for review, not silently removed.
-
-Cells are keyed by **library + barcode**. The existing
-[cell contract](https://github.com/kundajelab/genesis-preprocessing/blob/main/validation/design/scatac-metadata-schema.yaml) governs
-annotation provenance and explicit ATAC inclusion. Unknown QC values remain null;
-plant thresholds remain unspecified. Biological replicates are never pooled.
-Independent technical libraries require a named, explicit merge declaration.
-Different cells with identical coordinates remain independent molecules.
-
-Pseudobulks count each selected fragment once, regardless of read support. They
-retain source-cell membership, library composition, exclusions and support totals.
-For the recorded `chrombpnet-atac-v1` signal convention, a 10x interval `[s,e)`
-contributes cuts at `s` and `e`. This converts source offsets to the audited model
-convention; it does not shift the stored fragments. Out-of-reference cuts require
-an explicit error or exclusion-and-report policy.
-
-The policy must specify organellar handling, boundary handling, a peak q-value and
-an effective genome size per reference. MACS3 runs in BEDPE mode with all selected
-molecules retained. Signals are unstranded raw cut counts. FRiP counts unique
-selected fragments overlapping the union of the group's peaks by at least one
-base. TSS enrichment is not calculated by this command.
-
-SQLite keeps fragment sorting and cell joins on disk. Plan free space for the
-input, temporary database, indexed fragments and each selected group's outputs.
-`--resume` verifies input identity and output checksums. Changed inputs, annotations,
-policy or implementation require a new output directory. Failed staging directories
-retain diagnostics; complete outputs are published atomically.
+`qc` prints a bundle's recorded QC; `register` records it as an **unreviewed**
+artifact. The model export below also reads these bundles; it does not yet read the
+`scatac-seq` workflow's outputs.
 
 ## Export model inputs
 
