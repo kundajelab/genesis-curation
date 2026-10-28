@@ -14,7 +14,6 @@ from ..llm.providers import InferenceFailure
 from ..qc_policy import cli as qc_cli
 from ..registry import cli as registry_cli
 from ..scatac import cli as scatac_cli
-from ..study import cli as study_cli
 from . import cli as review_cli
 from . import metadata_cli
 
@@ -27,7 +26,6 @@ def configure(commands: argparse._SubParsersAction) -> None:
         ("review", review_cli),
         ("metadata", metadata_cli),
         ("ai", ai_cli),
-        ("study", study_cli),
         ("scatac", scatac_cli),
     ):
         module.configure(commands.add_parser(name))

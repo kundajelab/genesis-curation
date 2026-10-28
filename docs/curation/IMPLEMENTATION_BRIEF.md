@@ -1,8 +1,8 @@
 # Curation and optional AI: architecture
 
 This document describes component ownership and compatibility requirements for
-contributors. For commands and examples, use the [curation](../usage/curation.md),
-[study](../usage/studies.md) and [AI provider](../usage/ai-providers.md) guides.
+contributors. For commands and examples, use the [curation](../usage/curation.md)
+and [AI provider](../usage/ai-providers.md) guides.
 
 ## Scientific computation and dataset state
 
@@ -47,28 +47,16 @@ biological thresholds remain unspecified unless an explicit policy supplies them
   Ordinary registry exports remain available without review gating. The browser
   status page is read-only and binds to loopback.
 
-## Prepared studies
+## Input and result review
 
-`genesis study` connects prepared inputs to the existing execution and curation
-components. It does not introduce a second scheduler or accession-first acquisition.
-Version 3 records describe input manifests, study revisions, plans and collection
-receipts. Registry schema 4 separates input and result review and stores collection
-lineage; registration alone does not establish a scientific result or QC observation.
-
-ATAC jobs combine technical lanes within a library. DAP jobs group treatments
-sharing a control while retaining separate library identities. Worker assignments,
-paths, profiles and Git revisions are explicit configuration. SSH workers require
-path mappings for local inputs.
-
-The existing controller and detached supervisors own execution. Stale plans block
-new submissions while existing attempts continue to be observed. Collection reads
-worker-local outputs with bounded validation and transfers checksummed receipts.
-Import, diagnostic QC and receipt lineage commit together. Retrying collection
-never resubmits scientific analysis.
+Pipelines run in genesis-preprocessing; this repository imports their finished
+outputs and does not launch them. Version 3 records and registry schema 4 keep the
+input-revision, plan and collection-receipt formats written by the removed
+`genesis study` commands, so existing catalogs stay readable. Registration alone
+does not establish a scientific result or QC observation.
 
 Matching input metadata approval can carry forward with its original evidence.
-QC and export eligibility still require current result decisions. Late receipts
-remain historical; they cannot replace current reviewed records. Source
+QC and export eligibility still require current result decisions. Source
 classifications cannot be weakened through re-ingestion or a change of review scope.
 New DAP run provenance supports full validation; historical runs lacking the
 required evidence remain incomplete.
@@ -102,10 +90,6 @@ implicitly. See the [service guide](../usage/llm-deployment.md).
 contracts, catalog scale, review and installed-package tests.
 [AI validation](https://github.com/kundajelab/genesis-preprocessing/blob/main/validation/reports/hybrid-llm-validation.md) covers fake HTTP,
 synthetic metadata and service lifecycle simulations.
-[Study validation](https://github.com/kundajelab/genesis-preprocessing/blob/main/validation/reports/study-workflow-validation.md) covers
-local supervision, collection and review lineage.
-[Real-tool study tests](https://github.com/kundajelab/genesis-preprocessing/blob/main/validation/reports/real-study-validation.md) exercise
-DAP and ATAC through the coordinator using synthetic scientific fixtures.
 
 Each report identifies the tested revision and exact scope. Local mocks and
 synthetic fixtures do not establish live SSH, GPU/API compatibility, biological

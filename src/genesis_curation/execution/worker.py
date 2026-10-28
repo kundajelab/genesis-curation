@@ -87,10 +87,6 @@ def execute(folder: Path) -> None:
             )
             if actual != payload["git_sha"] or dirty:
                 raise ValueError("Worker checkout differs from the pinned clean revision")
-            if "study" in payload:
-                from ..study.staging import stage
-
-                stage(folder, payload)
             for item in payload["inputs"]:
                 with Path(item["path"]).open("rb") as source:
                     if hashlib.file_digest(source, "sha256").hexdigest() != item["sha256"]:

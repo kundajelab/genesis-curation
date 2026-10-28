@@ -5,11 +5,9 @@ from __future__ import annotations
 import json
 import os
 import shutil
-import signal
 import subprocess
 import sys
 import tempfile
-import time
 from pathlib import Path
 from unittest.mock import patch
 
@@ -88,29 +86,11 @@ if sys.argv[1] == 'info':
     print(json.dumps({'environments_info':[{'name':'default', 'prefix':str(prefix)}]}))
     sys.exit(0)
 record = json.dumps({'argv':sys.argv[1:], 'cwd':os.getcwd()})
-if '--executable' in sys.argv:
-    # The genesis launcher: pixi run --as-is --manifest-path ROOT --executable COMMAND...
-    Path(os.environ['CLI_PIXI_LOG']).write_text(record)
-    args = sys.argv[sys.argv.index('--executable') + 1:]
-    os.execv(args[0], args)
-# run-pipeline.sh: pixi run --manifest-path ROOT COMMAND...; run COMMAND from PATH.
-Path(os.environ['CLI_INNER_PIXI_LOG']).write_text(record)
-assert sys.argv[1:3] == ['run', '--manifest-path'], sys.argv
-os.execvp(sys.argv[4], sys.argv[4:])
-""",
-    )
-    script(
-        binaries / "nextflow",
-        """import json, os, shutil, signal, sys, time
-from pathlib import Path
-signal.signal(signal.SIGINT, lambda *_: sys.exit(130))
-record = {'argv':sys.argv[1:], 'cwd':os.getcwd(), 'pid':os.getpid()}
-record['genesis_tools'] = shutil.which('genesis-tools')
-Path(os.environ['CLI_TOOL_LOG']).write_text(json.dumps(record))
-if os.environ.get('CLI_WAIT') == '1':
-    while True:
-        time.sleep(0.1)
-sys.exit(int(os.environ.get('CLI_EXIT', '0')))
+# The genesis launcher: pixi run --as-is --manifest-path ROOT --executable COMMAND...
+assert '--executable' in sys.argv, sys.argv
+Path(os.environ['CLI_PIXI_LOG']).write_text(record)
+args = sys.argv[sys.argv.index('--executable') + 1:]
+os.execv(args[0], args)
 """,
     )
     return {
@@ -119,82 +99,16 @@ sys.exit(int(os.environ.get('CLI_EXIT', '0')))
         "GENESIS_REPO": str(PIPELINE),
         "CLI_FAKE_PREFIX": str(prefix),
         "CLI_PIXI_LOG": str(work / "pixi.json"),
-        "CLI_INNER_PIXI_LOG": str(work / "inner-pixi.json"),
-        "CLI_TOOL_LOG": str(work / "tool.json"),
     }
 
 
 def check_launchers(work: Path) -> None:
     env = fake_environment(work)
-    tool_log = Path(env["CLI_TOOL_LOG"])
-    sheet = work / "sample sheet.tsv"
-    sheet.touch()
-    arguments = [
-        "pipeline",
-        "-p",
-        "local,conda",
-        "-w",
-        "run folders",
-        "-n",
-        "named",
-        sheet.name,
-        "--references",
-        "a reference folder",
-        "--label",
-        "$(touch injected); 'quoted'",
-    ]
-    run([str(CLI), *arguments], work, env)
-    fresh = json.loads(tool_log.read_text())
-    # Pipeline helpers come from the pipeline checkout's environment, not this one.
-    assert fresh["genesis_tools"] == str(launch.python(PIPELINE).parent / "genesis-tools")
-    nf_args = fresh["argv"]
-    assert nf_args[nf_args.index("--input") + 1] == str(sheet)
-    assert nf_args[nf_args.index("--workspace") + 1] == str(work / "run folders")
-    assert nf_args[nf_args.index("-profile") + 1] == "local,conda"
-    assert nf_args[-4:] == arguments[-4:]
-    assert fresh["cwd"] == str(work / "run folders/named")
+    run([str(CLI), "benchmark", "plan", "missing.json"], work, env, 2)
     pixi = json.loads(Path(env["CLI_PIXI_LOG"]).read_text())
     assert pixi["cwd"] == str(work) and pixi["argv"][:2] == ["run", "--as-is"]
-    # run-pipeline.sh runs Nextflow through this checkout's Pixi environment, from the run folder.
-    inner = json.loads(Path(env["CLI_INNER_PIXI_LOG"]).read_text())
-    assert inner["argv"][:4] == ["run", "--manifest-path", str(PIPELINE), "nextflow"], inner
-    assert inner["cwd"] == str(work / "run folders/named"), inner
-    assert not (work / "injected").exists()
-    run([str(CLI), *arguments, "-resume"], work, env)
-    resumed = json.loads(tool_log.read_text())
-    assert resumed["cwd"] == fresh["cwd"] and resumed["argv"] == [*nf_args, "-resume"]
-    run([str(CLI), *arguments], work, {**env, "CLI_EXIT": "23"}, 23)
-    before = tool_log.read_bytes()
-    run([str(CLI), "pipeline", "missing.tsv"], work, env, 2)
-    assert tool_log.read_bytes() == before
-
-    run([str(CLI), "benchmark", "plan", "missing.json"], work, env, 2)
-    delegated = json.loads(Path(env["CLI_PIXI_LOG"]).read_text())["argv"]
+    delegated = pixi["argv"]
     assert delegated[-3:] == ["genesis_curation.benchmark", "plan", "missing.json"]
-
-    # The DAP CLI/Pixi/wrapper exec chain retains a single owned process.
-    tool_log.unlink()
-    process = subprocess.Popen(
-        [str(CLI), *arguments],
-        cwd=work,
-        env={**env, "CLI_WAIT": "1"},
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
-    )
-    try:
-        deadline = time.monotonic() + 10
-        while not tool_log.exists() and process.poll() is None and time.monotonic() < deadline:
-            time.sleep(0.02)
-        assert tool_log.exists(), "Signal test did not reach Nextflow stub"
-        assert json.loads(tool_log.read_text())["pid"] == process.pid
-        process.send_signal(signal.SIGINT)
-        stdout, stderr = process.communicate(timeout=10)
-        assert process.returncode == 130, (stdout, stderr)
-    finally:
-        if process.poll() is None:
-            process.kill()
-            process.communicate()
 
 
 def check_offline_and_runtime(work: Path) -> None:
@@ -205,7 +119,7 @@ def check_offline_and_runtime(work: Path) -> None:
         patch.object(launch.shutil, "which", return_value=None),
     ):
         try:
-            launch.command("pipeline", [])
+            launch.command("benchmark", [])
         except ValueError as error:
             assert "Pixi" in str(error)
         else:
@@ -213,9 +127,10 @@ def check_offline_and_runtime(work: Path) -> None:
     bare_env = {**os.environ, "PATH": "/usr/bin:/bin", "GENESIS_REPO": str(work / "missing")}
     run([str(CLI), "--help"], work, bare_env)
     run([str(CLI), "registry", "init", str(work / "catalog")], work, bare_env)
-    # Bulk ATAC runs from a genesis-preprocessing checkout; this CLI no longer launches it.
-    removed = run([str(CLI), "pipeline-atac", "--help"], work, bare_env, 2)
-    assert "invalid choice" in removed.stderr, removed.stderr
+    # Pipelines run from a genesis-preprocessing checkout; this CLI no longer launches them.
+    for command in ("pipeline", "pipeline-atac", "study"):
+        removed = run([str(CLI), command, "--help"], work, bare_env, 2)
+        assert "invalid choice" in removed.stderr, removed.stderr
     run([str(CLI), "benchmark", "run", "--help"], work, bare_env)
     reference = work / "offline-reference.fa"
     reference.write_text(">synthetic\nACGTacgtNN\n")
@@ -223,7 +138,6 @@ def check_offline_and_runtime(work: Path) -> None:
     assert json.loads(inspected.stdout)["contigs"]["synthetic"]["length"] == 10
     reference.write_text(">synthetic\nINVALID!\n")
     run([str(CLI), "benchmark", "reference", "inspect", str(reference)], work, bare_env, 2)
-    run([str(CLI), "pipeline", "input.tsv"], work, bare_env, 2)
     # Installed Pixi must preserve argv/cwd too, not only the test double.
     if shutil.which("pixi"):
         uninstalled = work / "missing runtime"
@@ -270,8 +184,8 @@ def main() -> None:
         check_launchers(work)
         check_offline_and_runtime(work)
     print(
-        "PASS: CLI installation, conflicts, independent cwd, DAP forwarding, resume, exits, "
-        "interrupts, benchmark delegation and offline core commands"
+        "PASS: CLI installation, conflicts, independent cwd, benchmark delegation, "
+        "removed launchers and offline core commands"
     )
 
 

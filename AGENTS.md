@@ -3,11 +3,11 @@
 ## Project overview
 Python tooling for the Genesis project that sits around the processing pipelines:
 metadata/LLM extraction, curation and review, QC policies, record contracts and the
-registry, studies and execution (the `genesis` command), scATAC, and method benchmarks.
-The Nextflow pipelines live in
-[genesis-preprocessing](https://github.com/kundajelab/genesis-preprocessing); commands
-that run a pipeline take that checkout from `GENESIS_REPO`. Pipeline logic belongs there,
-not here.
+registry, job execution (the `genesis` command), scATAC, and method benchmarks.
+The Nextflow pipelines live and run in
+[genesis-preprocessing](https://github.com/kundajelab/genesis-preprocessing); this
+repository does not launch them. `genesis benchmark` takes that checkout from
+`GENESIS_REPO`. Pipeline logic belongs there, not here.
 
 The project is managed by uv (`uv sync --frozen`). `benchmarks/environment/` is a separate
 Pixi workspace for the benchmark tools.

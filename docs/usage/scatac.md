@@ -90,8 +90,8 @@ a plant bias model. Do not apply another Tn5 shift to exported tracks.
 The export command always writes `model_ready: false`. Test the model loader and
 complete scientific review separately before training. Registry registration records
 an immutable **unreviewed** artifact; it does not approve a dataset. Use the standalone
-scATAC commands: prepared-study execution and reviewed scATAC release export are
-not supported for these records.
+scATAC commands; reviewed scATAC release export is not supported for these
+records.
 
 See the [model handoff](scatac-model-handoff.md) for loader setup and the [validation report](https://github.com/kundajelab/genesis-preprocessing/blob/main/validation/reports/scatac-delivery-validation.md)
 for tested inputs, public-data findings and validation limits.
