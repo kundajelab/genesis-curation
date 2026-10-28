@@ -26,16 +26,18 @@ folders and the checkout must be visible from compute nodes. Keep the controller
 alive for the run; on NERSC use an approved workflow allocation and project
 scratch, not a short-lived login session or home filesystem for work files.
 
+Run pipelines from the genesis-preprocessing checkout:
+
 ```bash
 # DAP-seq on Sherlock
-genesis pipeline -p sherlock,apptainer /path/samples.tsv --references /path/references \
+pixi run pipeline -p sherlock,apptainer /path/samples.tsv --references /path/references \
   -c /path/site.config
 
 # NERSC: the adapter path must be visible from compute nodes
-GENESIS_RUNTIME_DIR=/scratch/run/runtime scripts/nersc-podman.sh genesis pipeline -p nersc \
+GENESIS_RUNTIME_DIR=/scratch/run/runtime scripts/nersc-podman.sh pixi run pipeline -p nersc \
   /path/samples.tsv --references /path/references -c /path/site.config
 
-# Bulk ATAC uses the same scheduler profiles (run in the genesis-preprocessing checkout)
+# Bulk ATAC uses the same scheduler profiles
 pixi run pipeline-atac -p slurm,apptainer /path/atac-samples.tsv --references /path/references \
   -c /path/site.config
 ```
@@ -53,12 +55,6 @@ Test remote execution at your site before processing a study; local tests
 cannot establish scheduler access or site performance.
 
 ## Independent workers and isolated datasets
-
-For prepared DAP sheets, use the [study workflow](studies.md) to compile these
-campaigns, stage checksummed documents, resume workers and collect results into the
-scientific registry automatically. To configure individual jobs directly, use the
-campaign format below.
-Both paths use the same worker protocol, pinned checkout checks and retry rules.
 
 The campaign controller runs separate analysis jobs on existing Linux workers.
 Each worker needs the pinned, clean repository, its installed Pixi environment,

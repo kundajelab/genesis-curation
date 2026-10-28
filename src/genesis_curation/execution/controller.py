@@ -300,7 +300,7 @@ def main() -> None:
 
     parser = argparse.ArgumentParser(
         prog="genesis",
-        description="Plant sequencing, study execution and evidence-backed curation.",
+        description="Plant sequencing, job execution and evidence-backed curation.",
     )
     commands = parser.add_subparsers(dest="action", required=True)
     commands.add_parser("doctor")

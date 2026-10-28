@@ -12,7 +12,6 @@ import tomllib
 from pathlib import Path
 
 COMMANDS = {
-    "pipeline": "Run DAP-seq on one sample sheet",
     "benchmark": "Plan, run and compare benchmark experiments",
 }
 TOOLS = ("nextflow", "genesis-tools", "uv", "micromamba", "docker", "apptainer", "sbatch", "ssh")
@@ -31,7 +30,6 @@ def checkout() -> Path:
         "pixi.toml",
         "pixi.lock",
         "workflows/dap-seq.nf",
-        "scripts/run-pipeline.sh",
         "genesis_tools/pyproject.toml",
     )
     if not all((root / name).is_file() for name in required):
@@ -113,12 +111,9 @@ def environment(root: Path) -> dict[str, str]:
 def command(action: str, arguments: list[str]) -> list[str]:
     if action not in COMMANDS:
         raise ValueError(f"Unknown scientific command: {action}")
-    root = checkout()
-    if action == "pipeline":
-        executable = [str(root / "scripts/run-pipeline.sh")]
-    else:
-        executable = [sys.executable, "-m", "genesis_curation.benchmark"]
-    return managed_command(root, [*executable, *arguments])
+    return managed_command(
+        checkout(), [sys.executable, "-m", "genesis_curation.benchmark", *arguments]
+    )
 
 
 def configure(commands: argparse._SubParsersAction) -> None:
@@ -129,13 +124,10 @@ def configure(commands: argparse._SubParsersAction) -> None:
 
 def execute(action: str, arguments: list[str]) -> None:
     env = dict(os.environ)
-    # Help does not need a scientific environment or start Pixi. The DAP wrapper
-    # ships with the checkout; the benchmark parser also ships in standalone wheels.
+    # Help does not need a scientific environment or start Pixi; the benchmark parser
+    # ships in standalone wheels.
     if "--help" in arguments or "-h" in arguments:
-        if action == "pipeline":
-            argv = [str(checkout() / "scripts/run-pipeline.sh"), "--help"]
-        else:
-            argv = [sys.executable, "-m", "genesis_curation.benchmark", *arguments]
+        argv = [sys.executable, "-m", "genesis_curation.benchmark", *arguments]
     elif action == "benchmark" and arguments and arguments[0] == "reference":
         # FASTA/annotation validation is pure Python and ships in the wheel.
         # It does not launch scientific tools or require Nextflow resources.

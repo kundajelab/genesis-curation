@@ -1,9 +1,9 @@
 # Validate, catalog and review published datasets
 
 Use these commands to check output files, find datasets in a local catalog and
-record metadata or QC reviews. Start with a completed DAP run. If you
-want to manage inputs and processing as well, follow the [study workflow](studies.md),
-which collects results into the same catalog automatically. No AI service is needed.
+record metadata or QC reviews. Start with a completed DAP run from
+[genesis-preprocessing](https://github.com/kundajelab/genesis-preprocessing). No AI
+service is needed.
 
 Install genesis-curation and put `~/.local/bin` on PATH
 (see [installation](../../README.md#install)). Use
@@ -11,15 +11,14 @@ Install genesis-curation and put `~/.local/bin` on PATH
 an installed wheel.
 These command families support `--help` and `--json`. Successful commands emit
 JSON by default; search also supports `--format tsv`. In the examples, replace
-`DATASET_ID` with an ID returned by `registry search` or `study init`. A sequencing
+`DATASET_ID` with an ID returned by `registry search`. A sequencing
 accession is not necessarily the catalog ID.
 
-For registered studies, add `--scope inputs` to metadata/review commands before
-processing. Use the default `--scope results` to review processing outputs.
-Only metadata can be approved in the input scope; a matching collected result can
-carry that exact input approval forward with its original evidence. QC and export
-eligibility always require result-specific decisions. See the
-[study guide](studies.md#2-review-input-metadata-when-needed) for the full recipe.
+Catalogs with registered input revisions (from the removed `genesis study init`)
+also accept `--scope inputs` on metadata/review commands. Use the default
+`--scope results` to review processing outputs. Only metadata can be approved in the
+input scope; a matching result can carry that exact input approval forward with its
+original evidence. QC and export eligibility always require result-specific decisions.
 
 ## Try the workflow with synthetic data
 
@@ -386,9 +385,7 @@ genesis metadata apply /local/catalog DATASET_ID --target PROPOSAL_VERSION \
 Approval is `PENDING_APPLY` until apply succeeds; reviewed exports exclude it.
 Apply creates an immutable `metadata_revision`, updates the selected scope's canonical
 metadata and emits a `compiled_inputs` description referencing the exact original
-assay, lanes and reference. For registered input revisions, `genesis study plan`
-compiles reviewed metadata and the recorded scientific choices into an executable
-campaign. Apply itself does not launch work. Scientific inputs are copied
+assay, lanes and reference. Apply does not launch work. Scientific inputs are copied
 verbatim; reference/control proposals remain descriptive. Existing executed sheets,
 campaigns and raw accession records are never rewritten. Reassess QC and review
 eligibility after metadata changes. Source/manifest changes or concurrent reviews

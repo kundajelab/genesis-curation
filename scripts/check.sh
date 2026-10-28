@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Run all offline checks. Integration tests that need a genesis-preprocessing checkout
-# (tests/validate_study.py) or live services (tests/accept_*_live.py) are run separately.
+# Run all offline checks. The CLI launcher checks run only with GENESIS_REPO set to a
+# genesis-preprocessing checkout; tests needing live services (tests/accept_*_live.py)
+# are run separately.
 set -euo pipefail
 root=$(cd -- "$(dirname -- "$0")/.." && pwd)
 run=(uv run --frozen --project "$root")
@@ -10,7 +11,7 @@ run=(uv run --frozen --project "$root")
 "${run[@]}" ty check --project "$root" --extra-search-path "$root/tests" "$root/tests"
 for test in verify_publication verify_benchmark verify_benchmark_spec verify_benchmark_methods \
     verify_benchmark_references verify_execution verify_cli verify_curation verify_curation_artifacts \
-    verify_curation_adapters verify_ai verify_llm_deployment evaluate_metadata verify_study \
+    verify_curation_adapters verify_ai verify_llm_deployment evaluate_metadata \
     verify_scatac_inventory verify_scatac_exports \
     verify_scatac_inspection verify_macs3_launcher; do
     "${run[@]}" python "$root/tests/$test.py"

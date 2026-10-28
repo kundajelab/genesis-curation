@@ -1,1 +1,1 @@
-"""Genesis curation, metadata, review and study tooling."""
+"""Genesis curation, metadata, review and execution tooling."""

@@ -16,7 +16,7 @@ def summary(directory: Path, campaign: Path) -> str:
     from ..contracts.records import fingerprint, load
 
     campaign_id = fingerprint(load(campaign / "campaign.json"))
-    result = [study_progress(campaign)] + [
+    result = [
         "<h2>Scientific curation</h2><p>Independent of execution status; review in the CLI.</p><ul>"
     ]
     with contextlib.closing(store.connect(directory)) as db:
@@ -87,37 +87,3 @@ def report(directory: Path, route: str) -> bytes:
         if len(body) > 32 * 1024 * 1024 or hashlib.sha256(body).hexdigest() != item["sha256"]:
             raise ValueError("Report digest changed or report exceeds download limit")
         return body
-
-
-def study_progress(campaign: Path) -> str:
-    """Read only the controller-owned progress document, never arbitrary user paths."""
-    from ..contracts.records import load
-
-    path = campaign / "study-progress.json"
-    if not path.is_file():
-        return ""
-    try:
-        value = load(path)
-        if value.get("schema_version") != 1:
-            return "<p>Unsupported study progress snapshot.</p>"
-        study = value["study"]
-        result = [
-            "<h2>Prepared study: " + html.escape(study["study_id"]) + "</h2>",
-            "<p>Last controller observation: " + html.escape(str(value["updated"])) + ". "
-            "Collection is separate from analysis execution.</p><ul>",
-        ]
-        for row in study["datasets"][:1000]:
-            detail = row.get("collection_detail", {})
-            text = (
-                f"{row['name']}: execution {row['execution']}; collection {row['collection']}; "
-                f"structure {row['structural']}; QC {row['qc']}"
-            )
-            if detail.get("reason"):
-                text += "; " + str(detail["reason"])[:1024]
-            result.append("<li>" + html.escape(text) + "</li>")
-        result.append("</ul>")
-        for blocker in value.get("blockers", [])[:100]:
-            result.append("<p>" + html.escape(str(blocker)) + "</p>")
-        return "".join(result)
-    except ValueError, OSError, KeyError, TypeError:
-        return "<p>Study progress is unavailable; inspect the CLI.</p>"
