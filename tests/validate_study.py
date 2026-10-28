@@ -276,8 +276,8 @@ class Acceptance:
             output = Path(job["root"]) / "output"
             status = (output / "git-status.txt").read_text().splitlines()
             assert status[1] == "commit: " + self.revision, status
-            assert (output / "dap-images.lock").read_bytes() == (
-                PIPELINE / "conf/dap-images.lock"
+            assert (output / "genesis-images.lock").read_bytes() == (
+                PIPELINE / "conf/genesis-images.lock"
             ).read_bytes()
         self.review_results(study)
         self.export(study, "approved", len(state["datasets"]))
@@ -351,7 +351,7 @@ def preflight(reader: Path) -> str:
     )
     images = {
         line.split("=", 1)[1].strip().strip('"')
-        for line in (PIPELINE / "conf/dap-images.lock").read_text().splitlines()
+        for line in (PIPELINE / "conf/genesis-images.lock").read_text().splitlines()
         if "_IMAGE=" in line and not line.startswith("#")
     }
     for image in sorted(images):

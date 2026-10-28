@@ -83,8 +83,8 @@ workspace above it. The adapter preserves shared-control assignments, raw source
 snapshots and available QC definitions. DAP controls have no required treatment peak
 outputs.
 
-DAP runs record their image pins and Git status in `output/dap-images.lock` and
-`output/git-status.txt` (see [DAP run records](https://github.com/kundajelab/genesis-preprocessing/blob/main/docs/usage/dapseq-reference.md#run-records)).
+DAP runs record their image pins and Git status in `output/genesis-images.lock`
+(`dap-images.lock` in older runs) and `output/git-status.txt` (see [DAP run records](https://github.com/kundajelab/genesis-preprocessing/blob/main/docs/usage/dapseq-reference.md#run-records)).
 Import treats a run's provenance as complete only for a clean checkout run with a
 container engine and digest-pinned images, and keeps the engine and image pins in
 each manifest. Full inspection checks the declared artifact digests and reference

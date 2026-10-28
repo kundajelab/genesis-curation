@@ -67,8 +67,8 @@ def legacy(root: Path) -> None:
     # The run's recorded commit, engine, image pins and dirty files are carried over as-is.
     output = dap / "output"
     commit = "a" * 40
-    digest = "kundajelab/dap_seq_peaks@sha256:" + "b" * 64
-    (output / "dap-images.lock").write_text(f"DAP_SEQ_PEAKS_IMAGE={digest}\n")
+    digest = "kundajelab/genesis_macs3@sha256:" + "b" * 64
+    (output / "genesis-images.lock").write_text(f"GENESIS_MACS3_IMAGE={digest}\n")
     (output / "git-status.txt").write_text(
         f"branch: main\ncommit: {commit}\ncontainer engine: docker\n"
         "dirty files:\n M main.nf\n?? notes.txt\n"
@@ -80,9 +80,14 @@ def legacy(root: Path) -> None:
     assert run["git_sha"] == commit
     assert run["parameters"] == {
         "container_engine": "docker",
-        "images": {"DAP_SEQ_PEAKS_IMAGE": digest},
+        "images": {"GENESIS_MACS3_IMAGE": digest},
         "dirty_files": [" M main.nf", "?? notes.txt"],
     }
+    # Runs from before the lock rename recorded their pins in dap-images.lock.
+    (output / "genesis-images.lock").unlink()
+    old = "kundajelab/dap_seq_peaks@sha256:" + "c" * 64
+    (output / "dap-images.lock").write_text(f"DAP_SEQ_PEAKS_IMAGE={old}\n")
+    assert dap_run_record(output)[1]["images"] == {"DAP_SEQ_PEAKS_IMAGE": old}
     # A malformed or missing commit is not recorded as one.
     (output / "git-status.txt").write_text("git status unavailable: not a checkout\n")
     assert dap_run_record(output)[0] is None
