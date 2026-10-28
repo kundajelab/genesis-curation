@@ -73,9 +73,11 @@ with pyBigWig.open(out, 'w') as bw:
 total = 0.0
 with pyBigWig.open(out) as bw:
     chroms = bw.chroms()
-    for chrom in chroms:
-        for start, end, value in bw.intervals(chrom) or ():
-            total += value * (end - start)
+    # Sum in 1 Mb windows: reading whole contigs' intervals takes far more memory.
+    for chrom, length in chroms.items():
+        for start in range(0, length, 1_000_000):
+            end = min(start + 1_000_000, length)
+            total += bw.stats(chrom, start, end, type="sum", exact=True)[0] or 0.0
 print(json.dumps({"sum_counts": total, "contigs": chroms}))
 """
 
@@ -222,10 +224,17 @@ def import_library(
     fragments = run / f"{library}.fragments.tsv.gz"
     cell_table = run / "qc" / f"{library}.cells.tsv"
     with cell_table.open() as stream:
-        cells = table(stream)
-    groups = {row["barcode"]: row["group"] for row in cells}
-    if len(groups) != len(cells) or not groups:
+        listed = table(stream)
+    barcodes = [row["barcode"] for row in listed]
+    if not listed or len(set(barcodes)) != len(barcodes):
         raise ValueError("Each listed cell must appear once")
+    # Cells with no nuclear fragments are in the workflow's cell table but in none of its
+    # groups' fragments, QC or peaks; a group of only such cells has no outputs at all.
+    cells = [row for row in listed if int(row["fragments"]) > 0]
+    if not cells:
+        raise ValueError("No listed cell has nuclear fragments")
+    groups = {row["barcode"]: row["group"] for row in cells}
+    empty_groups = sorted({row["group"] for row in listed} - set(groups.values()))
     fasta = Path(reference_fields["fasta"])
     sizes = contigs(fasta)
     value = {
@@ -349,7 +358,14 @@ def import_library(
         value_out = complete(
             stage,
             "scatac-workflow-import",
-            {"signature": signature, "library": library, "groups": versions, "policy": POLICY},
+            {
+                "signature": signature,
+                "library": library,
+                "groups": versions,
+                "policy": POLICY,
+                "num_cells_without_fragments": len(listed) - len(cells),
+                "groups_without_fragments": empty_groups,
+            },
             started,
         )
     return {"cached": False, "manifest": value_out, "output": str(output)}

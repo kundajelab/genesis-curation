@@ -185,6 +185,19 @@ def main() -> None:
         )
         missing = write_run(root / "missing", FRAGMENTS[:-1])
         rejects(workflow.import_library, missing, fields, bigwig_python, root / "out-missing")
+
+        # Cells with only organelle fragments are listed but in no group's outputs; a group of
+        # only such cells has no folder. Both are recorded and skipped.
+        sparse = write_run(root / "sparse", FRAGMENTS)
+        with (sparse / "qc" / "lib.cells.tsv").open("a") as stream:
+            stream.write("DDD-1\tg1\t0\t5\t5\t1\nEEE-1\tg3\t0\t2\t2\t1\n")
+        result = workflow.import_library(sparse, fields, bigwig_python, root / "out-sparse")
+        data = result["manifest"]["data"]
+        assert sorted(data["groups"]) == ["g1", "g2"]
+        assert data["num_cells_without_fragments"] == 2
+        assert data["groups_without_fragments"] == ["g3"]
+        cells = (root / "out-sparse" / "g1" / "cells.jsonl").read_text().splitlines()
+        assert [json.loads(line)["cell_id"] for line in cells] == ["lib:AAA-1"]
     print("PASS: workflow scATAC import, chrombpnet-atac-v1 cuts, model export compatibility")
 
 
