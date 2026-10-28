@@ -6,7 +6,7 @@ import argparse
 from pathlib import Path
 from typing import Any
 
-from . import evidence, inventory, model, registry
+from . import evidence, inventory, model, registry, workflow
 
 
 def configure(parser: argparse.ArgumentParser) -> None:
@@ -14,6 +14,20 @@ def configure(parser: argparse.ArgumentParser) -> None:
     child = commands.add_parser("register")
     child.add_argument("--input", type=Path, required=True)
     child.add_argument("--registry", type=Path, required=True)
+    child.set_defaults(curation_handler=execute)
+    child = commands.add_parser(
+        "import-workflow", help="Group bundles from one genesis-preprocessing scATAC library"
+    )
+    child.add_argument("--run", type=Path, required=True, help="output/<species>/<sample_id>")
+    child.add_argument("--fasta", type=Path, required=True)
+    child.add_argument("--reference-id", required=True)
+    child.add_argument("--assembly", required=True)
+    child.add_argument("--species", required=True)
+    child.add_argument("--mitochondrial", nargs="*", default=[])
+    child.add_argument("--plastid", nargs="*", default=[])
+    child.add_argument("--bigwig-python", type=Path, required=True)
+    child.add_argument("--output", type=Path, required=True)
+    child.add_argument("--resume", action="store_true")
     child.set_defaults(curation_handler=execute)
     child = commands.add_parser("qc")
     child.add_argument("--input", type=Path, required=True)
@@ -55,6 +69,18 @@ def configure(parser: argparse.ArgumentParser) -> None:
 def execute(args: argparse.Namespace) -> tuple[Any, int]:
     if args.scatac_command == "register":
         return registry.register(args.input, args.registry), 0
+    if args.scatac_command == "import-workflow":
+        fields = {
+            "fasta": args.fasta,
+            "reference_id": args.reference_id,
+            "assembly": args.assembly,
+            "species": args.species,
+            "mitochondrial_contigs": args.mitochondrial,
+            "plastid_contigs": args.plastid,
+        }
+        return workflow.import_library(
+            args.run, fields, args.bigwig_python, args.output, resume=args.resume
+        ), 0
     if args.scatac_command == "qc":
         from .common import verify_output
 

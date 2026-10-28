@@ -40,8 +40,31 @@ genesis scatac register --input products/TASK_ID --registry catalog
 ```
 
 `qc` prints a bundle's recorded QC; `register` records it as an **unreviewed**
-artifact. The model export below also reads these bundles; it does not yet read the
-`scatac-seq` workflow's outputs.
+artifact. The model export below also reads these bundles.
+
+## Import the scatac-seq workflow's outputs
+
+`import-workflow` turns one library of a `scatac-seq` run into one group bundle per
+cell group, which `qc`, `register` and the model export read like the earlier bundles:
+
+```bash
+genesis scatac import-workflow --run RUN/output/Arabidopsis_thaliana/SAMPLE_ID \
+    --fasta references/TAIR10.fa.gz --reference-id TAIR10 --assembly TAIR10 \
+    --species Arabidopsis_thaliana --mitochondrial Mt --plastid Pt \
+    --bigwig-python /path/to/env/bin/python --output bundles/SAMPLE_ID
+```
+
+Peaks, cells and QC come from the workflow; the cut signal does not. The workflow's
+bigWig counts each fragment's first and last base (`start`, `end - 1`), while the model
+export's `chrombpnet-atac-v1` contract puts the second cut at `end`, one base to the
+right. The import therefore rebuilds `signal.bw` from the published fragments with
+those cuts, and records `chrombpnet-atac-v1` and the 10x `+4/-5` source offsets. A cut
+that would fall past a contig end is left out and counted. `--bigwig-python` names an
+existing Python with pyBigWig (for example the workflow's `genesis_deeptools`
+environment), so the import adds no dependency. Fragment counts, cells and peak counts
+are checked against the workflow's own tables. The FASTA must be the one the run used;
+the organelle contigs are recorded, since the workflow has already dropped their
+fragments. `--resume` reuses an unchanged import.
 
 ## Export model inputs
 
