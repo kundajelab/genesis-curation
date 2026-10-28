@@ -48,6 +48,19 @@ def reference(value: dict[str, Any], base: Path) -> tuple[Path, dict[str, int]]:
     ):
         raise ValueError("Explicit reference ID, assembly and species are required")
     fasta = checked_asset(value["fasta"], base)
+    observed = contigs(fasta)
+    if not observed or any(n < 1 for n in observed.values()) or value["contigs"] != observed:
+        raise ValueError("FASTA and declared chromosome dictionary differ")
+    mito, plastid = value["mitochondrial_contigs"], value["plastid_contigs"]
+    if len(mito) != len(set(mito)) or len(plastid) != len(set(plastid)):
+        raise ValueError("Repeated organellar contig")
+    if set(mito) & set(plastid) or (set(mito) | set(plastid)) - observed.keys():
+        raise ValueError("Invalid or overlapping organellar contig declarations")
+    return fasta, observed
+
+
+def contigs(fasta: Path) -> dict[str, int]:
+    """Contig lengths in FASTA order, rejecting duplicate names and non-IUPAC sequence."""
     observed: dict[str, int] = {}
     current = None
     with text_file(fasta) as stream:
@@ -72,14 +85,7 @@ def reference(value: dict[str, Any], base: Path) -> tuple[Path, dict[str, int]]:
                         raise ValueError("Non-IUPAC genomic FASTA sequence")
                     observed[current] += len(sequence)
             line_start = chunk.endswith("\n")
-    if not observed or any(n < 1 for n in observed.values()) or value["contigs"] != observed:
-        raise ValueError("FASTA and declared chromosome dictionary differ")
-    mito, plastid = value["mitochondrial_contigs"], value["plastid_contigs"]
-    if len(mito) != len(set(mito)) or len(plastid) != len(set(plastid)):
-        raise ValueError("Repeated organellar contig")
-    if set(mito) & set(plastid) or (set(mito) | set(plastid)) - observed.keys():
-        raise ValueError("Invalid or overlapping organellar contig declarations")
-    return fasta, observed
+    return observed
 
 
 def software() -> dict[str, Any]:
