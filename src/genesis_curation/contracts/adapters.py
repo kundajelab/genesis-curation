@@ -101,17 +101,20 @@ def signal(role: str, strand: str = "both") -> dict[str, Any]:
     }
 
 
-# The Nextflow run records its own provenance (trace, report, git-status.txt, dap-images.lock).
-# Carry that record into each manifest as-is; assessing it is not this adapter's job.
+# The Nextflow run records its own provenance (trace, report, git-status.txt,
+# genesis-images.lock; dap-images.lock before the rename). Carry that record into each
+# manifest as-is; assessing it is not this adapter's job.
 DAP_PROVENANCE_NOTE = (
     "DAP provenance is recorded by the Nextflow run (trace, report, git-status.txt, "
-    "dap-images.lock) and is not assessed by this adapter"
+    "genesis-images.lock) and is not assessed by this adapter"
 )
 
 
 def dap_run_record(output: Path) -> tuple[str | None, dict[str, Any]]:
     """Copy a DAP run's recorded commit, container engine, image pins and dirty files."""
-    status_path, lock_path = output / "git-status.txt", output / "dap-images.lock"
+    status_path, lock_path = output / "git-status.txt", output / "genesis-images.lock"
+    if not lock_path.is_file():
+        lock_path = output / "dap-images.lock"
     fields: dict[str, str] = {}
     dirty: list[str] = []
     if status_path.is_file():
