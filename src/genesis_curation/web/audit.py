@@ -13,8 +13,8 @@ from . import catalog, studies
 
 
 def create(root: Path, samples: list[dict[str, Any]], title: str, actor: str) -> str:
-    if not 1 <= len(samples) <= 20 or len({s["id"] for s in samples}) != len(samples):
-        raise ValueError("An audit needs 1–20 distinct frozen samples")
+    if not 1 <= len(samples) <= 100 or len({s["id"] for s in samples}) != len(samples):
+        raise ValueError("An audit needs 1–100 distinct frozen samples")
     cards = []
     for sample in samples:
         state = sample["state"]
@@ -116,8 +116,8 @@ def view(root: Path, key: str, sid: str, actor: str) -> dict[str, Any]:
     state = sample["state"]
     entries = catalog.evidence_index(state["sources"])
     wanted = set(sample["fields"])
-    citations = {e["quote"] for f in state["fields"] if f["field"] in wanted for e in f["evidence"]}
-    entries.sort(key=lambda e: (e["text"] not in citations, e["source_version"], e["locator"]))
+    # Evidence ordering must not reveal which passages the model selected.
+    entries.sort(key=lambda e: (e["source_version"], e["locator"]))
     return {
         "id": sid,
         "name": state["name"],

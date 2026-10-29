@@ -14,7 +14,68 @@ from ..contracts.records import fingerprint
 from . import intake
 
 SPECIES = {"Arabidopsis thaliana": 3702, "Sorghum bicolor": 4558}
-ASSAYS = {"RNA-seq": "RNA-Seq", "ATAC-seq": "ATAC-seq"}
+ASSAYS = {"RNA-seq": "RNA-Seq", "ATAC-seq": "ATAC-seq", "scATAC-seq": "ATAC-seq", "TSS": "OTHER"}
+GEO_ASSAYS = {
+    "RNA-seq": '("RNA-seq" OR "RNA sequencing")',
+    "ATAC-seq": '("ATAC-seq" OR "ATAC sequencing")',
+    "scATAC-seq": '("ATAC" AND ("single cell" OR "single nucleus" OR "scATAC" OR "multiome"))',
+    "TSS": '("CAGE" OR "RAMPAGE" OR "nanoPARE" OR "TSS-seq" OR "csRNA-seq" '
+    'OR "STRIPE-seq" OR "nanoCAGE" OR "5 prime" OR "transcription start")',
+}
+
+
+def valid_species_name(name: object) -> bool:
+    return isinstance(name, str) and bool(re.fullmatch(r"[A-Z][a-z]+ [a-z][a-z -]{1,90}", name))
+
+
+def taxon(root: Path, name: str, cancel: threading.Event | None) -> int:
+    """Require exact scientific name and plant ancestry; ambiguous names fail closed."""
+    if name in SPECIES:
+        return SPECIES[name]
+    if not valid_species_name(name):
+        raise ValueError("Use an exact plant scientific name")
+    found, _ = json_source(
+        root,
+        EUTILS
+        + "esearch.fcgi?"
+        + urlencode(
+            {
+                "db": "taxonomy",
+                "term": f'"{name}"[Scientific Name]',
+                "retmode": "json",
+            }
+        ),
+        cancel,
+    )
+    ids = found["esearchresult"]["idlist"]
+    if len(ids) != 1:
+        raise ValueError("Plant taxonomy name is unresolved or ambiguous: " + name)
+    source = intake.fetch(
+        root,
+        EUTILS
+        + "efetch.fcgi?"
+        + urlencode(
+            {
+                "db": "taxonomy",
+                "id": ids[0],
+                "retmode": "xml",
+            }
+        ),
+        cancel,
+    )
+    document = ET.fromstring(source["text"])
+    item = document.find("Taxon")
+    if (
+        item is None
+        or item.findtext("ScientificName") != name
+        or not any(
+            ancestor.findtext("TaxId") == "33090" for ancestor in item.findall("LineageEx/Taxon")
+        )
+    ):
+        raise ValueError("Taxonomy did not verify the requested plant species: " + name)
+    return int(ids[0])
+
+
 EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
 ENA = "https://www.ebi.ac.uk/ena/portal/api/"
 ACCESSIONS = re.compile(r"\b(?:GSE|GSM|[SED]R[PSRX]|PRJ[EDN][AB]|SAM[END][A-Z]?)\d+\b")
@@ -39,16 +100,13 @@ def search(
 ) -> dict[str, Any]:
     """One bounded page per call. Counts/cursors are retained, never claimed exhaustive."""
     species, assay = query["species"], query["assay"]
-    if species not in SPECIES or assay not in ASSAYS:
-        raise ValueError("Unsupported pilot species or assay")
+    if not valid_species_name(species) or assay not in ASSAYS:
+        raise ValueError("Unsupported plant species or assay")
+    tax_id = taxon(root, species, cancel)
     terms = [str(t).replace('"', " ")[:100] for t in query.get("terms", [])][:8]
     offset = int(query.get("offset", 0))
     if query["source"] == "geo":
-        assay_term = (
-            '("RNA-seq" OR "RNA sequencing")'
-            if assay == "RNA-seq"
-            else '("ATAC-seq" OR "ATAC sequencing")'
-        )
+        assay_term = GEO_ASSAYS[assay]
         term = f'"{species}"[Organism] AND {assay_term} AND gse[Entry Type]'
         if terms:
             term += " AND (" + " OR ".join('"' + t + '"' for t in terms) + ")"
@@ -98,7 +156,11 @@ def search(
             "next_offset": offset + len(ids) if ids and offset + len(ids) < total else None,
             "query": term,
         }
-    expression = f'tax_eq({SPECIES[species]}) AND library_strategy="{ASSAYS[assay]}"'
+    expression = f'tax_eq({tax_id}) AND library_strategy="{ASSAYS[assay]}"'
+    if assay == "TSS":
+        expression = (
+            f'tax_eq({tax_id}) AND (library_strategy="OTHER" OR library_strategy="RNA-Seq")'
+        )
     # ENA free-text fields vary by result type. Tissue/condition are evaluated from
     # retrieved evidence rather than silently turning a failed search into no matches.
     url = (

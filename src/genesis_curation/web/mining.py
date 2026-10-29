@@ -19,7 +19,7 @@ DEFAULTS = {"candidates": 50, "studies": 10, "samples": 200, "minutes": 30}
 MAXIMUMS = {"candidates": 500, "studies": 100, "samples": 2000, "minutes": 240}
 GUIDANCE = {
     "id": "plant-mining",
-    "version": "2",
+    "version": "3",
     "instructions": "Search the requested plant taxa and assay. "
     "Keep bulk and single-cell distinct. "
     "Bulk evidence can be pooled-tissue extraction and conventional library preparation; "
@@ -147,16 +147,17 @@ def create(root: Path, body: dict[str, Any], config: dict[str, Any], actor: str)
         raise ValueError("Describe the research goal in 3–4000 characters")
     species, assays = (
         body.get("species", list(sources.SPECIES)),
-        body.get("assays", list(sources.ASSAYS)),
+        body.get("assays", ["RNA-seq", "ATAC-seq"]),
     )
     if (
         not isinstance(species, list)
         or not species
-        or any(s not in sources.SPECIES for s in species)
+        or len(species) > 30
+        or any(not sources.valid_species_name(s) for s in species)
     ):
-        raise ValueError("Select the pilot species: sorghum and/or Arabidopsis")
+        raise ValueError("Provide up to 30 plant species names; taxonomy is checked during search")
     if not isinstance(assays, list) or not assays or any(s not in sources.ASSAYS for s in assays):
-        raise ValueError("Select RNA-seq and/or ATAC-seq")
+        raise ValueError("Select RNA-seq, ATAC-seq, scATAC-seq or TSS")
     limits = {**DEFAULTS, **body.get("limits", {})}
     if set(limits) != set(DEFAULTS) or any(
         type(v) is not int or not 1 <= v <= MAXIMUMS[k] for k, v in limits.items()
@@ -195,7 +196,7 @@ def create(root: Path, body: dict[str, Any], config: dict[str, Any], actor: str)
 
 
 def schedule(root: Path, run: dict[str, Any], actor: str) -> dict[str, Any]:
-    job = runtime.enqueue(root, "mining", actor, {"mining": run["id"]})
+    job = runtime.enqueue(root, "mining", actor, {"mining": run["id"], "provider": run["provider"]})
     run["job"] = job
     return save(root, run, "schedule", actor)
 
@@ -255,29 +256,29 @@ def decide(root: Path, key: str, cid: str, body: dict[str, Any], actor: str) -> 
     return run
 
 
+def questions(run: dict[str, Any]) -> list[dict[str, Any]]:
+    return [
+        {
+            "kind": "mining-inclusion",
+            "id": c["id"],
+            "run": run["id"],
+            "version": c["version"],
+            "title": c["title"],
+            "reason": c["reason"],
+            "goal": run["goal"],
+            "accession": c["accession"],
+            "quotes": c.get("quotes", []),
+            "url": c["url"],
+            "priority": 0,
+            "affected": 1,
+        }
+        for c in run["candidates"]
+        if c["status"] == "uncertain"
+    ]
+
+
 def question_rows(root: Path) -> list[dict[str, Any]]:
-    rows = []
-    for item in listing(root):
-        run = read(root, item["id"])
-        for c in run["candidates"]:
-            if c["status"] == "uncertain":
-                rows.append(
-                    {
-                        "kind": "mining-inclusion",
-                        "id": c["id"],
-                        "run": run["id"],
-                        "version": c["version"],
-                        "title": c["title"],
-                        "reason": c["reason"],
-                        "goal": run["goal"],
-                        "accession": c["accession"],
-                        "quotes": c.get("quotes", []),
-                        "url": c["url"],
-                        "priority": 0,
-                        "affected": 1,
-                    }
-                )
-    return rows
+    return [q for item in listing(root) for q in questions(read(root, item["id"]))]
 
 
 def invoke(
@@ -404,20 +405,26 @@ def assess(
         run,
         config,
         {
-            "goal": "Find public bulk "
+            "goal": "Find public "
             + candidate["query"]["assay"]
             + " studies in "
             + candidate["query"]["species"],
             "species": [candidate["query"]["species"]],
             "assays": [candidate["query"]["assay"]],
             "required_tissue_or_condition": run.get("plan", {}).get("terms", []),
-            "scope": "bulk assays; single-cell/nucleus-only studies are out of scope",
+            "scope": (
+                "Single-cell/nucleus chromatin accessibility; require per-cell barcode evidence"
+                if candidate["query"]["assay"] == "scATAC-seq"
+                else "Transcription start mapping; require an explicit 5-prime mapping protocol"
+                if candidate["query"]["assay"] == "TSS"
+                else "bulk assays; single-cell/nucleus-only studies are out of scope"
+            ),
             "evidence": text,
             "title": candidate["title"],
             "task": "Species and assay lists are ALTERNATIVES, not cumulative requirements. "
             "A study needs ANY ONE selected species AND ANY ONE selected assay, not all of them. "
             "Apply tissue/condition constraints from the goal strictly. "
-            "Assess whether the study includes matching bulk data. "
+            "Assess whether the study includes data matching the requested modality.  "
             "Cite exact supporting passages. "
             "Search results alone do not prove relevance. "
             "Missing tissue/condition evidence is uncertain. "

@@ -57,6 +57,8 @@ def fetch(root: Path, url: str, cancellation: threading.Event | None = None) -> 
             dump(cache, result)
             return retain(root, result)
         except (OSError, UnicodeDecodeError) as exc:
+            if isinstance(exc, HTTPError) and 400 <= exc.code < 500 and exc.code != 429:
+                raise ValueError(f"Metadata retrieval failed: HTTP {exc.code}") from exc
             error = exc
             delay = min(attempt + 1, 3)
             if isinstance(exc, HTTPError) and exc.code in {429, 503}:
@@ -302,3 +304,47 @@ def import_accession(
         actor,
     )
     return key
+
+
+def archive_xml(root: Path, accession: str) -> dict[str, Any]:
+    """Read exact experiment/BioSample evidence with a bounded NCBI fallback."""
+    if not re.fullmatch(r"(?:[SED]RX|SAM[END][A-Z]?)\d+", accession):
+        raise ValueError("Expected an experiment or BioSample accession")
+    try:
+        return fetch(root, "https://www.ebi.ac.uk/ena/browser/api/xml/" + accession)
+    except ValueError as ena_error:
+        database = "biosample" if accession.startswith("SAM") else "sra"
+        base = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
+        found = fetch(
+            root,
+            base
+            + "esearch.fcgi?"
+            + urlencode(
+                {
+                    "db": database,
+                    "term": accession + "[Accession]",
+                    "retmode": "json",
+                    "retmax": 2,
+                }
+            ),
+        )
+        ids = json.loads(found["text"])["esearchresult"]["idlist"]
+        if len(ids) != 1:
+            raise ValueError("Archive identity unresolved: " + accession) from ena_error
+        source = fetch(
+            root,
+            base
+            + "efetch.fcgi?"
+            + urlencode(
+                {
+                    "db": database,
+                    "id": ids[0],
+                    "retmode": "xml",
+                }
+            ),
+        )
+        tree = ET.fromstring(source["text"])
+        tag = "BioSample" if database == "biosample" else "EXPERIMENT"
+        if not any(item.get("accession") == accession for item in tree.iter(tag)):
+            raise ValueError("Fallback archive evidence has a different accession") from ena_error
+        return source
