@@ -343,6 +343,11 @@ def metadata_checks(root: Path) -> None:
     # Actual prior schema and populated scientific/approval history survive migration and restore.
     with sqlite3.connect(directory / "registry.sqlite") as db:
         for table in (
+            "workspace_events",
+            "workspace_items",
+            "workspace_campaigns",
+            "workspace_rows",
+            "workspace_imports",
             "curation_queue_tasks",
             "curation_queue_owners",
             "curation_result_rows",

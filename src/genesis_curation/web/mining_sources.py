@@ -12,20 +12,18 @@ from urllib.parse import urlencode
 
 from ..contracts.records import fingerprint
 from . import intake
+from .discovery_catalog import ASSAYS as RECIPES
 
 SPECIES = {"Arabidopsis thaliana": 3702, "Sorghum bicolor": 4558}
-ASSAYS = {"RNA-seq": "RNA-Seq", "ATAC-seq": "ATAC-seq", "scATAC-seq": "ATAC-seq", "TSS": "OTHER"}
+
+ASSAYS = {k: v["strategies"][0] for k, v in RECIPES.items()}
 GEO_ASSAYS = {
-    "RNA-seq": '("RNA-seq" OR "RNA sequencing")',
-    "ATAC-seq": '("ATAC-seq" OR "ATAC sequencing")',
-    "scATAC-seq": '("ATAC" AND ("single cell" OR "single nucleus" OR "scATAC" OR "multiome"))',
-    "TSS": '("CAGE" OR "RAMPAGE" OR "nanoPARE" OR "TSS-seq" OR "csRNA-seq" '
-    'OR "STRIPE-seq" OR "nanoCAGE" OR "5 prime" OR "transcription start")',
+    k: "(" + " OR ".join('"' + t + '"' for t in v["terms"]) + ")" for k, v in RECIPES.items()
 }
 
 
 def valid_species_name(name: object) -> bool:
-    return isinstance(name, str) and bool(re.fullmatch(r"[A-Z][a-z]+ [a-z][a-z -]{1,90}", name))
+    return isinstance(name, str) and bool(re.fullmatch(r"[A-Z][A-Za-z0-9 .×_-]{1,120}", name))
 
 
 def taxon(root: Path, name: str, cancel: threading.Event | None) -> int:
@@ -98,7 +96,7 @@ def queries(species: list[str], assays: list[str], terms: list[str]) -> list[dic
 def search(
     root: Path, query: dict[str, Any], cancel: threading.Event | None = None
 ) -> dict[str, Any]:
-    """One bounded page per call. Counts/cursors are retained, never claimed exhaustive."""
+    "One bounded page per call. Counts/cursors are retained, never claimed exhaustive."
     species, assay = query["species"], query["assay"]
     if not valid_species_name(species) or assay not in ASSAYS:
         raise ValueError("Unsupported plant species or assay")
@@ -156,7 +154,11 @@ def search(
             "next_offset": offset + len(ids) if ids and offset + len(ids) < total else None,
             "query": term,
         }
-    expression = f'tax_eq({tax_id}) AND library_strategy="{ASSAYS[assay]}"'
+    expression = (
+        f"tax_tree({tax_id}) AND ("
+        + " OR ".join('library_strategy="' + v + '"' for v in RECIPES[assay]["strategies"])
+        + ")"
+    )
     if assay == "TSS":
         expression = (
             f'tax_eq({tax_id}) AND (library_strategy="OTHER" OR library_strategy="RNA-Seq")'

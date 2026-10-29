@@ -1,4 +1,4 @@
-"""Local application sessions and durable jobs; inference never holds a write lock."""
+"Local application sessions and durable jobs; inference never holds a write lock."
 
 from __future__ import annotations
 
@@ -126,6 +126,8 @@ def enqueue(root: Path, kind: str, actor: str, payload: dict[str, Any]) -> str:
         "study-prepare",
         "study-intake",
         "mining",
+        "workspace",
+        "workspace-export",
     }:
         raise ValueError("Unknown job type")
     key = str(uuid.uuid4())
@@ -139,7 +141,10 @@ def enqueue(root: Path, kind: str, actor: str, payload: dict[str, Any]) -> str:
         ):
             raise ValueError("Job queue is full")
         db.execute(
-            "INSERT INTO jobs(id,kind,actor,payload,status,created,updated) VALUES(?,?,?,?,?,?,?)",
+            (
+                "INSERT INTO jobs(id,kind,actor,payload,status,created,updated) VA"
+                "LUES(?,?,?,?,?,?,?)"
+            ),
             (key, kind, actor, canonical(payload), "QUEUED", now(), now()),
         )
     return key
@@ -246,14 +251,14 @@ def recover(root: Path) -> None:
 
 def yield_job(root: Path, task: dict[str, Any], result: dict[str, Any]) -> bool:
     """Checkpoint a study job and release the worker between inference batches."""
-    is_mining = task["kind"] == "mining"
+    is_mining = task["kind"] in {"mining", "workspace"}
     payload = task["payload"] if is_mining else {**task["payload"], "study": result["study"]}
     with connection(root) as db:
         db.execute(
             "UPDATE jobs SET status=CASE WHEN cancel=1 THEN 'CANCELLED' ELSE 'QUEUED' END,"
             "kind=?,payload=?,result=?,updated=? WHERE id=?",
             (
-                "mining" if is_mining else "study-prepare",
+                task["kind"] if is_mining else "study-prepare",
                 canonical(payload),
                 canonical(result),
                 now(),

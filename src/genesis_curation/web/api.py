@@ -1,4 +1,4 @@
-"""Authenticated browser boundary; no arbitrary file paths, shell or deployment tools."""
+"Authenticated browser boundary; no arbitrary file paths, shell or deployment tools."
 
 from __future__ import annotations
 
@@ -413,6 +413,9 @@ def create_app(
     from . import mining_api
 
     mining_api.mount(app, root, config_path)
+    from . import workspace_api
+
+    workspace_api.mount(app, root, config_path)
 
     @app.get("/{path:path}")
     def frontend(path: str) -> FileResponse:

@@ -1,0 +1,11 @@
+# Private metasearch API for the application worker; never exposed publicly.
+services:
+  search:
+    image: docker.io/searxng/searxng@sha256:c4e8448495ef3b0175eb6c97a19c1ac7cc0a5c907d581ab3877f3cb430e81b86
+    ports:
+      - "127.0.0.1:18888:8080"
+    restart: unless-stopped
+    volumes:
+      - ${WEB_ROOT:?}/search:/etc/searxng:rw
+    environment:
+      SEARXNG_BASE_URL: http://127.0.0.1:18888/

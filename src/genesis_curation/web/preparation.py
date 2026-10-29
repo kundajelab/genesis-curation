@@ -127,6 +127,17 @@ def select_skill(folder: Path, state: dict[str, Any]) -> dict[str, Any]:
             if state.get("source_scopes", {}).get(s["version"]) != "study_context"
         ).lower()
     )
+    modality = state.get("original", {}).get("_modality", "")
+    chosen = {
+        "TSS": "plant-tss-metadata",
+        "Bulk ATAC": "plant-atac-metadata",
+        "scATAC": "plant-atac-metadata",
+        "MPRA": "plant-mpra-metadata",
+        "Genomes": "plant-genome-metadata",
+        "DAP-seq": "plant-binding-metadata",
+    }.get(modality)
+    if chosen:
+        return skills.select(folder, chosen)
     if any(
         term in context
         for term in (

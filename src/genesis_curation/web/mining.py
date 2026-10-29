@@ -152,12 +152,14 @@ def create(root: Path, body: dict[str, Any], config: dict[str, Any], actor: str)
     if (
         not isinstance(species, list)
         or not species
-        or len(species) > 30
+        or len(species) > 500
         or any(not sources.valid_species_name(s) for s in species)
     ):
-        raise ValueError("Provide up to 30 plant species names; taxonomy is checked during search")
+        raise ValueError(
+            "Provide up to 500 plant species or taxonomy names; taxonomy is checked during search"
+        )
     if not isinstance(assays, list) or not assays or any(s not in sources.ASSAYS for s in assays):
-        raise ValueError("Select RNA-seq, ATAC-seq, scATAC-seq or TSS")
+        raise ValueError("Select a supported assay")
     limits = {**DEFAULTS, **body.get("limits", {})}
     if set(limits) != set(DEFAULTS) or any(
         type(v) is not int or not 1 <= v <= MAXIMUMS[k] for k, v in limits.items()

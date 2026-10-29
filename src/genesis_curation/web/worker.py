@@ -14,6 +14,7 @@ from ..contracts.records import canonical, fingerprint
 from ..curation import harmonize
 from ..llm import providers
 from ..llm.security import redact
+from ..registry import store
 from . import catalog, intake, mining, preparation, runtime, skills, studies
 
 
@@ -21,6 +22,14 @@ def execute(
     root: Path, config_path: Path, task: dict[str, Any], cancellation: threading.Event | None = None
 ) -> dict[str, Any]:
     data, kind = task["payload"], task["kind"]
+    if kind == "workspace":
+        from . import campaigns
+
+        return campaigns.step(root, config_path, task, cancellation)
+    if kind == "workspace-export":
+        from . import workspace
+
+        return workspace.export_bundle(root, task["id"], bool(data.get("clean")))
     if kind == "mining":
         return mining.step(root, config_path, task, cancellation)
     if kind == "study-intake":
@@ -132,11 +141,20 @@ def once(root: Path, config_path: Path) -> bool:
             raise ValueError("Request cancelled")
         result = execute(root, config_path, task, cancellation)
         if result.get("pending"):
-            if runtime.yield_job(root, task, result) and task["kind"] != "mining":
+            if runtime.yield_job(root, task, result) and task["kind"] not in {
+                "mining",
+                "workspace",
+            }:
                 studies.preparation(root / "catalog", result["study"], {"status": "INTERRUPTED"})
         else:
             runtime.finish(root, task["id"], result)
     except Exception as error:
+        if task["kind"] == "workspace":
+            with store.write(root / "catalog") as db:
+                db.execute(
+                    "UPDATE workspace_campaigns SET status='FAILED' WHERE id=?",
+                    (task["payload"]["campaign"],),
+                )
         if task["kind"] == "mining":
             with contextlib.suppress(ValueError):
                 run = mining.read(root, task["payload"]["mining"])
@@ -160,12 +178,15 @@ def once(root: Path, config_path: Path) -> bool:
 
 
 def run(root: Path, config_path: Path) -> None:
+    from . import campaigns
+
     with (root / "worker.lock").open("a") as lock:
         try:
             fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
             raise ValueError("A worker already owns this application") from None
         runtime.recover(root)
+        campaigns.recover(root)
         mining.recover(root)
         with runtime.connection(root) as db:
             queued = {row[0] for row in db.execute("SELECT id FROM jobs WHERE status='QUEUED'")}

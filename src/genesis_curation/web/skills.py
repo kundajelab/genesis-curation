@@ -16,7 +16,7 @@ BUILTIN: dict[str, Any] = {
     "single-cell assay from an ATAC-seq title. Do not infer genotype, stage or treatment from "
     "a related sample. Report conflicts and missing evidence explicitly. Cite only exact supplied "
     "source passages; reference guidance and prior corrections are not dataset evidence.",
-    "references": [{"title": "Genesis metadata vocabulary", "id": "plant-v1"}],
+    "references": [{"title": "Genesis metadata vocabulary", "id": "genesis-plant-terms/4"}],
 }
 
 
@@ -51,6 +51,74 @@ def available(folder: Path) -> list[dict[str, Any]]:
             ],
         },
     ]
+    packs = {
+        "plant-discovery": (
+            "Search and source linking",
+            (
+                "Use archive APIs first, then literature and domain-restricted web"
+                " search. Record query, cursor, errors and source hashes. Accessio"
+                "n-seeded replay is not independent discovery. A citing paper is n"
+                "ot necessarily the originating paper; require an explicit accessi"
+                "on relationship. Search snippets are leads, not proof."
+            ),
+        ),
+        "plant-tss-metadata": (
+            "TSS protocols",
+            (
+                "Distinguish cap-selected transcription starts, nascent transcript"
+                "ion, RNA modifications and generic RNA-seq. NAD capture is not au"
+                "tomatically a TSS assay. Require library protocol evidence; retai"
+                "n subtype and ambiguous mapping intent."
+            ),
+        ),
+        "plant-atac-metadata": (
+            "ATAC libraries and controls",
+            (
+                "Verify transposase accessibility at library level. Separate genom"
+                "ic DNA, input and non-ATAC controls. For single-cell/nucleus and "
+                "multiome, require barcode and modality evidence. Do not infer bul"
+                "k from absence of single-cell words."
+            ),
+        ),
+        "plant-mpra-metadata": (
+            "MPRA and reporter assays",
+            (
+                "Distinguish a paper from its deposited dataset, DNA library input"
+                " from RNA readout, construct from biological replicate, and proto"
+                "plast from whole tissue. Require explicit species, assay context "
+                "and accession links. Do not fabricate per-construct measurements "
+                "from article summaries."
+            ),
+        ),
+        "plant-genome-metadata": (
+            "Genome references",
+            (
+                "Record assembly accession and version, organism, subgenome and pr"
+                "ovenance. A local path is not a public download or a verified ass"
+                "embly. Imported BUSCO, mapping and QC values remain external clai"
+                "ms; do not report processing success."
+            ),
+        ),
+        "plant-identity-metadata": (
+            "Taxonomy and sample identity",
+            (
+                "Preserve original taxon names, ranks, hybrids and cultivar groups"
+                ". Keep tissue, stage, genotype and treatment separate. Do not use"
+                " sample labels as tissues or fill missing values from neighboring"
+                " samples. Link only exact experiment identities; shared BioProjec"
+                "ts are not duplicates."
+            ),
+        ),
+    }
+    for key, (title, instructions) in packs.items():
+        result.append(
+            {
+                **BUILTIN,
+                "id": key,
+                "title": title,
+                "instructions": BUILTIN["instructions"] + " " + instructions,
+            }
+        )
     if folder.exists():
         for path in sorted(folder.glob("*.json")):
             value = load(path)

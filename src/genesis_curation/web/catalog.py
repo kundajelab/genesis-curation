@@ -68,6 +68,23 @@ def save(
     actor: str,
     payload: dict[str, Any],
 ) -> dict[str, Any]:
+    previous = db.execute(
+        "SELECT body FROM curation_subjects WHERE id=?", (state["id"],)
+    ).fetchone()
+    before = (
+        {f["field"]: f["value"] for f in loads(previous[0]).get("fields", [])} if previous else {}
+    )
+    changes = [
+        {
+            "field": f["field"],
+            "before": before.get(f["field"]),
+            "after": f["value"],
+            "evidence": f["evidence"],
+        }
+        for f in state.get("fields", [])
+        if before.get(f["field"]) != f["value"]
+    ]
+    payload = {**payload, "changes": changes}
     event = record(
         "curation_event",
         {
@@ -94,6 +111,9 @@ def save(
     from . import results
 
     results.project(db, state)
+    from . import workspace
+
+    workspace.sync(db, state)
     return state
 
 

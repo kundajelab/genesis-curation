@@ -5,7 +5,7 @@ from __future__ import annotations
 import re
 from typing import Any
 
-VERSION = "library-eligibility/1"
+VERSION = "library-eligibility/2"
 TSS = re.compile(
     r"\b(cage(?:-seq)?|rampage|nanopare|tss-seq2?|csrna-seq|stripe-seq|nanocage)\b", re.I
 )
@@ -42,6 +42,22 @@ def classify(original: dict[str, Any], metadata: dict[str, Any]) -> dict[str, st
             else "Other"
         )
     )
+    if modality == "Other":
+        patterns = {
+            "DAP-seq": r"\b(?:amp)?DAP[- ]seq\b",
+            "ChIP-seq": r"\bChIP[- ]seq\b",
+            "WGBS": r"\b(?:WGBS|bisulfite[- ]seq)\b",
+            "MPRA": r"\b(?:MPRA|STARR[- ]seq|massively parallel reporter)\b",
+            "RNA-seq": r"\bRNA[- ]seq\b",
+        }
+        modality = next(
+            (
+                name
+                for name, pattern in patterns.items()
+                if re.search(pattern, assay + " " + claimed, re.I)
+            ),
+            "Other",
+        )
     if CONTROL.search(text):
         return {
             "modality": modality,
@@ -84,6 +100,14 @@ def classify(original: dict[str, Any], metadata: dict[str, Any]) -> dict[str, st
             "modality": modality,
             "eligibility": "uncertain",
             "reason": "Verify 5-prime protocol and mapping intent",
+        }
+    if modality in {"DAP-seq", "ChIP-seq", "WGBS", "MPRA", "RNA-seq"}:
+        return {
+            "modality": modality,
+            "eligibility": "candidate"
+            if re.search(patterns[modality], assay, re.I)
+            else "uncertain",
+            "reason": "Library-level assay claim; protocol evidence retained",
         }
     return {
         "modality": modality,

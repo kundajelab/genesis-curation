@@ -15,7 +15,7 @@ from typing import Any
 
 from ..contracts.records import canonical, fingerprint, identity, loads, now, record, validate
 
-SCHEMA_VERSION = 10
+SCHEMA_VERSION = 11
 MIGRATIONS = {
     1: [
         "CREATE TABLE meta (key TEXT PRIMARY KEY,value TEXT NOT NULL)",
@@ -194,6 +194,46 @@ MIGRATIONS = {
         "INSERT INTO curation_queue_owners(owner,kind) VALUES(new.id,'mining'); END",
         "CREATE TRIGGER queue_mining_update AFTER UPDATE ON mining_runs BEGIN "
         "UPDATE curation_queue_owners SET dirty=1 WHERE owner=new.id; END",
+    ],
+    11: [
+        ("CREATE TABLE workspace_imports (id TEXT PRIMARY KEY,body TEXT NOT NULL)"),
+        (
+            "CREATE TABLE workspace_rows (id TEXT PRIMARY KEY,batch TEXT NOT NULL,t"
+            "ab TEXT NOT NULL,row_number INTEGER NOT NULL,modality TEXT NOT NULL,sp"
+            "ecies TEXT NOT NULL,study TEXT NOT NULL,entity TEXT NOT NULL,subject T"
+            "EXT NOT NULL DEFAULT '',status TEXT NOT NULL,body TEXT NOT NULL)"
+        ),
+        ("CREATE INDEX workspace_modality ON workspace_rows(modality,id)"),
+        ("CREATE INDEX workspace_species ON workspace_rows(modality,species,id)"),
+        ("CREATE INDEX workspace_entity ON workspace_rows(entity,id)"),
+        ("CREATE INDEX workspace_subject ON workspace_rows(subject)"),
+        ("CREATE INDEX workspace_status ON workspace_rows(status,modality,id)"),
+        (
+            "CREATE TABLE workspace_campaigns (id TEXT PRIMARY KEY,status TEXT NOT "
+            "NULL,body TEXT NOT NULL)"
+        ),
+        (
+            "CREATE TABLE workspace_items (campaign TEXT,entity TEXT,status TEXT NO"
+            "T NULL,body TEXT NOT NULL,PRIMARY KEY(campaign,entity))"
+        ),
+        ("CREATE INDEX workspace_pending ON workspace_items(campaign,status,entity)"),
+        (
+            "CREATE TABLE workspace_events (sequence INTEGER PRIMARY KEY AUTOINCREM"
+            "ENT,campaign TEXT NOT NULL,entity TEXT NOT NULL,created TEXT NOT NULL,"
+            "body TEXT NOT NULL)"
+        ),
+        ("CREATE INDEX workspace_event_page ON workspace_events(campaign,sequence)"),
+        ("CREATE INDEX workspace_event_entity ON workspace_events(entity,sequence)"),
+        (
+            "CREATE TRIGGER immutable_workspace_events_update BEFORE UPDATE ON work"
+            "space_events BEGIN SELECT RAISE(ABORT,'immutable workspace event'); EN"
+            "D"
+        ),
+        (
+            "CREATE TRIGGER immutable_workspace_events_delete BEFORE DELETE ON work"
+            "space_events BEGIN SELECT RAISE(ABORT,'immutable workspace event'); EN"
+            "D"
+        ),
     ],
 }
 

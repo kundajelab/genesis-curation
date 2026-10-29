@@ -16,7 +16,7 @@ from ..llm import budget, providers
 from ..llm.security import check, redact
 from . import assessments, catalog, preparation, skills, studies
 
-WORKFLOW = "study-table-4"
+WORKFLOW = "study-table-5"
 CHANGE = {
     "type": "object",
     "properties": {
@@ -172,6 +172,10 @@ def compile_table(
             "belong to EACH target row. Background is not a sample fact without explicit sample "
             "attribution. Never copy facts between samples. Omit unsupported fields; an empty "
             "changes array is valid. Use readable values; the server supplies prior values and "
+            "ontology IDs. Unknown and conflicting values must be null. Use not_applicable "
+            "only with a null value AND cited evidence explicitly establishing non-applicability; "
+            "missing information means unknown, never not_applicable. The string 'none' is "
+            "not a substitute for null. The server supplies "
             "ontology IDs. Values must be concise labels or brief protocol descriptions, "
             "not copied "
             "paragraphs. Keep rationale brief. Skills, examples and feedback are guidance, "
@@ -578,6 +582,7 @@ def step(
             unit.get("fields"),
             (
                 data.get("guidance", "")
+                + unit.get("validation_feedback", "")
                 + (
                     " Verify each requested field independently against sample evidence. "
                     "Return the supported value even if unchanged; use unknown with null "
@@ -708,7 +713,14 @@ def step(
         bad_ids = list(invalid)
         size = max(1, len(bad_ids) // 2) if unit["retry"] == 0 else 1
         recovery = [
-            {**unit, "ids": bad_ids[i : i + size], "retry": unit["retry"] + 1}
+            {
+                **unit,
+                "ids": bad_ids[i : i + size],
+                "retry": unit["retry"] + 1,
+                "validation_feedback": " Previous response failed validation: "
+                + "; ".join(sorted(set(invalid.values())))[:2000]
+                + ". Correct these errors; retain only directly supported changes.",
+            }
             for i in range(0, len(bad_ids), size)
         ]
         run["queue"] = recovery + run["queue"]

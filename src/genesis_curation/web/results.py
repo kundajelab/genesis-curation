@@ -12,6 +12,7 @@ from typing import Any
 from ..contracts.records import canonical, loads
 from ..registry import store
 from . import eligibility
+from .discovery_catalog import MODALITIES
 
 COLUMNS = (
     "species",
@@ -104,7 +105,7 @@ def page(
     cursor: str = "",
     limit: int = 50,
 ) -> dict[str, Any]:
-    if modality not in {"Bulk ATAC", "scATAC", "TSS", "Other"} or not 1 <= limit <= 200:
+    if modality not in MODALITIES or not 1 <= limit <= 200:
         raise ValueError("Invalid results page")
     where, args = ["modality=?"], [modality]
     for column, value in (
@@ -156,21 +157,12 @@ def csv_page(rows: list[dict[str, Any]]) -> str:
 
 def workbook(root: Path) -> bytes:
     """Export one consistent draft snapshot; no formulas, source-sheet writes or sign-off."""
-    import xml.etree.ElementTree as ET
-    import zipfile
-
-    spreadsheet = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
-    relationships = "http://schemas.openxmlformats.org/package/2006/relationships"
-    office = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
-    content_types = "http://schemas.openxmlformats.org/package/2006/content-types"
     sheets: dict[str, list[dict[str, Any]]] = {
-        name: [] for name in ("TSS", "Bulk ATAC", "scATAC", "Unresolved", "Excluded")
+        name: [] for name in (*MODALITIES, "Unresolved", "Excluded")
     }
     with contextlib.closing(store.connect(root)) as db:
         db.execute("BEGIN")
         count = db.execute("SELECT count(*) FROM curation_result_rows").fetchone()[0]
-        if count > 10000:
-            raise ValueError("Workbook exceeds 10,000 rows; use filtered page exports")
         for (body,) in db.execute("SELECT body FROM curation_result_rows ORDER BY subject"):
             row = loads(body)
             name = (
@@ -189,6 +181,17 @@ def workbook(root: Path) -> bytes:
         {"property": "biological_accuracy", "value": "NOT_INDEPENDENTLY_VALIDATED"},
         {"property": "rows", "value": str(count)},
     ]
+    return xlsx(sheets, manifest)
+
+
+def xlsx(sheets: dict[str, list[dict[str, Any]]], manifest: list[dict[str, Any]]) -> bytes:
+    import xml.etree.ElementTree as ET
+    import zipfile
+
+    spreadsheet = "http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+    relationships = "http://schemas.openxmlformats.org/package/2006/relationships"
+    office = "http://schemas.openxmlformats.org/officeDocument/2006/relationships"
+    content_types = "http://schemas.openxmlformats.org/package/2006/content-types"
     root_book = ET.Element("workbook", xmlns=spreadsheet)
     sheet_list = ET.SubElement(root_book, "sheets")
     rels = ET.Element("Relationships", xmlns=relationships)
@@ -209,7 +212,11 @@ def workbook(root: Path) -> bytes:
     stream = io.BytesIO()
     with zipfile.ZipFile(stream, "w", zipfile.ZIP_DEFLATED) as archive:
         for index, (name, rows) in enumerate([*sheets.items(), ("Manifest", manifest)], 1):
-            fields = ("property", "value") if name == "Manifest" else COLUMNS
+            fields = (
+                ("property", "value")
+                if name == "Manifest"
+                else tuple(dict.fromkeys(k for row in rows for k in row)) or COLUMNS
+            )
             sheet = ET.Element("worksheet", xmlns=spreadsheet)
             data = ET.SubElement(sheet, "sheetData")
             for number, row in enumerate([dict(zip(fields, fields, strict=True)), *rows], 1):

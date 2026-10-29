@@ -19,7 +19,7 @@ from ..curation import harmonize
 from ..llm import providers
 from . import catalog, studies
 
-HOSTS = {"www.ncbi.nlm.nih.gov", "eutils.ncbi.nlm.nih.gov", "www.ebi.ac.uk"}
+HOSTS = {"www.ncbi.nlm.nih.gov", "eutils.ncbi.nlm.nih.gov", "www.ebi.ac.uk", "ngdc.cncb.ac.cn"}
 ACCESSION = re.compile(r"(?:GSE|GSM|[SED]RP|[SED]RS|[SED]RR|[SED]RX|PRJ[EDN][AB])\d{3,12}")
 
 
