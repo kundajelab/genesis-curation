@@ -7,6 +7,7 @@ import sqlite3
 import subprocess
 import sys
 
+from ..celltype import cli as celltype_cli
 from ..contracts import cli as validation_cli
 from ..contracts.records import canonical
 from ..llm import cli as ai_cli
@@ -29,6 +30,7 @@ def configure(commands: argparse._SubParsersAction) -> None:
         ("ai", ai_cli),
         ("scatac", scatac_cli),
         ("web", web_cli),
+        ("celltype", celltype_cli),
     ):
         module.configure(commands.add_parser(name))
 

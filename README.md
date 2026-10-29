@@ -46,6 +46,7 @@ Without `GENESIS_REPO`, the launcher checks report NOT RUN and everything else s
 
 ## Documentation
 
+- [Plant cell-type annotation](docs/usage/celltype.md) with reviewed RNA labels
 - [Curation](docs/usage/curation.md), [AI providers](docs/usage/ai-providers.md),
   [LLM deployment](docs/usage/llm-deployment.md)
 - [Execution](docs/usage/execution.md)
