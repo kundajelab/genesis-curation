@@ -15,21 +15,9 @@ from typing import Any
 
 from ..contracts.records import canonical, fingerprint, loads, now
 from ..registry import store
-from ..scatac import workbook
-from . import catalog
+from . import catalog, workbook
 from .discovery_catalog import MODALITIES
 
-SHEET = "https://docs.google.com/spreadsheets/d/1Rq3J5U8-IDsR1n9kVbRCGC6om7aYdSkL8BsBe4woH0Q"
-TABS = {
-    "DAP-seq": "DAP-seq",
-    "DAP-seq genomes": "Genomes",
-    "TSS": "TSS",
-    "ATAC": "Bulk ATAC",
-    "MPRA Papers": "MPRA",
-    "TSS Fable Curated": "TSS",
-    "Bulk ATAC Fable Curated": "Bulk ATAC",
-    "scATAC Fable Curated": "scATAC",
-}
 ALIASES = {
     "organism": "species",
     "scientific_name": "species",
@@ -98,6 +86,7 @@ def add_row(
     cells: dict[str, Any],
     modality: str,
     location: str,
+    origin: str = "discovery",
 ) -> None:
     row = normalized(values, modality)
     key = fingerprint([batch, tab, number])
@@ -114,7 +103,7 @@ def add_row(
         else "paper"
         if modality == "MPRA" and not experiment
         else "metadata",
-        "origin": "external-reference" if location.startswith(SHEET) else "discovery",
+        "origin": origin,
     }
     db.execute(
         (
@@ -131,13 +120,13 @@ def add_row(
             row["species"],
             str(row.get("study_accession", "")),
             entity,
-            "Imported" if body["origin"] == "external-reference" else "Discovered",
+            "Discovered" if origin == "discovery" else "Imported",
             canonical(body),
         ),
     )
 
 
-def import_workbook(root: Path, path: Path, source: str = SHEET) -> dict[str, Any]:
+def import_workbook(root: Path, path: Path) -> dict[str, Any]:
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     registry = root / "catalog"
     store.initialize(registry)
@@ -151,34 +140,30 @@ def import_workbook(root: Path, path: Path, source: str = SHEET) -> dict[str, An
         shutil.copyfile(path, destination)
     manifest: dict[str, Any] = {
         "id": digest,
-        "source": source,
+        "source": "snapshot:" + digest,
         "retrieved_at": now(),
-        "origin": "external-reference",
+        "origin": "user-import",
         "tabs": {},
         "rows": 0,
     }
     for name, rows in workbook.read(destination).items():
-        modality = TABS.get(name, "Other")
-        headerless = name in {"TSS", "MPRA Papers"}
+        modality = name if name in MODALITIES else "Other"
         headers = (
             {}
-            if headerless or not rows
+            if not rows
             else {re.sub(r"\d+$", "", a): c["value"] for a, c in rows[0]["cells"].items()}
         )
         counts: dict[str, int] = {}
         for h in headers.values():
             counts[str(h)] = counts.get(str(h), 0) + 1
-        entries = rows if headerless else rows[1:]
+        entries = rows[1:]
         for start in range(0, len(entries), 100):
             with store.write(registry) as db:
                 for row in entries[start : start + 100]:
                     values = {}
                     for address, cell in row["cells"].items():
                         column = re.sub(r"\d+$", "", address)
-                        heading = str(
-                            headers.get(column)
-                            or ("entry" if headerless and column == "A" else column)
-                        )
+                        heading = str(headers.get(column) or column)
                         if counts.get(heading, 0) > 1:
                             heading += " [" + column + "]"
                         if cell["value"] != "" or cell["formula"] is not None:
@@ -191,7 +176,8 @@ def import_workbook(root: Path, path: Path, source: str = SHEET) -> dict[str, An
                         values,
                         row["cells"],
                         modality,
-                        source + "/edit#range=" + name + "!A" + str(row["row"]),
+                        "snapshot:" + digest + ":" + name + ":" + str(row["row"]),
+                        origin="user-import",
                     )
         manifest["tabs"][name] = {"rows": len(entries), "modality": modality}
         manifest["rows"] += len(entries)
@@ -332,7 +318,8 @@ def history(root: Path, key: str) -> dict[str, Any]:
             for r in db.execute(
                 "SELECT sequence,created,body FROM workspace_events "
                 "WHERE entity=? OR sequence=? OR (campaign=? AND (json_extract(body,'$.action')="
-                "'workbook-import' OR (json_extract(body,'$.action')='search-completed' "
+                "'workbook-import' OR json_extract(body,'$.action')='demo-import' "
+                "OR (json_extract(body,'$.action')='search-completed' "
                 "AND json_extract(body,'$.result.query')=?))) ORDER BY sequence",
                 (
                     record["entity"],
@@ -506,7 +493,7 @@ def export_bundle(root: Path, key: str, clean: bool = False) -> dict[str, Any]:
         manifest = {
             "kind": "clean-metadata" if clean else "metadata-working-copy",
             "created": now(),
-            "source_sheet_modified": False,
+            "source_data_modified": False,
             "rows": sum(map(len, tables.values())),
             "scientific_qc": "External QC columns retained; not rerun",
             "source_snapshots": [
@@ -532,3 +519,63 @@ def export_bundle(root: Path, key: str, clean: bool = False) -> dict[str, Any]:
         "rows": manifest["rows"],
         "url": "/api/workspace/exports/" + key,
     }
+
+
+def import_demo(root: Path, path: Path) -> dict[str, Any]:
+    """Load the current neutral JSONL demo format; no external source is contacted."""
+    import json
+
+    with path.open("rb") as source:
+        digest = hashlib.file_digest(source, "sha256").hexdigest()
+    registry = root / "catalog"
+    store.initialize(registry)
+    with contextlib.closing(store.connect(registry)) as db:
+        old = db.execute("SELECT body FROM workspace_imports WHERE id=?", (digest,)).fetchone()
+        if old:
+            return loads(old[0])
+    with path.open() as stream:
+        header = loads(stream.readline())
+        if header.get("format") != "genesis-demo/1":
+            raise ValueError("Expected genesis-demo/1 JSONL")
+        manifest = {
+            "id": digest,
+            "source": "snapshot:" + digest,
+            "origin": "demo-reference",
+            "retrieved_at": now(),
+            "rows": 0,
+            "tabs": {},
+            "source_snapshot": header["source_snapshot"],
+        }
+        with store.write(registry) as db:
+            for line in stream:
+                item = loads(line)
+                if item["modality"] not in MODALITIES:
+                    raise ValueError("Unknown demo modality")
+                if any(
+                    host in json.dumps(item) for host in ("docs.google.com", "sheets.google.com")
+                ):
+                    raise ValueError("Demo records must use snapshot identities, not workbook URLs")
+                add_row(
+                    db,
+                    digest,
+                    item["table"],
+                    item["row"],
+                    item["original"],
+                    item.get("cells", {}),
+                    item["modality"],
+                    f"snapshot:{digest}:{item['table']}:{item['row']}",
+                    origin="demo-reference",
+                )
+                counts = manifest["tabs"].setdefault(
+                    item["table"], {"rows": 0, "modality": item["modality"]}
+                )
+                counts["rows"] += 1
+                manifest["rows"] += 1
+            if manifest["rows"] != header["rows"]:
+                raise ValueError("Demo row count differs from its manifest")
+            db.execute("INSERT INTO workspace_imports VALUES(?,?)", (digest, canonical(manifest)))
+            event(db, digest, "", "demo-import", manifest=manifest)
+    destination = root / "reference-snapshots" / (digest + ".jsonl")
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(path, destination)
+    return manifest

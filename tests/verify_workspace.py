@@ -13,22 +13,20 @@ from genesis_curation.contracts.records import canonical, dump, loads
 from genesis_curation.curation import harmonize
 from genesis_curation.llm import providers
 from genesis_curation.registry import store
-from genesis_curation.scatac import workbook
-from genesis_curation.web import campaigns, catalog, results, runtime, worker, workspace
+from genesis_curation.web import campaigns, catalog, results, runtime, workbook, worker, workspace
 
 
 def main() -> None:
     with tempfile.TemporaryDirectory(prefix="genesis-workspace-") as folder:
         root = Path(folder)
         runtime.initialize(root, "curator", "synthetic-workspace-password")
-        # First rows are data in these two historical lists. Duplicate header labels
-        # elsewhere must not silently overwrite different columns.
+        # Duplicate header labels must not silently overwrite different columns.
         raw = results.xlsx(
             {
                 "TSS": [{"entry": "SRP123456", "other": "first"}],
-                "MPRA Papers": [{"entry": "Plant promoter paper"}],
+                "MPRA": [{"entry": "Plant promoter paper"}],
                 "DAP-seq": [{"Species": "Arabidopsis thaliana", "Multi": "3", "Multi2": "7"}],
-                "Bulk ATAC Fable Curated": [
+                "Bulk ATAC": [
                     {
                         "species": "Arabidopsis thaliana",
                         "sample_name": "one",
@@ -49,8 +47,8 @@ def main() -> None:
         path = root / "reference.xlsx"
         path.write_bytes(output.getvalue())
         manifest = workspace.import_workbook(root, path)
-        assert manifest["tabs"]["TSS"]["rows"] == 2
-        assert manifest["tabs"]["MPRA Papers"]["rows"] == 2
+        assert manifest["tabs"]["TSS"]["rows"] == 1
+        assert manifest["tabs"]["MPRA"]["rows"] == 1
         assert workspace.import_workbook(root, path) == manifest
         dap = workspace.page(root, "DAP-seq")["items"][0]
         detail = workspace.history(root, dap["id"])
@@ -59,7 +57,7 @@ def main() -> None:
         assert [e["body"]["action"] for e in detail["events"]] == ["workbook-import"]
         assert not detail["changes"]
         assert dap["status"] == "Imported" and not dap["subject"]
-        print("PASS lossless headers, headerless first rows, idempotency and import provenance")
+        print("PASS lossless headers, first data rows, idempotency and import provenance")
         config = providers.select(
             Path(__file__).parents[1] / "examples/curation/providers.mock.json", "mock"
         )
@@ -154,7 +152,7 @@ def main() -> None:
                 {"experiment_accession": "SRX123456", "species": "Arabidopsis thaliana"},
                 {},
                 "Bulk ATAC",
-                workspace.SHEET + "/edit#range=ATAC!A1",
+                "snapshot:fixture:ATAC:1",
             )
             row = dict(
                 db.execute("SELECT * FROM workspace_rows WHERE batch='archive-fixture'").fetchone()
@@ -205,7 +203,7 @@ def main() -> None:
         export = workspace.export_bundle(root, "fixture")
         with zipfile.ZipFile(root / "exports" / export["filename"]) as archive:
             manifest_export = loads(archive.read("manifest.json").decode())
-            assert manifest_export["source_sheet_modified"] is False
+            assert manifest_export["source_data_modified"] is False
             xlsx = root / "roundtrip.xlsx"
             xlsx.write_bytes(archive.read("metadata.xlsx"))
             tabs = workbook.read(xlsx)

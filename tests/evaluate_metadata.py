@@ -10,7 +10,7 @@ from typing import Any
 
 from verify_ai import configuration
 
-from genesis_curation.contracts.records import canonical, dump, load, now, record
+from genesis_curation.contracts.records import canonical, dump, load
 from genesis_curation.curation.harmonize import extract, source_record, verify_fields
 from genesis_curation.llm.providers import invoke
 from genesis_curation.llm.security import schema
@@ -33,19 +33,7 @@ def evaluate(path: Path) -> dict[str, Any]:
                     )
                     for i, value in enumerate(case["sources"])
                 ]
-                bundle = record(
-                    "source_bundle",
-                    {
-                        "dataset_id": case["id"],
-                        "manifest_version": "0" * 64,
-                        "classification": "public",
-                        "sources": sources,
-                        "retrieved_at": now(),
-                        "accessions": [],
-                    },
-                    case["id"],
-                    version=2,
-                )
+                bundle = {"data": {"sources": sources}}
                 fields = extract(bundle, {})
                 if provider == "mock":
                     invocation = invoke(

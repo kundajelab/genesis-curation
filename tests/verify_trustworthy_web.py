@@ -1,4 +1,4 @@
-"""Evidence risk, guided decisions, audit isolation and recoverable schema migration."""
+"""Evidence risk, guided decisions, audit isolation and immutable backup recovery."""
 
 from __future__ import annotations
 
@@ -245,22 +245,25 @@ def main() -> None:
         assert not assessments.cross_sample(rows)
         print("PASS contradictory identity detection preserves legitimate sample differences")
 
-        legacy = root / "legacy"
-        legacy.mkdir()
-        with sqlite3.connect(legacy / "registry.sqlite") as db:
-            for version in range(1, 7):
-                for statement in store.MIGRATIONS[version]:
-                    db.execute(statement)
-            db.execute("PRAGMA user_version=6")
-        store.initialize(legacy)
-        assert list(legacy.glob(f"before-v6-to-v{store.SCHEMA_VERSION}-*.sqlite"))
+        unsupported = root / "unsupported"
+        unsupported.mkdir()
+        with sqlite3.connect(unsupported / "registry.sqlite") as db:
+            db.execute("CREATE TABLE prototype (id TEXT)")
+            db.execute("PRAGMA user_version=7")
+        try:
+            store.initialize(unsupported)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Prototype schema must not be migrated or accepted")
+
         snapshot = root / "backup.sqlite"
         store.backup(registry, snapshot)
         restored = root / "restored"
         store.restore(snapshot, restored)
         assert audit.report(restored, audit_id) == report
         assert catalog.export(restored) == catalog.export(registry)
-        print("PASS legacy migration backup, audit restore and unchanged signed metadata")
+        print("PASS unsupported schema rejection, audit restore and unchanged signed metadata")
 
 
 if __name__ == "__main__":

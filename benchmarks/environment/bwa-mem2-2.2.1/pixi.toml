@@ -1,7 +1,0 @@
-[workspace]
-name = "genesis-production-aligner-comparison"
-channels = ["conda-forge", "bioconda"]
-platforms = ["linux-64"]
-
-[dependencies]
-bwa-mem2 = "==2.2.1"

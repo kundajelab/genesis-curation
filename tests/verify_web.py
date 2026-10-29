@@ -11,8 +11,8 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import patch
 
+from helpers import rejects
 from verify_ai import FakeHandler, configuration, inference, server
-from verify_curation import rejects
 
 from genesis_curation.contracts.records import canonical, fingerprint, loads
 from genesis_curation.llm import wire

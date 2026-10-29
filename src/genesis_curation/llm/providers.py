@@ -475,10 +475,10 @@ def invoke(
             "capabilities": config["capabilities"],
         },
         str(uuid.uuid4()),
-        version=2,
+        version=1,
     )
     with store.write(directory) as db:
-        store.put(db, invocation, dataset)
+        store.put(db, invocation)
     if status != "SUCCEEDED":
         raise InferenceFailure(invocation)
     if cache:

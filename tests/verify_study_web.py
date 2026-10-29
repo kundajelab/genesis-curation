@@ -1,4 +1,4 @@
-"""Study-level review, migration, evidence scope and signed-release invariants."""
+"""Study-level review, imports, evidence scope and signed-release invariants."""
 
 from __future__ import annotations
 
@@ -51,7 +51,7 @@ def main() -> None:
             "curator",
         )
         before = catalog.export(registry)
-        studies.bootstrap(registry)
+        studies.link_imports(registry, ids, "curator")
         assert catalog.export(registry) == before
         key = studies.listing(registry)["items"][0]["id"]
         initial = studies.get(registry, key)
@@ -124,7 +124,7 @@ def main() -> None:
             reject(lambda: db.execute("DELETE FROM curation_releases"), "immutable")
             reject(lambda: db.execute("UPDATE curation_study_events SET body='{}'"), "immutable")
         print(
-            "PASS migration, preparation, drafts, deferred/unknown decisions, "
+            "PASS import, preparation, drafts, deferred/unknown decisions, "
             "sign-off, invalidation and immutable exports"
         )
 
@@ -239,7 +239,7 @@ def main() -> None:
         ):
             field = next(f for f in fields if f["field"] == name)
             assert field["vocabulary_id"] == taxon
-        assert harmonize.vocabulary("genesis-plant-terms/2")["version"] == "genesis-plant-terms/2"
+        assert harmonize.vocabulary()["version"] == "genesis-plant-terms/4"
         field["vocabulary_id"] = "NCBITaxon:3702"
         reject(lambda: harmonize.verify_fields(taxonomy_bundle, fields), "mismatched term")
         print("PASS distinct DNA/TF taxa and historical vocabularies; wrong taxon IDs rejected")
@@ -324,18 +324,18 @@ def main() -> None:
         assert not any("PMC999" in url for url in requested)
         print("PASS linked-publication retrieval excludes cited-reference traversal")
 
-        # A v5 registry upgrades with a backup and no retroactive approval.
-        old = root / "legacy"
+        # Prototype registries must be archived, never silently migrated.
+        old = root / "prototype"
         old.mkdir()
         with contextlib.closing(sqlite3.connect(old / "registry.sqlite")) as db:
-            for version in range(1, 6):
-                for sql in store.MIGRATIONS[version]:
-                    db.execute(sql)
             db.execute("PRAGMA user_version=5")
-            db.commit()
-        store.initialize(old)
-        assert list(old.glob(f"before-v5-to-v{store.SCHEMA_VERSION}-*.sqlite"))
-        print("PASS schema v5 migration creates a recoverable backup")
+        try:
+            store.initialize(old)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Prototype database was accepted")
+        print("PASS prototype registry rejected")
 
         # Cursor pagination returns every study without the former global cap.
         for index in range(205):

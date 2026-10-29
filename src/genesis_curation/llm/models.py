@@ -123,5 +123,5 @@ def inspect(
         "limitations": limitations,
     }
     return record(
-        "model_inspection", data, identity("model", identifier, sha, fingerprint(data)), version=2
+        "model_inspection", data, identity("model", identifier, sha, fingerprint(data)), version=1
     )

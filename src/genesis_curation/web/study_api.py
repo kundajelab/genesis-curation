@@ -13,7 +13,7 @@ from fastapi.responses import Response
 from ..contracts.records import canonical, fingerprint, loads
 from ..llm import providers
 from ..registry import store
-from . import audit, catalog, intake, results, review_queue, runtime, skills, studies
+from . import audit, catalog, intake, review_queue, runtime, skills, studies
 
 
 def provider(
@@ -83,43 +83,6 @@ def queue(
 def mount(app: FastAPI, root: Path, config_path: Path) -> None:
     registry = root / "catalog"
     store.initialize(registry)
-    studies.bootstrap(registry)
-    results.backfill(registry)
-
-    @app.get("/api/results")
-    def result_page(
-        modality: str = "Bulk ATAC",
-        species: str = "",
-        eligibility: str = "",
-        study: str = "",
-        cursor: str = "",
-        limit: int = 50,
-    ) -> dict[str, Any]:
-        return results.page(registry, modality, species, eligibility, study, cursor, limit)
-
-    @app.get("/api/results.xlsx")
-    def result_workbook() -> Response:
-        return Response(
-            results.workbook(registry),
-            media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-            headers={"Content-Disposition": 'attachment; filename="genesis-metadata-drafts.xlsx"'},
-        )
-
-    @app.get("/api/results.csv")
-    def result_csv(
-        modality: str = "Bulk ATAC",
-        species: str = "",
-        eligibility: str = "",
-        study: str = "",
-        cursor: str = "",
-        limit: int = 200,
-    ) -> Response:
-        page = results.page(registry, modality, species, eligibility, study, cursor, limit)
-        return Response(
-            results.csv_page(page["items"]),
-            media_type="text/csv",
-            headers={"Content-Disposition": 'attachment; filename="draft-metadata-page.csv"'},
-        )
 
     @app.get("/api/review-queue")
     def queue_page(cursor: int = 0, limit: int = 25, status: str = "open") -> dict[str, Any]:

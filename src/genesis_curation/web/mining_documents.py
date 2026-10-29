@@ -16,8 +16,7 @@ from urllib.request import Request, build_opener
 
 from ..contracts.records import canonical, fingerprint, now
 from ..llm import providers
-from ..scatac import workbook
-from . import intake, mining_sources
+from . import intake, mining_sources, workbook
 
 LIMIT = 8 * 1024 * 1024
 EXTENSIONS = {".csv", ".tsv", ".xlsx", ".txt"}

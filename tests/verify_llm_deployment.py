@@ -12,11 +12,10 @@ from pathlib import Path
 from typing import Any
 from unittest.mock import Mock, patch
 
-from verify_curation import rejects
+from helpers import rejects
 
 from genesis_curation.contracts.records import canonical, dump, fingerprint, load, record
-from genesis_curation.execution import transport
-from genesis_curation.llm import deployments, models
+from genesis_curation.llm import deployments, models, transport
 from genesis_curation.llm import service_worker as worker
 from genesis_curation.registry import store
 
@@ -144,7 +143,7 @@ def checks(root: Path) -> None:
     }
     rejects(lambda: deployments.plan(bad_node, model, observed), "expired")
     data = {**model["data"], "gated": True}
-    gated = record("model_inspection", data, model["id"], version=2)
+    gated = record("model_inspection", data, model["id"], version=1)
     rejects(lambda: deployments.plan(config, gated, observed), "gated")
     altered = copy.deepcopy(plan)
     altered["config"]["context_length"] = 512

@@ -9,7 +9,6 @@ import os
 import re
 import tempfile
 import uuid
-from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from functools import lru_cache
 from importlib.resources import files
@@ -108,7 +107,7 @@ def dump(path: Path, value: object, *, immutable: bool = False) -> None:
 
 @lru_cache
 def schema(version: int = 1) -> dict[str, Any]:
-    if version not in {1, 2, 3, 4, 5}:
+    if version != 1:
         raise ValueError("Unsupported contract version")
     return loads(files(__package__).joinpath(f"schemas/records-v{version}.json").read_text())
 
@@ -132,7 +131,7 @@ def validator(kind: str, version: int = 1) -> Validator:
 def validate(value: object, kind: str | None = None) -> dict[str, Any]:
     if not isinstance(value, dict) or type(value.get("schema_version")) is not int:
         raise ValueError("A versioned record object is required")
-    if value["schema_version"] not in {1, 2, 3, 4, 5} or (kind and value.get("kind") != kind):
+    if value["schema_version"] != 1 or (kind and value.get("kind") != kind):
         raise ValueError("Unsupported record version or kind")
     if not isinstance(value.get("kind"), str):
         raise ValueError("A record kind is required")
@@ -169,123 +168,3 @@ def record(kind: str, data: dict[str, Any], key: str, *, version: int = 1) -> di
     result = {"schema_version": version, "kind": kind, "id": key, "data": data}
     result["version"] = fingerprint(result)
     return validate(result, kind)
-
-
-@dataclass(frozen=True)
-class Subject:
-    id: str
-    version: str
-    scope: str
-
-
-@dataclass(frozen=True)
-class SourceEvidence:
-    location: str
-    sha256: str | None
-    locator: str
-    worker: str
-
-
-@dataclass(frozen=True)
-class Finding:
-    rule_id: str
-    subject: Subject
-    result: Result
-    expected: str
-    observed: Any
-    evidence: SourceEvidence
-    rule_version: int = 1
-    validator_version: str = VERSION
-
-    def export(self) -> dict[str, Any]:
-        data = asdict(self)
-        return record("finding", data, identity("finding", fingerprint(data)))
-
-
-@dataclass(frozen=True)
-class ArtifactManifest:
-    """A dataset is independent of a job, accession and physical artifact location."""
-
-    source_id: str
-    dataset_id: str
-    name: str
-    assay: str
-    species: str | None
-    study: str | None
-    biosample: str | None
-    library: str
-    lanes: list[dict[str, Any]]
-    reference: dict[str, Any]
-    worker: str
-    run: dict[str, Any]
-    metadata: dict[str, Any]
-    artifacts: list[dict[str, Any]]
-    sources: list[dict[str, Any]]
-    measurements: list[dict[str, Any]]
-
-    def export(self) -> dict[str, Any]:
-        return record("manifest", asdict(self), self.dataset_id)
-
-
-@dataclass(frozen=True)
-class QCMeasurement:
-    subject_id: str
-    metric: str
-    definition: str
-    units: str
-    denominator: str
-    value: float | int | None
-    evidence: SourceEvidence
-    depth: str = "unknown"
-    metric_version: int = 1
-    denominator_value: float | int | None = None
-
-    def export(self) -> dict[str, Any]:
-        data = asdict(self)
-        return record("measurement", data, identity("measurement", fingerprint(data)))
-
-
-@dataclass(frozen=True)
-class MetadataProposal:
-    dataset_id: str
-    manifest_version: str
-    changes: dict[str, Any]
-    evidence: list[dict[str, Any]]
-    reason: str
-
-    def export(self) -> dict[str, Any]:
-        data = asdict(self)
-        return record("proposal", data, identity("proposal", fingerprint(data)))
-
-
-@dataclass(frozen=True)
-class QCAssessment:
-    dataset_id: str
-    manifest_version: str
-    validation_version: str
-    policy: dict[str, Any]
-    findings: list[dict[str, Any]]
-    result: str
-    metadata_version: str
-
-    def export(self) -> dict[str, Any]:
-        data = asdict(self)
-        return record("assessment", data, identity("assessment", fingerprint(data)))
-
-
-@dataclass(frozen=True)
-class ReviewDecision:
-    dataset_id: str
-    category: str
-    action: str
-    target: str | None
-    token: str
-    bindings: dict[str, Any]
-    reviewer: dict[str, Any]
-    reason: str
-    evidence: list[dict[str, Any]]
-    timestamp: str
-
-    def export(self) -> dict[str, Any]:
-        data = asdict(self)
-        return record("decision", data, identity("decision", fingerprint(data)))

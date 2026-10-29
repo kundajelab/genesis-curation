@@ -1,9 +1,0 @@
-[workspace]
-name = "genesis-benchmark-sra-acquisition"
-channels = ["conda-forge", "bioconda"]
-platforms = ["linux-64"]
-
-# Optional acquisition/conversion tools, separate from production environments.
-[dependencies]
-sra-tools = "3.2.1.*"
-pigz = "2.8.*"

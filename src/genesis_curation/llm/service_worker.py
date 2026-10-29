@@ -165,7 +165,7 @@ def verify_plan(plan: dict[str, Any]) -> None:
     if plan["plan_hash"] != fingerprint({k: v for k, v in plan.items() if k != "plan_hash"}):
         raise ValueError("Deployment plan content hash changed")
     config = plan["config"]
-    from ..execution.transport import validate_worker
+    from .transport import validate_worker
 
     validate_worker(config["node"]["worker"])
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9./_:-]*@sha256:[a-f0-9]{64}", config["image"]):

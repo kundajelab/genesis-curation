@@ -2,9 +2,7 @@
 
 from __future__ import annotations
 
-import csv
 import hmac
-import io
 from pathlib import Path
 from typing import Any
 
@@ -13,7 +11,7 @@ from fastapi.responses import FileResponse, JSONResponse, Response
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.types import ASGIApp
 
-from ..contracts.records import canonical, fingerprint, loads
+from ..contracts.records import fingerprint, loads
 from ..llm import local_models, providers
 from . import catalog, inbox, model_manager, runtime, skills, studies, study_api
 
@@ -286,7 +284,7 @@ def create_app(
                         "public",
                         request.state.account["actor"],
                     )
-        studies.bootstrap(registry)
+        studies.link_imports(registry, ids, request.state.account["actor"])
         return {"subjects": ids}
 
     @app.post("/api/subjects/{subject}/evidence")
@@ -371,48 +369,7 @@ def create_app(
             studies.preparation(registry, job["payload"]["study"], {"status": "INTERRUPTED"})
         return {"ok": True}
 
-    @app.get("/api/export")
-    def export(format: str = "json") -> Response:
-        result = catalog.export(registry)
-        if format == "json":
-            content, media = canonical(result), "application/json"
-        elif format in {"csv", "tsv"}:
-            columns = ["id", "name", "version", "review_status", "unresolved"] + sorted(
-                harmonize_fields()
-            )
-            stream = io.StringIO()
-            writer = csv.DictWriter(
-                stream, fieldnames=columns, delimiter="\t" if format == "tsv" else ","
-            )
-            writer.writeheader()
-            for row in result["records"]:
-                values = {k: row[k] for k in columns[:5]} | row["metadata"]
-                values["unresolved"] = ";".join(values["unresolved"])
-                # Prevent spreadsheet formulas when opening exports.
-                writer.writerow(
-                    {
-                        k: "'" + v
-                        if isinstance(v, str) and v.startswith(("=", "+", "-", "@"))
-                        else v
-                        for k, v in values.items()
-                    }
-                )
-            content, media = (
-                stream.getvalue(),
-                "text/csv" if format == "csv" else "text/tab-separated-values",
-            )
-        else:
-            raise ValueError("Unknown export format")
-        return Response(
-            content,
-            media_type=media,
-            headers={"Content-Disposition": f'attachment; filename="curated-metadata.{format}"'},
-        )
-
     study_api.mount(app, root, config_path)
-    from . import mining_api
-
-    mining_api.mount(app, root, config_path)
     from . import workspace_api
 
     workspace_api.mount(app, root, config_path)

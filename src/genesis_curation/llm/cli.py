@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from ..contracts.records import dump, load
-from . import assistant, deployments, diagnostics, local_models, models, providers
+from . import deployments, local_models, models, providers
 
 
 def inference_options(parser: argparse.ArgumentParser, *, required: bool = False) -> None:
@@ -65,26 +65,6 @@ def configure(parser: argparse.ArgumentParser) -> None:
             child.add_argument("--plan", required=True, type=Path)
             if name == "apply":
                 child.add_argument("--authorize", required=True, help="Exact reviewed plan_hash")
-    for name in ("ask", "diagnose"):
-        child = commands.add_parser(name)
-        child.set_defaults(curation_handler=execute, operation=name)
-        child.add_argument("--json", action="store_true")
-        child.add_argument("directory", type=Path)
-        inference_options(child, required=name == "ask")
-        child.add_argument(
-            "--classification", choices=("public", "internal", "local-only"), default="local-only"
-        )
-        if name == "ask":
-            child.add_argument("question")
-            child.add_argument("--dataset", required=True, action="append")
-        else:
-            child.add_argument("--root", type=Path, required=True)
-            child.add_argument("--log", required=True, action="append")
-            child.add_argument("--facts", type=Path)
-            child.add_argument("--dataset")
-            child.add_argument("--worker-config", type=Path)
-            child.add_argument("--worker-id", default="local")
-            child.add_argument("--output", type=Path)
 
 
 def execute(args: argparse.Namespace) -> tuple[Any, int]:
@@ -134,28 +114,4 @@ def execute(args: argparse.Namespace) -> tuple[Any, int]:
             "FAILED",
             "UNHEALTHY",
         } else 3
-    if bool(args.config) != bool(args.provider):
-        raise ValueError("Use both --config and --provider for optional inference")
-    config = providers.select(args.config, args.provider) if args.config else None
-    if args.ai_family == "ask":
-        if config is None:
-            raise ValueError("An explicit provider is required")
-        return assistant.ask(
-            args.directory, config, args.question, args.dataset, args.classification
-        ), 0
-    bundle = (
-        diagnostics.remote(load(args.worker_config), args.root, args.log, args.worker_id)
-        if args.worker_config
-        else diagnostics.collect(args.root, args.log, args.worker_id)
-    )
-    result = diagnostics.diagnose(
-        args.directory,
-        bundle,
-        facts=load(args.facts) if args.facts else {},
-        config=config,
-        dataset=args.dataset,
-        classification=args.classification,
-    )
-    if args.output:
-        dump(args.output, result, immutable=True)
-    return result, 0
+    raise ValueError("Unknown model command")

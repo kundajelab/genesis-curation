@@ -87,15 +87,6 @@ def project(db: sqlite3.Connection, state: dict[str, Any]) -> None:
     )
 
 
-def backfill(root: Path) -> None:
-    with store.write(root) as db:
-        for (body,) in db.execute(
-            "SELECT s.body FROM curation_subjects s LEFT JOIN curation_result_rows r "
-            "ON r.subject=s.id WHERE r.subject IS NULL"
-        ).fetchall():
-            project(db, loads(body))
-
-
 def page(
     root: Path,
     modality: str = "Bulk ATAC",

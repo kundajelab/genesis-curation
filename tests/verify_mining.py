@@ -401,15 +401,18 @@ def main() -> None:
         )
         print("PASS metadata-only downloads, exact sample bindings and advertised file inventories")
 
-        legacy = root / "legacy"
-        legacy.mkdir()
-        with sqlite3.connect(legacy / "registry.sqlite") as db:
-            for version in range(1, 8):
-                for sql in store.MIGRATIONS[version]:
-                    db.execute(sql)
+        unsupported = root / "unsupported"
+        unsupported.mkdir()
+        with sqlite3.connect(unsupported / "registry.sqlite") as db:
+            db.execute("CREATE TABLE prototype (id TEXT)")
             db.execute("PRAGMA user_version=7")
-        store.initialize(legacy)
-        assert list(legacy.glob(f"before-v7-to-v{store.SCHEMA_VERSION}-*.sqlite"))
+        try:
+            store.initialize(unsupported)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Prototype schema must not be migrated or accepted")
+
         with store.write(root / "catalog") as db:
             events = [json.loads(r[0]) for r in db.execute("SELECT body FROM mining_events")]
             assert any(e["action"] == "candidate-include" and e["candidates"] for e in events)
@@ -433,7 +436,7 @@ def main() -> None:
             ]
             == "first"
         )
-        print("PASS migration backup, immutable inclusion history and retained source revisions")
+        print("PASS schema rejection, immutable history and retained source revisions")
 
 
 if __name__ == "__main__":

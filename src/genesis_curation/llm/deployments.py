@@ -7,9 +7,8 @@ from pathlib import Path
 from typing import Any
 
 from ..contracts.records import canonical, dump, fingerprint, now, record
-from ..execution import transport
 from ..registry import store
-from . import service_worker
+from . import service_worker, transport
 from .security import check, schema
 
 MODULE = "genesis_curation.llm.service_worker"
@@ -40,7 +39,7 @@ def remote_path(value: dict[str, Any]) -> Path:
 
 
 def journal(directory: Path, value: dict[str, Any], status: dict[str, Any]) -> dict[str, Any]:
-    result = record("deployment", status, value["plan_hash"], version=2)
+    result = record("deployment", status, value["plan_hash"], version=1)
     with store.write(directory) as db:
         store.put(db, value["model"])
         store.put(

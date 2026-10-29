@@ -100,13 +100,13 @@ def link(
     return key
 
 
-def bootstrap(root: Path) -> None:
-    """Upgrade legacy imports without guessing biological study relationships."""
+def link_imports(root: Path, ids: list[str], actor: str) -> None:
+    """Group newly imported metadata without inventing biological relationships."""
     groups: dict[str, list[dict[str, Any]]] = {}
     with contextlib.closing(store.connect(root)) as db:
         for row in db.execute(
-            "SELECT body FROM curation_subjects WHERE id NOT IN "
-            "(SELECT subject FROM curation_members)"
+            "SELECT body FROM curation_subjects WHERE id IN (" + ",".join("?" for _ in ids) + ")",
+            ids,
         ):
             state = loads(row[0])
             group = state["original"].get("study_accession") or state["import_source"]
@@ -117,7 +117,7 @@ def bootstrap(root: Path) -> None:
             root,
             [r["id"] for r in rows],
             str(accession or rows[0]["namespace"]),
-            "migration",
+            actor,
             str(accession) if accession else None,
             group,
         )
@@ -218,9 +218,6 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
                 if kind in {"conflict", "uncertain"}
                 else "missing"
             )
-            if not assessment and kind in {"conflict", "uncertain"}:
-                # Preserve legacy task identities/drafts until explicit re-analysis.
-                scope = fingerprint(field["evidence"])
             key = identity("study-task", study["id"], name, kind, scope, status)
             task = grouped.setdefault(
                 key,

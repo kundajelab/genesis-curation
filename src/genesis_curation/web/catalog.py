@@ -96,7 +96,7 @@ def save(
             "payload": payload,
         },
         str(uuid.uuid4()),
-        version=5,
+        version=1,
     )
     state.update(version=event["version"], updated=event["data"]["created"])
     store.put(db, event)

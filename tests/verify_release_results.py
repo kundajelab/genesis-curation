@@ -9,7 +9,6 @@ from unittest.mock import patch
 from genesis_curation.contracts.records import canonical
 from genesis_curation.curation import harmonize
 from genesis_curation.registry import store
-from genesis_curation.scatac import workbook
 from genesis_curation.web import (
     assessments,
     audit,
@@ -18,6 +17,7 @@ from genesis_curation.web import (
     results,
     review_queue,
     studies,
+    workbook,
 )
 
 
@@ -67,7 +67,12 @@ def main() -> None:
     assert vocab["version"] == "genesis-plant-terms/4"
     assert len({t["id"] for t in vocab["terms"]["tissue"].values()}) > 1000
     assert vocab["terms"]["tissue"]["root"]["id"] == "PO:0009005"
-    assert harmonize.vocabulary("genesis-plant-terms/1")["version"] == "genesis-plant-terms/1"
+    try:
+        harmonize.vocabulary("genesis-plant-terms/1")
+    except ValueError:
+        pass
+    else:
+        raise AssertionError("Obsolete vocabulary accepted")
     prompt = harmonize.prompt_vocabulary("Arabidopsis thaliana root, young panicle; control_2h")
     assert "root" in prompt["terms"]["tissue"]
     assert "control_2h" not in prompt["terms"]["tissue"]
