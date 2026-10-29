@@ -57,4 +57,4 @@ its earlier history is in that repository.
 
 For the optional browser review workspace, evidence-backed field decisions, local
 Hugging Face models and hosted provider APIs, see
-[human-reviewed metadata curation](docs/usage/metadata-web.md).
+[human-reviewed metadata curation](docs/usage/metadata-web.md). Use [Find data](docs/usage/agentic-mining.md) to discover public studies and prepare metadata automatically, then review the exceptions.

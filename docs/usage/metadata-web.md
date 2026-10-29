@@ -6,6 +6,9 @@ exceptions that need a reviewer. Resolve those decisions, then sign off once on
 the study summary. Download the signed JSON (with evidence and provenance), CSV,
 or TSV. No sequencing files are downloaded and no scientific pipeline is launched.
 
+For goal-driven discovery, use [Find data](agentic-mining.md). It searches public
+archives and sends uncertain inclusion decisions into the same reviewer to-do list.
+
 ## Reviewer workflow
 
 1. **Add studies.** Enter a GEO/ENA/SRA/BioProject accession or upload CSV, TSV or
