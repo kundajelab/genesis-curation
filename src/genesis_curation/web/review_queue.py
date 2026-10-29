@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from ..registry import store
-from . import studies
+from . import mining, studies
 
 
 def listing(root: Path, cursor: int = 0, limit: int = 25, status: str = "open") -> dict[str, Any]:
@@ -51,7 +51,9 @@ def listing(root: Path, cursor: int = 0, limit: int = 25, status: str = "open") 
                         }
                         | {"study_name": study["name"], "affected": len(task["targets"])}
                     )
-    rows.sort(key=lambda t: (t["priority"], t["study"], t["id"]))
+    if status == "open":
+        rows.extend(mining.question_rows(root.parent))
+    rows.sort(key=lambda t: (t["priority"], t.get("study", t.get("run", "")), t["id"]))
     return {
         "items": rows[cursor : cursor + limit],
         "total": len(rows),

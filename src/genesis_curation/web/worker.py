@@ -14,13 +14,15 @@ from ..contracts.records import canonical, fingerprint
 from ..curation import harmonize
 from ..llm import providers
 from ..llm.security import redact
-from . import catalog, intake, preparation, runtime, skills, studies
+from . import catalog, intake, mining, preparation, runtime, skills, studies
 
 
 def execute(
     root: Path, config_path: Path, task: dict[str, Any], cancellation: threading.Event | None = None
 ) -> dict[str, Any]:
     data, kind = task["payload"], task["kind"]
+    if kind == "mining":
+        return mining.step(root, config_path, task, cancellation)
     if kind == "study-intake":
         key = intake.import_accession(root, data["accession"], task["actor"], cancellation)
         task["payload"] = {**data, "study": key, "versions": {}}
@@ -130,11 +132,17 @@ def once(root: Path, config_path: Path) -> bool:
             raise ValueError("Request cancelled")
         result = execute(root, config_path, task, cancellation)
         if result.get("pending"):
-            if runtime.yield_job(root, task, result):
+            if runtime.yield_job(root, task, result) and task["kind"] != "mining":
                 studies.preparation(root / "catalog", result["study"], {"status": "INTERRUPTED"})
         else:
             runtime.finish(root, task["id"], result)
     except Exception as error:
+        if task["kind"] == "mining":
+            with contextlib.suppress(ValueError):
+                run = mining.read(root, task["payload"]["mining"])
+                if run["status"] == "RUNNING" and run["job"] == task["id"]:
+                    run.update(status="FAILED", reason=redact(str(error))[:1000])
+                    mining.save(root, run, "worker-failure", "worker")
         if task["kind"] in {"study-intake", "study-prepare"} and task["payload"].get("study"):
             with contextlib.suppress(ValueError):
                 studies.preparation(
@@ -158,6 +166,7 @@ def run(root: Path, config_path: Path) -> None:
         except BlockingIOError:
             raise ValueError("A worker already owns this application") from None
         runtime.recover(root)
+        mining.recover(root)
         with runtime.connection(root) as db:
             queued = {row[0] for row in db.execute("SELECT id FROM jobs WHERE status='QUEUED'")}
         studies.recover(root / "catalog", queued)

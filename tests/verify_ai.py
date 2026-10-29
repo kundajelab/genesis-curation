@@ -346,6 +346,8 @@ def metadata_checks(root: Path) -> None:
             "curation_audit_events",
             "curation_audit_answers",
             "curation_audits",
+            "mining_events",
+            "mining_runs",
             "curation_releases",
             "curation_study_events",
             "curation_drafts",

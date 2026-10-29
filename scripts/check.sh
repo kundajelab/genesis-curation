@@ -11,7 +11,7 @@ run=(uv run --frozen --extra web --project "$root")
 "${run[@]}" ty check --project "$root" --extra-search-path "$root/tests" "$root/tests"
 for test in verify_publication verify_benchmark verify_benchmark_spec verify_benchmark_methods \
     verify_benchmark_references verify_execution verify_cli verify_curation verify_curation_artifacts \
-    verify_curation_adapters verify_web verify_study_web verify_table_web verify_trustworthy_web \
+    verify_curation_adapters verify_web verify_study_web verify_table_web verify_trustworthy_web verify_mining \
     verify_ai verify_llm_deployment evaluate_metadata \
     verify_scatac_inventory verify_scatac_exports verify_scatac_workflow_import \
     verify_scatac_inspection verify_macs3_launcher; do

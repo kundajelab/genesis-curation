@@ -125,6 +125,7 @@ def enqueue(root: Path, kind: str, actor: str, payload: dict[str, Any]) -> str:
         "prepare",
         "study-prepare",
         "study-intake",
+        "mining",
     }:
         raise ValueError("Unknown job type")
     key = str(uuid.uuid4())
@@ -222,11 +223,18 @@ def recover(root: Path) -> None:
 
 def yield_job(root: Path, task: dict[str, Any], result: dict[str, Any]) -> bool:
     """Checkpoint a study job and release the worker between inference batches."""
-    payload = {**task["payload"], "study": result["study"]}
+    is_mining = task["kind"] == "mining"
+    payload = task["payload"] if is_mining else {**task["payload"], "study": result["study"]}
     with connection(root) as db:
         db.execute(
             "UPDATE jobs SET status=CASE WHEN cancel=1 THEN 'CANCELLED' ELSE 'QUEUED' END,"
-            "kind='study-prepare',payload=?,result=?,updated=? WHERE id=?",
-            (canonical(payload), canonical(result), now(), task["id"]),
+            "kind=?,payload=?,result=?,updated=? WHERE id=?",
+            (
+                "mining" if is_mining else "study-prepare",
+                canonical(payload),
+                canonical(result),
+                now(),
+                task["id"],
+            ),
         )
         return bool(db.execute("SELECT cancel FROM jobs WHERE id=?", (task["id"],)).fetchone()[0])

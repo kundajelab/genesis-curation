@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import copy
 import math
 import re
 import threading
@@ -15,7 +16,7 @@ from ..llm import budget, providers
 from ..llm.security import check, redact
 from . import assessments, catalog, preparation, skills, studies
 
-WORKFLOW = "study-table-2"
+WORKFLOW = "study-table-3"
 CHANGE = {
     "type": "object",
     "properties": {
@@ -260,8 +261,60 @@ def plan(
             best, lo = candidate, mid + 1
         else:
             hi = mid - 1
+    if best is not None:
+        return best
+    # Full evidence remains immutable and available to reviewers. Only the inference
+    # view is windowed; both the selected refs and omitted count are in its manifest.
+    compiled, actual, limits = attempt(1)
+    source = compiled["data"]
+    wanted = " ".join(source["table"][0]["needs_review"] + source["table"][0]["fields"])
+    terms = set(re.findall(r"[a-z]+", wanted.replace("_", " ")))
+    own = set(source["common"]["sample_evidence"] + source["table"][0]["sample_evidence"])
+    ranked = sorted(
+        source["evidence"],
+        key=lambda ref: (
+            -(
+                20 * (ref in own)
+                + len(terms & set(re.findall(r"[a-z]+", source["evidence"][ref].lower())))
+            ),
+            ref,
+        ),
+    )
+    lo, hi, best = 1, len(ranked), None
+    while lo <= hi:
+        count = (lo + hi) // 2
+        selected = set(ranked[:count])
+        window = copy.deepcopy(compiled)
+        data = window["data"]
+        data["evidence"] = {
+            ref: value for ref, value in source["evidence"].items() if ref in selected
+        }
+        for row in [data["common"], *data["table"]]:
+            for scope in ("sample_evidence", "background_evidence"):
+                row[scope] = [ref for ref in row[scope] if ref in selected]
+        window["bindings"] = {
+            ref: value for ref, value in compiled["bindings"].items() if ref in selected
+        }
+        window["coverage"] = {
+            "available_passages": len(ranked),
+            "selected_passages": count,
+            "omitted_passages": len(ranked) - count,
+            "selection": "sample-first field-ranked window",
+            "selected_refs": sorted(selected),
+            "complete": count == len(ranked),
+        }
+        data["evidence_coverage"] = window["coverage"]
+        data["rules"] += (
+            " This is a bounded evidence window, not an exhaustive source scan. "
+            "Do not treat absent passages as evidence of absence."
+        )
+        limits = budget.inspect(actual, payload(actual, data))
+        if limits["fits"]:
+            best, lo = (window, actual, limits), count + 1
+        else:
+            hi = count - 1
     if best is None:
-        raise ValueError("A sample's evidence exceeds the token budget; attach a focused excerpt")
+        raise ValueError("Required instructions and one evidence passage exceed the token budget")
     return best
 
 
@@ -585,6 +638,7 @@ def step(
                         "budget": limits,
                         "available_passages": len(compiled["bindings"]),
                         "omitted_passages": 0,
+                        **compiled.get("coverage", {}),
                     },
                     cancellation,
                     target_fields=unit.get("fields", {}).get(sid),

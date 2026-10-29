@@ -239,14 +239,14 @@ def main() -> None:
                     db.execute(statement)
             db.execute("PRAGMA user_version=6")
         store.initialize(legacy)
-        assert list(legacy.glob("before-v6-to-v7-*.sqlite"))
+        assert list(legacy.glob(f"before-v6-to-v{store.SCHEMA_VERSION}-*.sqlite"))
         snapshot = root / "backup.sqlite"
         store.backup(registry, snapshot)
         restored = root / "restored"
         store.restore(snapshot, restored)
         assert audit.report(restored, audit_id) == report
         assert catalog.export(restored) == catalog.export(registry)
-        print("PASS v6-to-v7 migration backup, audit restore and unchanged signed metadata")
+        print("PASS legacy migration backup, audit restore and unchanged signed metadata")
 
 
 if __name__ == "__main__":

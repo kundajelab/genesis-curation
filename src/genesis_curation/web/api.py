@@ -395,6 +395,9 @@ def create_app(
         )
 
     study_api.mount(app, root, config_path)
+    from . import mining_api
+
+    mining_api.mount(app, root, config_path)
 
     @app.get("/{path:path}")
     def frontend(path: str) -> FileResponse:

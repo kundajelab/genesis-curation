@@ -7,8 +7,10 @@ import re
 import threading
 import time
 import xml.etree.ElementTree as ET
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+from urllib.error import HTTPError
 from urllib.parse import urlencode, urlsplit
 from urllib.request import Request, build_opener
 
@@ -27,7 +29,11 @@ def fetch(root: Path, url: str, cancellation: threading.Event | None = None) -> 
         raise ValueError("Only fixed public metadata services are supported")
     cache = root / "source-cache" / (fingerprint(url) + ".json")
     if cache.exists():
-        return load(cache)
+        cached = load(cache)
+        if (
+            datetime.now(UTC) - datetime.fromisoformat(cached["retrieved_at"])
+        ).total_seconds() < 86400:
+            return retain(root, cached)
     # Stay below the unauthenticated NCBI request-rate limit in this serial worker.
     if parsed.hostname.endswith("ncbi.nlm.nih.gov"):
         if cancellation:
@@ -49,14 +55,28 @@ def fetch(root: Path, url: str, cancellation: threading.Event | None = None) -> 
                 )
             result = {"url": url, "text": raw.decode("utf-8"), "retrieved_at": now()}
             dump(cache, result)
-            return result
+            return retain(root, result)
         except (OSError, UnicodeDecodeError) as exc:
             error = exc
+            delay = min(attempt + 1, 3)
+            if isinstance(exc, HTTPError) and exc.code in {429, 503}:
+                retry = exc.headers.get("Retry-After", "")
+                delay = min(30, int(retry)) if retry.isdigit() else 3 * (attempt + 1)
             if cancellation:
-                cancellation.wait(min(attempt + 1, 3))
+                cancellation.wait(delay)
             else:
-                time.sleep(min(attempt + 1, 3))
+                time.sleep(delay)
     raise ValueError(f"Metadata retrieval failed: {error}")
+
+
+def retain(root: Path, source: dict[str, Any]) -> dict[str, Any]:
+    """URL caches may refresh; cited content snapshots never disappear on refresh."""
+    dump(
+        root / "source-snapshots" / (fingerprint(source["text"]) + ".json"),
+        {"text": source["text"]},
+        immutable=True,
+    )
+    return source
 
 
 def geo_url(accession: str) -> str:
@@ -131,7 +151,7 @@ def articles(
                 paragraphs = [
                     " ".join(n.itertext()).strip()
                     for n in tree.iter()
-                    if n.tag in {"ArticleTitle", "AbstractText", "article-title", "p"}
+                    if n.tag in {"ArticleTitle", "AbstractText", "article-title", "p", "table-wrap"}
                 ]
                 if not paragraphs:
                     raise ValueError("No article text available")
@@ -148,7 +168,10 @@ def import_accession(
     actor: str,
     cancellation: threading.Event | None = None,
     sample_limit: int | None = None,
+    sample_offset: int = 0,
 ) -> str:
+    if sample_offset < 0:
+        raise ValueError("Sample offset must be nonnegative")
     accession = accession.strip().upper()
     if not ACCESSION.fullmatch(accession):
         raise ValueError("Use a GEO, ENA/SRA or BioProject accession")
@@ -172,7 +195,7 @@ def import_accession(
         if sample_limit is not None:
             if not 1 <= sample_limit <= 1000:
                 raise ValueError("Pilot sample limit must be 1–1000")
-            samples = samples[:sample_limit]
+            samples = samples[sample_offset : sample_offset + sample_limit]
         docs, ledger = articles(root, source["text"], cancellation)
         ledger.insert(0, {"url": source["url"], "status": "retrieved"})
         for sample in samples:
@@ -219,7 +242,7 @@ def import_accession(
         if sample_limit is not None:
             if not 1 <= sample_limit <= 1000:
                 raise ValueError("Pilot sample limit must be 1–1000")
-            rows = rows[:sample_limit]
+            rows = rows[sample_offset : sample_offset + sample_limit]
         # Import in bounded batches; the study itself has no 1000-record ceiling.
         for start in range(0, len(rows), 500):
             ids.extend(
@@ -270,7 +293,8 @@ def import_accession(
             "retrieval_failures": failures,
             "selection": {
                 "available_records": available_records,
-                "selected_records": len(ids),
+                "selected_records": len(studies.get(registry, key)["records"]),
+                "sample_offset": sample_offset,
                 "pilot_limit": sample_limit,
             },
             "status": "NOT_STARTED",
