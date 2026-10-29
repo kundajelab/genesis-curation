@@ -1,10 +1,50 @@
 # Human-reviewed metadata curation
 
-The default GUI is a study to-do list. Add an accession or upload a table; the
-worker retrieves metadata, prepares evidence-backed suggestions, and groups the
-exceptions that need a reviewer. Resolve those decisions, then sign off once on
-the study summary. Download the signed JSON (with evidence and provenance), CSV,
-or TSV. No sequencing files are downloaded and no scientific pipeline is launched.
+The GUI opens with **Discover**, followed by **Curation** and **Review**. Search
+plant datasets, inspect modality tables, and resolve the exceptions that need a
+reviewer. Background jobs retrieve metadata and prepare evidence-backed proposals.
+No sequencing files are downloaded and no scientific pipeline is launched.
+
+## Discovery and the reference workbook
+
+Discover combines versioned assay/source recipes, native archive APIs, literature,
+known plant repository searches, and an LLM query-expansion step. Actual requests,
+results, errors and source snapshots are retained. A search hit is a lead, not a
+verified experiment. Source availability and bounded pagination limit coverage.
+
+Curation uses indexed, paginated modality tables. Filters and column selection work
+without loading the entire workbook into the browser. **Curate selected** and
+**Curate all** enqueue work immediately; Discover shows progress and pause/resume.
+Campaigns batch records within studies using the provider's token budgets. Worker
+interruptions preserve checkpoints and require explicit resume. Low disk space
+pauses work. Unsupported or missing evidence remains visible for review.
+
+To import an existing reference XLSX without modifying its source:
+
+```bash
+uv run python scripts/import_reference_workspace.py \
+  --root /absolute/workspace/web-data --workbook /absolute/workspace/reference.xlsx
+```
+
+All eight known reference tabs are retained, including the headerless TSS and
+MPRA lists and repeated DAP column headers. Original tab names remain in provenance;
+navigation uses assay names. The immutable snapshot, row coordinates and original
+cells establish lineage. Imported labels are external claims, not outputs of this
+pipeline or independently validated truth. Accession-seeded replay records real
+lookups and searches; it does not claim to reconstruct the original curator's work.
+
+**History** shows original values, proposed values, cited evidence, source events,
+model provenance and recorded review changes. **Export all + history** produces a
+ZIP containing XLSX and JSON provenance. **Export clean metadata** restricts the
+table to supported or reviewed records; unsupported claims are not promoted by
+importing them. Metadata support is distinct from biological accuracy or assay QC.
+
+For optional web search, run `deploy/web/search.yaml` alongside the app with a
+private `$WEB_ROOT/search/settings.yml` based on the example (replace its secret).
+Only loopback port 18888 is exposed. The worker requests Google and Brave through
+SearXNG and caches responses for 24 hours. Google may reject server requests;
+actual engine results and errors are recorded. Native archive searches do not
+depend on SearXNG.
 
 For goal-driven discovery, use [Find data](agentic-mining.md). It searches public
 archives and sends uncertain inclusion decisions into the same reviewer to-do list.

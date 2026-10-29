@@ -37,3 +37,28 @@ input:focus,select:focus,textarea:focus{outline-color:#60a5fa}
 @media(max-width:760px){.sidebar{width:100%;border-right:0;border-bottom:1px solid #e2e8f0}.sidebar .brand{margin:0;font-size:20px}.sidebar nav{align-items:start}.sidebar nav>button{width:auto}.sidebar nav details{padding:0;border:0}.sidebar nav summary{padding:8px}.workspace{margin:0;width:100%}.login-card{padding:28px}.model-catalog{grid-template-columns:1fr}}
 
 .result-tabs{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}
+
+/* Dense metadata workspace: keep controls short and tables independently scrollable. */
+.column-options {display:flex;flex-wrap:wrap;gap:.6rem 1rem;margin:.65rem 0}
+.column-options label {display:flex;align-items:center;gap:.35rem;font-size:.85rem;font-weight:400}
+.column-options input[type=checkbox],.metadata-table input[type=checkbox] {width:1rem;height:1rem;margin:0}
+.metadata-table {max-height:65vh;overflow:auto;margin:1rem 0}
+.metadata-table table {font-size:.8rem;border-collapse:separate;border-spacing:0}
+.metadata-table th {position:sticky;top:0;background:#f8fafc;z-index:2;white-space:nowrap}
+.metadata-table td {max-width:230px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.metadata-table th:first-child,.metadata-table td:first-child {position:sticky;left:0;background:white;z-index:3}
+.metadata-table th:nth-child(2),.metadata-table td:nth-child(2) {position:sticky;left:38px;background:white;z-index:2}
+.result-tabs {flex-wrap:wrap;gap:.4rem;margin:1rem 0}
+.result-tabs button {padding:.45rem .7rem;font-size:.85rem}
+.inventory-counts {display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.6rem}
+.inventory-counts button {display:flex;flex-direction:column;gap:.3rem;min-width:110px;text-align:left}
+.inventory-counts strong {font-size:1.3rem;color:#0f172a}
+.event-list {max-height:55vh;overflow:auto;margin-top:1rem}
+.event-list>details {border-top:1px solid #e2e8f0;padding:.5rem 0}
+.event-list time {color:#64748b;font-variant-numeric:tabular-nums;margin-right:.5rem}
+.history-panel {position:fixed;inset:4vh 3vw 4vh 20vw;z-index:20;overflow:auto;box-shadow:0 10px 80px #0004;background:white;border:1px solid #cbd5e1}
+.history-panel table {font-size:.85rem}
+.history-panel td {max-width:280px;overflow-wrap:anywhere}
+.history-panel pre {max-height:400px;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere}
+.header-actions label {font-size:.75rem}.header-actions select {max-width:270px}
+@media(max-width:760px){.history-panel{inset:1vh 2vw}.header-actions select{max-width:190px}.column-options{gap:.45rem}.metadata-table{max-height:60vh}}
