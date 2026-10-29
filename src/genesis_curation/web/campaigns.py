@@ -165,6 +165,7 @@ def run_search(root: Path, query: dict[str, Any], cancel: threading.Event | None
             "query": result["query"],
             "rows": result["candidates"],
             "next_offset": result["next_offset"],
+            "coverage": result.get("coverage", {}),
             "sources": [
                 {"url": s["url"], "hash": fingerprint(s["text"]), "retrieved_at": s["retrieved_at"]}
                 for s in result["sources"]

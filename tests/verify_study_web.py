@@ -242,7 +242,7 @@ def main() -> None:
         assert harmonize.vocabulary()["version"] == "genesis-plant-terms/4"
         field["vocabulary_id"] = "NCBITaxon:3702"
         reject(lambda: harmonize.verify_fields(taxonomy_bundle, fields), "mismatched term")
-        print("PASS distinct DNA/TF taxa and historical vocabularies; wrong taxon IDs rejected")
+        print("PASS distinct DNA/TF taxa and current vocabulary; wrong taxon IDs rejected")
         print("PASS grouped correction rollback and wrong-sample evidence rejection")
 
         # Intake failure retains the missing GSM and supports a subsequent retry.

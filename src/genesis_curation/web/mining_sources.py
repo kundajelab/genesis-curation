@@ -165,6 +165,11 @@ def search(
         )
     # ENA free-text fields vary by result type. Tissue/condition are evaluated from
     # retrieved evidence rather than silently turning a failed search into no matches.
+    # ENA has no server-side offset. Page a bounded, cached metadata response.
+    # Keep truncation explicit instead of implying complete archive coverage.
+    limit = 1000
+    if not 0 <= offset < limit:
+        raise ValueError("ENA cursor exceeds the bounded search limit")
     url = (
         ENA
         + "search?"
@@ -173,8 +178,7 @@ def search(
                 "result": "read_run",
                 "query": expression,
                 "format": "json",
-                "limit": 100,
-                "offset": offset,
+                "limit": limit,
                 "fields": "study_accession,secondary_study_accession,study_title,"
                 "scientific_name,library_strategy",
             }
@@ -183,8 +187,10 @@ def search(
     rows, source = json_source(root, url, cancel)
     if not isinstance(rows, list):
         raise ValueError("ENA search did not return a record list")
+    coverage = {"returned_runs": len(rows), "limit": limit, "limit_reached": len(rows) >= limit}
+    page = rows[offset : offset + 100]
     candidates = {}
-    for row in rows:
+    for row in page:
         accession = row.get("study_accession", "")
         if intake.ACCESSION.fullmatch(accession):
             candidates[accession] = {
@@ -199,8 +205,9 @@ def search(
     return {
         "candidates": list(candidates.values()),
         "sources": [source],
-        "total": None,
-        "next_offset": offset + len(rows) if len(rows) == 100 else None,
+        "total": len(rows) if len(rows) < limit else None,
+        "next_offset": offset + len(page) if offset + len(page) < len(rows) else None,
+        "coverage": coverage,
         "query": expression,
     }
 

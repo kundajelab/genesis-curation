@@ -42,3 +42,12 @@ classifications. Skills guide extraction but do not override source evidence or 
 Alex Borowsky's plant cell-type annotation skill remains available as a reviewed,
 provenance-pinned metadata guidance resource. Gene-expression analysis and preprocessing
 are outside this application's scope.
+
+## Search coverage
+
+ENA's [Portal API](https://ena-docs.readthedocs.io/en/latest/retrieval/programmatic-access/advanced-search.html)
+uses a result limit rather than offset pagination. The application retrieves a bounded
+1,000-run metadata response, caches it, and presents local pages. Receipts explicitly
+record when that limit is reached. Campaign query budgets can stop earlier; discovery
+is never presented as exhaustive. Web engines may deny or rate-limit requests; partial
+results and engine errors remain visible in the activity log.

@@ -10,6 +10,7 @@ from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 from unittest.mock import patch
+from urllib.parse import parse_qs, urlparse
 
 from genesis_curation.contracts.records import canonical, dump, fingerprint, now
 from genesis_curation.llm import providers
@@ -52,6 +53,35 @@ def main() -> None:
         )
         config_path = root / "providers.json"
         dump(config_path, {"schema_version": 1, "providers": [config]})
+        archive_rows = [
+            {"study_accession": f"PRJNA{100000 + i}", "study_title": str(i)} for i in range(250)
+        ]
+        urls: list[str] = []
+
+        def ena_page(
+            root: Path, url: str, cancel: threading.Event | None
+        ) -> tuple[list[dict[str, str]], dict[str, str]]:
+            urls.append(url)
+            params = parse_qs(urlparse(url).query)
+            assert "offset" not in params and params["limit"] == ["1000"]
+            return archive_rows, {"url": url}
+
+        query = {"source": "ena", "species": "Arabidopsis thaliana", "assay": "ATAC-seq"}
+        with (
+            patch.object(mining_sources, "taxon", return_value="3702"),
+            patch.object(mining_sources, "json_source", ena_page),
+        ):
+            pages = [mining_sources.search(root, {**query, "offset": i}) for i in (0, 100, 200)]
+            accessions = [r["accession"] for page in pages for r in page["candidates"]]
+            assert len(accessions) == len(set(accessions)) == 250
+            assert [page["next_offset"] for page in pages] == [100, 200, None]
+            assert len(set(urls)) == 1
+            assert all(page["total"] == 250 for page in pages)
+            archive_rows *= 4
+            capped = mining_sources.search(root, {**query, "offset": 900})
+            assert capped["coverage"]["limit_reached"] and capped["total"] is None
+            assert capped["next_offset"] is None
+        print("PASS ENA bounded local pagination, unique pages and explicit truncation")
         body = {
             "goal": "Find Arabidopsis RNA-seq leaf studies",
             "species": ["Arabidopsis thaliana"],
