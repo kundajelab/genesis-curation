@@ -57,6 +57,12 @@ def main() -> None:
         {"tissue"},
         excerpts,
     )
+    generic = harmonize.source_record(
+        '{"library_strategy":"RNA-Seq"}', "synthetic:strategy", "application/json"
+    )
+    assert not audit.direct_values(
+        {"sources": [generic]}, {"assay"}, catalog.evidence_index([generic])
+    )
     vocab = harmonize.vocabulary()
     assert vocab["version"] == "genesis-plant-terms/4"
     assert len({t["id"] for t in vocab["terms"]["tissue"].values()}) > 1000

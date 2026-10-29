@@ -17,6 +17,8 @@ def direct_values(
     state: dict[str, Any], wanted: set[str], entries: list[dict[str, str]]
 ) -> dict[str, Any]:
     """Source attributes only: never consult predictions when helping an expert label."""
+    # Archive strategy alone cannot establish bulk/single-cell or a genuine 5-prime protocol.
+    wanted = wanted - {"assay"}
     sources = [
         s
         for s in state["sources"]
