@@ -1,0 +1,172 @@
+{
+  "schema_version": 1,
+  "code_commit": "7247a77",
+  "reference_role": "external human/other-LLM curation, not pipeline output or gold labels",
+  "reference_sheet_modified": false,
+  "pilot": {
+    "mode": "accession-reconstruction",
+    "manifest_hash": "6c0bfb37cbebbcbe8fd3e556219f0eab05995050afe50c319f772d160072ddbf",
+    "counts": {
+      "experiments": 100,
+      "studies": 85,
+      "species": 61,
+      "runs": 116
+    },
+    "baseline": {
+      "workflow": "study-table-3",
+      "seconds": 1773.5158281018957,
+      "measured": {
+        "failed_invocations": 1,
+        "http_attempts": 47,
+        "invocations": 47,
+        "usage": {
+          "completion_tokens": 45140,
+          "prompt_tokens": 498282,
+          "total_tokens": 543422
+        }
+      },
+      "raw_prepared_count": 91,
+      "exclusive_prepared_count": 89,
+      "terminal_failures": 11,
+      "overlapping_old_completed_failed_records": 2,
+      "pending_decisions": 38
+    },
+    "candidate": {
+      "workflow": "study-table-4",
+      "assessment": "plant-evidence/3",
+      "seconds": 1315.1043807610404,
+      "measured": {
+        "failed_invocations": 1,
+        "http_attempts": 19,
+        "invocations": 19,
+        "usage": {
+          "completion_tokens": 35478,
+          "prompt_tokens": 292118,
+          "total_tokens": 327596
+        }
+      },
+      "prepared": 100,
+      "terminal_failures": 0,
+      "pending_decisions": 37
+    },
+    "runtime_reduction_percent": 25.847609594297783,
+    "token_reduction_percent": 39.716095410196864,
+    "measurement_limit": "One paired run on identical evidence and Qwen Q8 at 32768 context; not biological accuracy or a repeated timing benchmark",
+    "cost": "NOT_RECORDED"
+  },
+  "retrieval_1000": {
+    "attempted": 1000,
+    "counts": {
+      "experiments": 997,
+      "studies": 254,
+      "species": 161,
+      "runs": 1166
+    },
+    "by_reference_stratum": {
+      "TSS": {
+        "experiments": 300,
+        "studies": 58,
+        "species": 28,
+        "runs": 334
+      },
+      "Bulk ATAC": {
+        "experiments": 399,
+        "studies": 161,
+        "species": 145,
+        "runs": 405
+      },
+      "scATAC": {
+        "experiments": 298,
+        "studies": 37,
+        "species": 17,
+        "runs": 427
+      }
+    },
+    "failures": [
+      {
+        "accession": "SRX11670424",
+        "error": "Expected an experiment or BioSample accession",
+        "stratum": "Bulk ATAC"
+      },
+      {
+        "accession": "DRX512984",
+        "error": "Archive did not return the exact experiment identity",
+        "stratum": "scATAC"
+      },
+      {
+        "accession": "DRX512983",
+        "error": "Archive did not return the exact experiment identity",
+        "stratum": "scATAC"
+      }
+    ],
+    "manifest_hash": "11e43daa6e950e1513d412f2d6117e3c6df9368d7a3913243414f488a2616530",
+    "sealed": false,
+    "llm_curation": "NOT_RUN",
+    "seconds": "NOT_INSTRUMENTED"
+  },
+  "independent_search": {
+    "queries": 18,
+    "failed_queries": 0,
+    "seconds": 16.504195938119665,
+    "hits": 264,
+    "unique_candidate_accessions": 219,
+    "reference_seeds": false,
+    "precision_and_recall": "NOT_EVALUATED",
+    "end_to_end_llm_curation": "NOT_RUN"
+  },
+  "local_models": [
+    {
+      "id": "gemma-4-12b",
+      "repository": "google/gemma-4-12B-it-qat-q4_0-gguf",
+      "revision": "29d097773436b69ff9feafd636ab4cf873786537",
+      "sha256": "93567e57a8fe10b23569b9d9ec38cd005deedf71e29477c421a4b83f418a538b",
+      "weight_integrity": "PASS",
+      "configured_context": 32768,
+      "tokenizer_and_short_json_probe": "PASS",
+      "biological_accuracy": "NOT_EVALUATED"
+    },
+    {
+      "id": "gemma-4-e4b",
+      "repository": "google/gemma-4-E4B-it-qat-q4_0-gguf",
+      "revision": "4b4a2c1d584be7264f87aac328a1bc739ce81b6c",
+      "sha256": "676c35070db6dbe52f93e9c864ee0fba4eddea94b9c875d9cb10daff453fbaee",
+      "weight_integrity": "PASS",
+      "configured_context": 32768,
+      "tokenizer_and_short_json_probe": "PASS",
+      "biological_accuracy": "NOT_EVALUATED"
+    },
+    {
+      "id": "ministral-3-14b",
+      "repository": "mistralai/Ministral-3-14B-Instruct-2512-GGUF",
+      "revision": "74fac473c43357d7fb2671713608183cc72496d0",
+      "sha256": "8122acc8df446039d41dd9650dabb024d3c6b8dae6eff336d28ac2bddd3bbc13",
+      "weight_integrity": "PASS",
+      "configured_context": 32768,
+      "tokenizer_and_short_json_probe": "PASS",
+      "biological_accuracy": "NOT_EVALUATED"
+    }
+  ],
+  "expert_audit": {
+    "new_samples": 100,
+    "answers": 0,
+    "fields": [
+      "organism",
+      "assay",
+      "tissue",
+      "genotype",
+      "developmental_stage",
+      "treatment",
+      "library_layout"
+    ],
+    "predictions_hidden_until_judgment": true,
+    "status": "AWAITING_HUMAN_LABELS"
+  },
+  "scale_10000": {
+    "indexed_result_and_queue_software_tests": "PASS",
+    "workbook_roundtrip_software_test": "PASS",
+    "biological_curation": "NOT_RUN",
+    "gate": "Requires expert pilot audit and quality assessment"
+  },
+  "sequencing_downloads": "NOT_RUN",
+  "github_main_updated": false
+}
