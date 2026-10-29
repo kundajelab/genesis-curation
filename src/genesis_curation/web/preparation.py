@@ -280,7 +280,11 @@ def run(
                 "mode": "ai" if config else "source-only",
             },
         )
-        return {"study": key, "prepared": len(completed), "failed": len(failures)}
+        return {
+            "study": key,
+            "prepared": len(completed.keys() - failures.keys()),
+            "failed": len(failures),
+        }
     except Exception:
         studies.preparation(registry, key, {"status": "FAILED"})
         raise

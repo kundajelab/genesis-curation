@@ -3,15 +3,50 @@
 from __future__ import annotations
 
 import re
+import xml.etree.ElementTree as ET
 from typing import Any
 
 from ..contracts.records import fingerprint
 
-VERSION = "plant-evidence/1"
+VERSION = "plant-evidence/3"
+
+
+def sample_attributes(state: dict[str, Any]) -> dict[str, set[str]]:
+    """Read explicit attributes from single-sample XML, never study-context sources."""
+    result: dict[str, set[str]] = {}
+    for source in state.get("sources", []):
+        if state.get("source_scopes", {}).get(source["version"]) == "study_context":
+            continue
+        text = source["data"]["snapshot"]
+        if not text.lstrip().startswith("<"):
+            continue
+        try:
+            document = ET.fromstring(text)
+        except ET.ParseError:
+            continue
+        samples = [
+            e for e in document.iter() if e.tag.rsplit("}", 1)[-1] in {"SAMPLE", "BioSample"}
+        ]
+        if len(samples) != 1:
+            continue
+        for element in samples[0].iter():
+            tag = element.tag.rsplit("}", 1)[-1]
+            if tag == "SAMPLE_ATTRIBUTE":
+                children = {e.tag.rsplit("}", 1)[-1]: e.text or "" for e in element}
+                name, value = children.get("TAG", ""), children.get("VALUE", "")
+            elif tag == "Attribute":
+                name = element.get("harmonized_name") or element.get("attribute_name", "")
+                value = element.text or ""
+            else:
+                continue
+            if name.strip() and value.strip():
+                result.setdefault(name.strip().casefold(), set()).add(value.strip())
+    return result
 
 
 def assess(state: dict[str, Any], fields: list[dict[str, Any]]) -> dict[str, Any]:
     result = {}
+    explicit = sample_attributes(state)
     for field in fields:
         name, value = field["field"], str(field["value"] or "")
         citations = field["evidence"]
@@ -55,6 +90,30 @@ def assess(state: dict[str, Any], fields: list[dict[str, Any]]) -> dict[str, Any
                 issues.append(
                     "Library layout must distinguish paired-end from single-end sequencing"
                 )
+        if field["status"] == "known" and name in {"tissue", "genotype"}:
+            original = state.get("original", {})
+            attributes = str(original.get("sample_attributes", ""))
+            aliases = "tissue|organ" if name == "tissue" else "genotype|cultivar|ecotype"
+            matches = re.findall(
+                rf"(?:^|[;|\n])\s*(?:{aliases})\s*[:=]\s*([^;|\n]+)", attributes, re.I
+            )
+            matches.extend(v for alias in aliases.split("|") for v in explicit.get(alias, set()))
+            if matches and all(value.strip().casefold() != v.strip().casefold() for v in matches):
+                issues.append("Proposed value differs from the sample's explicit archive attribute")
+            if name == "tissue" and re.search(
+                r"(?:control|treated|replicate)[ _-]*\d|^IRBB\d", value, re.I
+            ):
+                issues.append("A sample or treatment label may have been used as tissue")
+            if name == "genotype" and re.search(
+                r"\b(young panicle|leaf|root|seedling)\b", value, re.I
+            ):
+                issues.append("An organ or developmental label may have been used as genotype")
+        if field["status"] == "known" and name == "assay":
+            from . import eligibility
+
+            check = eligibility.classify(state.get("original", {}), {"assay": value})
+            if check["eligibility"] in {"excluded", "uncertain"}:
+                issues.append(check["reason"])
         supported = field["status"] == "known" and bool(citations)
         verbatim = supported and value.casefold() in text
         result[name] = {

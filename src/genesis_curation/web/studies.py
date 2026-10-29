@@ -561,7 +561,7 @@ def progress(root: Path, key: str) -> dict[str, Any]:
     )
     batches = run.get("batches_done", 0)
     remaining = sum(len(unit["ids"]) for unit in run.get("queue", []))
-    prepared = len(prep["completed"])
+    prepared = len(prep["completed"].keys() - prep["failures"].keys())
     # A single large request has no measured throughput yet; do not invent an ETA.
     eta = None
     if batches >= 2 and prepared and remaining:

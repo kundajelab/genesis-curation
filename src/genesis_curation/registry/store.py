@@ -15,7 +15,7 @@ from typing import Any
 
 from ..contracts.records import canonical, fingerprint, identity, loads, now, record, validate
 
-SCHEMA_VERSION = 8
+SCHEMA_VERSION = 10
 MIGRATIONS = {
     1: [
         "CREATE TABLE meta (key TEXT PRIMARY KEY,value TEXT NOT NULL)",
@@ -161,6 +161,39 @@ MIGRATIONS = {
         "BEGIN SELECT RAISE(ABORT,'immutable mining event'); END",
         "CREATE TRIGGER immutable_mining_events_delete BEFORE DELETE ON mining_events "
         "BEGIN SELECT RAISE(ABORT,'immutable mining event'); END",
+    ],
+    9: [
+        "CREATE TABLE curation_result_rows (subject TEXT PRIMARY KEY "
+        "REFERENCES curation_subjects(id), "
+        "modality TEXT NOT NULL,species TEXT NOT NULL,eligibility TEXT NOT NULL,"
+        "study TEXT NOT NULL,body TEXT NOT NULL)",
+        "CREATE INDEX result_modality ON curation_result_rows(modality,subject)",
+        "CREATE INDEX result_species ON curation_result_rows(modality,species,subject)",
+        "CREATE INDEX result_eligibility ON curation_result_rows(modality,eligibility,subject)",
+        "CREATE INDEX result_study ON curation_result_rows(modality,study,subject)",
+    ],
+    10: [
+        "CREATE TABLE curation_queue_owners (owner TEXT PRIMARY KEY,kind TEXT NOT NULL,"
+        "dirty INTEGER NOT NULL DEFAULT 1,body TEXT NOT NULL DEFAULT '{}')",
+        "CREATE TABLE curation_queue_tasks (owner TEXT,task TEXT,status TEXT,priority INTEGER,"
+        "body TEXT NOT NULL,PRIMARY KEY(owner,task))",
+        "CREATE INDEX queue_page ON curation_queue_tasks(status,priority,owner,task)",
+        "CREATE INDEX queue_dirty ON curation_queue_owners(dirty,owner)",
+        "INSERT INTO curation_queue_owners(owner,kind) SELECT id,'study' FROM curation_studies",
+        "INSERT INTO curation_queue_owners(owner,kind) SELECT id,'mining' FROM mining_runs",
+        "CREATE TRIGGER queue_study_insert AFTER INSERT ON curation_studies BEGIN "
+        "INSERT INTO curation_queue_owners(owner,kind) VALUES(new.id,'study'); END",
+        "CREATE TRIGGER queue_study_update AFTER UPDATE ON curation_studies BEGIN "
+        "UPDATE curation_queue_owners SET dirty=1 WHERE owner=new.id; END",
+        "CREATE TRIGGER queue_subject_update AFTER UPDATE ON curation_subjects BEGIN "
+        "UPDATE curation_queue_owners SET dirty=1 WHERE owner IN "
+        "(SELECT study FROM curation_members WHERE subject=new.id); END",
+        "CREATE TRIGGER queue_member_insert AFTER INSERT ON curation_members BEGIN "
+        "UPDATE curation_queue_owners SET dirty=1 WHERE owner=new.study; END",
+        "CREATE TRIGGER queue_mining_insert AFTER INSERT ON mining_runs BEGIN "
+        "INSERT INTO curation_queue_owners(owner,kind) VALUES(new.id,'mining'); END",
+        "CREATE TRIGGER queue_mining_update AFTER UPDATE ON mining_runs BEGIN "
+        "UPDATE curation_queue_owners SET dirty=1 WHERE owner=new.id; END",
     ],
 }
 

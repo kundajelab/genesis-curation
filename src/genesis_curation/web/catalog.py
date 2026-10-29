@@ -6,6 +6,7 @@ import contextlib
 import csv
 import io
 import json
+import re
 import sqlite3
 import threading
 import uuid
@@ -90,6 +91,9 @@ def save(
     db.execute(
         "INSERT INTO curation_events(subject,version) VALUES(?,?)", (state["id"], event["version"])
     )
+    from . import results
+
+    results.project(db, state)
     return state
 
 
@@ -367,11 +371,33 @@ def examples(root: Path, state: dict[str, Any]) -> list[dict[str, Any]]:
     return result
 
 
-def evidence_index(sources: list[dict[str, Any]]) -> list[dict[str, str]]:
+def evidence_index(
+    sources: list[dict[str, Any]], *, compact_xml: bool = False
+) -> list[dict[str, str]]:
     """Give inference exact locators rather than asking it to invent source paths."""
     result = []
     for source in sources:
         data = source["data"]
+        if compact_xml and data["snapshot"].lstrip().startswith(
+            ("<?xml", "<EXPERIMENT", "<SAMPLE", "<BioSample")
+        ):
+            tags = (
+                "SAMPLE_ATTRIBUTE|Attribute|DESIGN_DESCRIPTION|STUDY_TITLE|STUDY_ABSTRACT|"
+                "TITLE|SCIENTIFIC_NAME|TAXON_ID|EXTERNAL_ID|PRIMARY_ID|LIBRARY_STRATEGY|"
+                "LIBRARY_LAYOUT|LIBRARY_SELECTION|LIBRARY_SOURCE|LIBRARY_NAME|"
+                "LIBRARY_CONSTRUCTION_PROTOCOL|Description|Organism"
+            )
+            matches = list(re.finditer(rf"<({tags})\b[^>]*>[\s\S]*?</\1>", data["snapshot"], re.I))
+            if matches:
+                for match in matches:
+                    result.append(
+                        {
+                            "source_version": source["version"],
+                            "locator": f"span:{match.start()}:{match.end()}",
+                            "text": match[0],
+                        }
+                    )
+                continue
         if data["media_type"] == "application/json":
             value = json.loads(data["snapshot"])
             if isinstance(value, dict):
@@ -433,6 +459,7 @@ def run_proposal(
         indexed, coverage = select_evidence(
             state, indexed, target_fields, min(9000, max(1000, config["context_chars"] // 3))
         )
+    prompt_vocab = harmonize.prompt_vocabulary(canonical(indexed))
     specification = schema("metadata-response-v1")
     properties = specification["properties"]["fields"]["items"]["properties"]
     properties["value"]["description"] = (
@@ -442,11 +469,7 @@ def run_proposal(
     properties["vocabulary_id"] = {
         "enum": [None]
         + sorted(
-            {
-                term["id"]
-                for terms in harmonize.vocabulary()["terms"].values()
-                for term in terms.values()
-            }
+            {term["id"] for terms in prompt_vocab["terms"].values() for term in terms.values()}
         ),
         "description": "Use a listed ID only for an exact field and label match; otherwise null.",
     }
@@ -484,7 +507,7 @@ def run_proposal(
             "fields": target_fields or sorted(harmonize.FIELDS),
             "sample": state["name"],
             "evidence_coverage": coverage,
-            "vocabulary": harmonize.vocabulary(),
+            "vocabulary": prompt_vocab,
             "draft": [
                 {k: f[k] for k in ("field", "status", "value")}
                 for f in extracted

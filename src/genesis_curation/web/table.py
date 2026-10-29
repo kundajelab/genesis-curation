@@ -16,7 +16,7 @@ from ..llm import budget, providers
 from ..llm.security import check, redact
 from . import assessments, catalog, preparation, skills, studies
 
-WORKFLOW = "study-table-3"
+WORKFLOW = "study-table-4"
 CHANGE = {
     "type": "object",
     "properties": {
@@ -78,7 +78,7 @@ def compile_table(
         )
         scope_map: dict[str, list[str]] = {"sample": [], "study_context": []}
         sample_text = []
-        for entry in catalog.evidence_index(state["sources"]):
+        for entry in catalog.evidence_index(state["sources"], compact_xml=True):
             scope = state.get("source_scopes", {}).get(entry["source_version"], "sample")
             if scope != "study_context":
                 sample_text.append(entry["text"])
@@ -157,7 +157,9 @@ def compile_table(
         "skills": list(skills.values()),
         "reviewed_examples": list(examples.values()),
         "feedback": guidance,
-        "vocabulary": harmonize.vocabulary(),
+        "evidence_index_policy": "xml-metadata-spans/1: exact selected metadata elements; "
+        "archive file/link scaffolding omitted from prompts; full sources retained for review",
+        "vocabulary": harmonize.prompt_vocabulary("\n".join(texts)),
         "rules": (
             "Each row inherits all common draft values and evidence IDs, plus its own entries. "
             "Resolve needs_review using sample_evidence, especially assay from explicit "
@@ -528,6 +530,8 @@ def step(
                     )
                     completed[sid] = updated["version"]
         run["finished"] = True
+        for sid in failures:
+            completed.pop(sid, None)
         studies.preparation(
             registry,
             key,
@@ -710,6 +714,8 @@ def step(
         run["queue"] = recovery + run["queue"]
     else:
         failures.update(invalid)
+        for sid in invalid:
+            completed.pop(sid, None)
     run["batches_done"] += 1
     run["seconds"] += time.monotonic() - started
     run["active_rows"] = 0

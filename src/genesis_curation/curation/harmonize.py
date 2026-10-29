@@ -9,6 +9,7 @@ import io
 import json
 import re
 import sqlite3
+from functools import lru_cache
 from importlib.resources import files
 from pathlib import Path
 from typing import Any
@@ -76,16 +77,38 @@ ALIASES = {
 CLASSIFICATIONS = {"public": 0, "internal": 1, "local-only": 2}
 
 
+@lru_cache(maxsize=8)
 def vocabulary(version: str | None = None) -> dict[str, Any]:
     snapshots = {
         "genesis-plant-terms/1": "plant-v1.json",
         "genesis-plant-terms/2": "plant-v2.json",
         "genesis-plant-terms/3": "plant-v3.json",
+        "genesis-plant-terms/4": "plant-v4.json",
     }
-    name = snapshots.get(version or "genesis-plant-terms/3")
+    name = snapshots.get(version or "genesis-plant-terms/4")
     if name is None:
         raise ValueError("Unknown vocabulary version")
     return loads(files(__package__).joinpath("vocabularies/" + name).read_text())
+
+
+def prompt_vocabulary(text: str, limit: int = 40) -> dict[str, Any]:
+    """Only exact evidence matches enter prompts; full normalization remains server-side."""
+    vocab = vocabulary()
+    words = " " + " ".join(re.findall(r"\w+", text.casefold())) + " "
+    selected: dict[str, dict[str, Any]] = {}
+    for field, terms in vocab["terms"].items():
+        selected[field] = {}
+        for alias, term in sorted(terms.items(), key=lambda pair: (-len(pair[0]), pair[0])):
+            phrase = " " + " ".join(re.findall(r"\w+", alias)) + " "
+            if phrase.strip() and phrase in words:
+                selected[field][alias] = term
+                if len(selected[field]) >= limit:
+                    break
+    return {
+        "version": vocab["version"],
+        "terms": selected,
+        "selection": "bounded exact evidence matches",
+    }
 
 
 def source_record(text: str, location: str, media_type: str) -> dict[str, Any]:
@@ -245,6 +268,11 @@ def head(db: sqlite3.Connection, dataset: str) -> dict[str, Any]:
 
 def locate(source: dict[str, Any], locator: str) -> str:
     text = source["data"]["snapshot"]
+    if locator.startswith("span:"):
+        match = re.fullmatch(r"span:(\d+):(\d+)", locator)
+        if not match or not 0 <= int(match[1]) < int(match[2]) <= len(text):
+            raise ValueError("Evidence span outside source")
+        return text[int(match[1]) : int(match[2])]
     if locator.startswith("line:"):
         line = int(locator[5:])
         if not 1 <= line <= len(text.splitlines()):

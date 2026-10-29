@@ -409,7 +409,7 @@ def main() -> None:
                     db.execute(sql)
             db.execute("PRAGMA user_version=7")
         store.initialize(legacy)
-        assert list(legacy.glob("before-v7-to-v8-*.sqlite"))
+        assert list(legacy.glob(f"before-v7-to-v{store.SCHEMA_VERSION}-*.sqlite"))
         with store.write(root / "catalog") as db:
             events = [json.loads(r[0]) for r in db.execute("SELECT body FROM mining_events")]
             assert any(e["action"] == "candidate-include" and e["candidates"] for e in events)
