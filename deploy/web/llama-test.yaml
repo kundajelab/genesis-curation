@@ -26,9 +26,9 @@ services:
       CUDA_CACHE_PATH: /scratch/cuda-cache
     command:
       - --model
-      - /models/Qwen3.8-27B-Q8_0.gguf
+      - /models/${LLAMA_MODEL_FILE:-Qwen3.8-27B-Q8_0.gguf}
       - --alias
-      - Qwen3.8-27B-Q8_0
+      - ${LLAMA_MODEL_ALIAS:-Qwen3.8-27B-Q8_0}
       - --host
       - 0.0.0.0
       - --port
@@ -47,5 +47,5 @@ services:
       - "on"
       - --jinja
       - --chat-template-kwargs
-      - '{"enable_thinking":false}'
+      - ${LLAMA_TEMPLATE_KWARGS:?Set per-model JSON template options}
       - --no-webui

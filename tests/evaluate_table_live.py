@@ -14,11 +14,18 @@ from genesis_curation.contracts.records import dump, fingerprint, load
 from genesis_curation.curation import harmonize
 from genesis_curation.llm import providers
 from genesis_curation.registry import store
-from genesis_curation.web import catalog, preparation, studies
+from genesis_curation.web import catalog, model_manager, preparation, studies
 
 
 def evaluate(
-    root: Path, snapshot: Path, configs: Path, skills: Path, provider: str, context: int, limit: int
+    root: Path,
+    snapshot: Path,
+    configs: Path,
+    skills: Path,
+    provider: str,
+    context: int,
+    limit: int,
+    lease_root: Path | None = None,
 ) -> dict[str, Any]:
     if root.exists():
         raise ValueError("Evaluation requires a new isolated directory")
@@ -60,14 +67,25 @@ def evaluate(
             catalog.save(db, state, "import", "table-evaluation", {})
     key = studies.link(registry, list(baseline), frozen["name"], "table-evaluation")
     started = time.monotonic()
-    result = preparation.run(
-        root,
-        config_path,
-        {
-            "actor": "table-evaluation",
-            "payload": {"study": key, "provider": provider, "provider_hash": fingerprint(config)},
-        },
+    reservation = (
+        model_manager.exclusive(lease_root, provider)
+        if lease_root is not None
+        else contextlib.nullcontext(None)
     )
+    with reservation as cancellation:
+        result = preparation.run(
+            root,
+            config_path,
+            {
+                "actor": "table-evaluation",
+                "payload": {
+                    "study": key,
+                    "provider": provider,
+                    "provider_hash": fingerprint(config),
+                },
+            },
+            cancellation,
+        )
     elapsed = time.monotonic() - started
     study = studies.get(registry, key)
     differences = []
@@ -136,9 +154,21 @@ if __name__ == "__main__":
     parser.add_argument("--provider", required=True)
     parser.add_argument("--context", type=int, default=8192)
     parser.add_argument("--limit", type=int, default=0)
+    parser.add_argument(
+        "--lease-root",
+        type=Path,
+        help="Live service data directory; reserves its active model during evaluation",
+    )
     args = parser.parse_args()
     outcome = evaluate(
-        args.root, args.snapshot, args.configs, args.skills, args.provider, args.context, args.limit
+        args.root,
+        args.snapshot,
+        args.configs,
+        args.skills,
+        args.provider,
+        args.context,
+        args.limit,
+        args.lease_root,
     )
     print(
         {

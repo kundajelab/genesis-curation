@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from ..contracts.records import dump, load
-from . import assistant, deployments, diagnostics, models, providers
+from . import assistant, deployments, diagnostics, local_models, models, providers
 
 
 def inference_options(parser: argparse.ArgumentParser, *, required: bool = False) -> None:
@@ -17,6 +17,14 @@ def inference_options(parser: argparse.ArgumentParser, *, required: bool = False
 
 def configure(parser: argparse.ArgumentParser) -> None:
     commands = parser.add_subparsers(dest="ai_family", required=True)
+    local = commands.add_parser("local-model").add_subparsers(dest="operation", required=True)
+    for name in ("list", "download"):
+        child = local.add_parser(name)
+        child.set_defaults(curation_handler=execute)
+        child.add_argument("--json", action="store_true")
+        if name == "download":
+            child.add_argument("preset", choices=[p["id"] for p in local_models.PRESETS])
+            child.add_argument("--directory", type=Path, required=True)
     provider = commands.add_parser("providers").add_subparsers(dest="operation", required=True)
     for name in ("list", "check"):
         child = provider.add_parser(name)
@@ -80,6 +88,10 @@ def configure(parser: argparse.ArgumentParser) -> None:
 
 
 def execute(args: argparse.Namespace) -> tuple[Any, int]:
+    if args.ai_family == "local-model":
+        if args.operation == "list":
+            return {"models": local_models.catalog()}, 0
+        return local_models.download(args.preset, args.directory), 0
     if args.ai_family == "providers":
         if args.operation == "list":
             return {

@@ -171,10 +171,33 @@ def job(root: Path, key: str) -> dict[str, Any]:
 def claim(root: Path) -> dict[str, Any] | None:
     with connection(root) as db:
         db.execute("BEGIN IMMEDIATE")
+        condition = "1"
+        parameters: list[str] = []
+        if db.execute("SELECT 1 FROM sqlite_master WHERE name='model_manager_state'").fetchone():
+            if db.execute(
+                "SELECT 1 FROM model_manager_leases WHERE expires>?", (time.time(),)
+            ).fetchone():
+                return None
+            manager = db.execute("SELECT body FROM model_manager_state WHERE id=1").fetchone()
+            if manager:
+                status = loads(manager[0])
+                if status.get("maintenance") or time.time() - status.get("heartbeat", 0) >= 30:
+                    return None
+                managed = status.get("managed_providers", [])
+                if managed:
+                    markers = ",".join("?" for _ in managed)
+                    condition = (
+                        f"(COALESCE(json_extract(payload,'$.provider'),'') NOT IN ({markers}) "
+                        "OR json_extract(payload,'$.provider')=?) "
+                        "AND NOT (kind='mining' AND json_extract(payload,'$.provider') IS NULL)"
+                    )
+                    parameters = [*managed, status["active_provider"]]
         row = db.execute(
-            "SELECT * FROM jobs WHERE status='QUEUED' AND cancel=0 "
-            "ORDER BY CASE WHEN kind IN ('propose','chat','probe') "
-            "OR json_extract(payload,'$.field') IS NOT NULL THEN 0 ELSE 1 END,updated LIMIT 1"
+            "SELECT * FROM jobs WHERE status='QUEUED' AND cancel=0 AND "
+            + condition
+            + " ORDER BY CASE WHEN kind IN ('propose','chat','probe') "
+            "OR json_extract(payload,'$.field') IS NOT NULL THEN 0 ELSE 1 END,updated LIMIT 1",
+            parameters,
         ).fetchone()
         if not row:
             return None

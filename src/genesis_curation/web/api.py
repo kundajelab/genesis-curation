@@ -14,8 +14,8 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.types import ASGIApp
 
 from ..contracts.records import canonical, fingerprint, loads
-from ..llm import providers
-from . import catalog, inbox, runtime, skills, studies, study_api
+from ..llm import local_models, providers
+from . import catalog, inbox, model_manager, runtime, skills, studies, study_api
 
 LIMIT = 3 * 1024 * 1024
 
@@ -135,6 +135,21 @@ def create_app(
         response = JSONResponse({"ok": True})
         response.delete_cookie("genesis_session")
         return response
+
+    model_manager.initialize(root)
+
+    @app.get("/api/model-manager")
+    def manager_status() -> dict[str, Any]:
+        return model_manager.state(root)
+
+    @app.post("/api/model-manager")
+    async def switch_model(request: Request) -> dict[str, str]:
+        body = await request.json()
+        return model_manager.request(root, body.get("preset", ""), request.state.account["actor"])
+
+    @app.get("/api/local-models")
+    def local_model_catalog() -> list[dict[str, Any]]:
+        return local_models.catalog(config_path.parent / "local-model-status.json")
 
     @app.get("/api/providers")
     def configured_providers() -> list[dict[str, Any]]:
