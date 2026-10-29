@@ -10,7 +10,15 @@ from genesis_curation.contracts.records import canonical
 from genesis_curation.curation import harmonize
 from genesis_curation.registry import store
 from genesis_curation.scatac import workbook
-from genesis_curation.web import assessments, catalog, eligibility, results, review_queue, studies
+from genesis_curation.web import (
+    assessments,
+    audit,
+    catalog,
+    eligibility,
+    results,
+    review_queue,
+    studies,
+)
 
 
 def main() -> None:
@@ -40,6 +48,15 @@ def main() -> None:
     assert assessments.assess({"sources": [source]}, [field])["tissue"]["issues"]
     field["value"] = "root"
     assert not assessments.assess({"sources": [source]}, [field])["tissue"]["issues"]
+    assert (
+        audit.direct_values({"sources": [source]}, {"tissue"}, excerpts)["tissue"]["value"]
+        == "root"
+    )
+    assert not audit.direct_values(
+        {"sources": [source], "source_scopes": {source["version"]: "study_context"}},
+        {"tissue"},
+        excerpts,
+    )
     vocab = harmonize.vocabulary()
     assert vocab["version"] == "genesis-plant-terms/4"
     assert len({t["id"] for t in vocab["terms"]["tissue"].values()}) > 1000
@@ -73,6 +90,38 @@ def main() -> None:
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
         store.initialize(root)
+        audit_id = audit.create(
+            root,
+            [
+                {
+                    "id": "xml-audit",
+                    "state": {
+                        "name": "xml-audit",
+                        "fields": [{**field, "value": "leaf"}],
+                        "sources": [source],
+                    },
+                    "audit_fields": ["tissue"],
+                    "study": "synthetic",
+                    "split": "evaluation",
+                }
+            ],
+            "XML source-first",
+            "test",
+        )
+        card = audit.view(root, audit_id, "xml-audit", "test")
+        assert card["prediction"] is None and card["direct_values"]["tissue"]["value"] == "root"
+        audit.save(
+            root,
+            audit_id,
+            "xml-audit",
+            "test",
+            {
+                "source_hash": card["source_hash"],
+                "version": None,
+                "labels": {"tissue": {"status": "known", "value": "root", "evidence": excerpts[0]}},
+            },
+        )
+        assert audit.report(root, audit_id)["metrics"]["matching_values"] == 0
         with store.write(root) as db:
             for i in range(10000):
                 key = f"sample-{i:05d}"

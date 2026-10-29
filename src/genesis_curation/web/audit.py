@@ -3,13 +3,71 @@
 from __future__ import annotations
 
 import contextlib
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import Any
 
 from ..contracts.records import canonical, fingerprint, loads, now
 from ..curation import harmonize
 from ..registry import store
-from . import catalog, studies
+from . import assessments, catalog, studies
+
+
+def direct_values(
+    state: dict[str, Any], wanted: set[str], entries: list[dict[str, str]]
+) -> dict[str, Any]:
+    """Source attributes only: never consult predictions when helping an expert label."""
+    sources = [
+        s
+        for s in state["sources"]
+        if state.get("source_scopes", {}).get(s["version"]) != "study_context"
+    ]
+    found = {
+        f["field"]: [f]
+        for f in harmonize.extract({"data": {"sources": sources}}, {})
+        if f["field"] in wanted and f["status"] == "known"
+    }
+    single_samples = {
+        s["version"] for s in sources if assessments.sample_attributes({"sources": [s]})
+    }
+    for entry in entries:
+        if entry["source_version"] not in single_samples or not entry["text"].startswith("<"):
+            continue
+        try:
+            element = ET.fromstring(entry["text"])
+        except ET.ParseError:
+            continue
+        tag = element.tag.rsplit("}", 1)[-1]
+        if tag == "SAMPLE_ATTRIBUTE":
+            children = {e.tag.rsplit("}", 1)[-1]: e.text or "" for e in element}
+            name, value = children.get("TAG", ""), children.get("VALUE", "")
+        elif tag == "Attribute":
+            name = element.get("harmonized_name") or element.get("attribute_name", "")
+            value = element.text or ""
+        else:
+            continue
+        name = name.strip().lower().replace(" ", "_")
+        name = harmonize.ALIASES.get(name, name)
+        if name in wanted and value.strip():
+            found.setdefault(name, []).append(
+                {
+                    "field": name,
+                    "value": value.strip(),
+                    "status": "known",
+                    "evidence": [
+                        {
+                            "source_version": entry["source_version"],
+                            "locator": entry["locator"],
+                            "quote": entry["text"],
+                        }
+                    ],
+                }
+            )
+    return {
+        name: values[0]
+        for name, values in found.items()
+        if len({str(v["value"]).strip().casefold() for v in values}) == 1
+    }
 
 
 def create(root: Path, samples: list[dict[str, Any]], title: str, actor: str) -> str:
@@ -125,7 +183,7 @@ def view(root: Path, key: str, sid: str, actor: str) -> dict[str, Any]:
             (actor, f"audit:{key}:{sid}"),
         ).fetchone()
     state = sample["state"]
-    entries = catalog.evidence_index(state["sources"])
+    entries = catalog.evidence_index(state["sources"], compact_xml=bool(sample.get("audit_fields")))
     wanted = set(sample["fields"])
     # Evidence ordering must not reveal which passages the model selected.
     entries.sort(key=lambda e: (e["source_version"], e["locator"]))
@@ -135,22 +193,8 @@ def view(root: Path, key: str, sid: str, actor: str) -> dict[str, Any]:
         "fields": sample["fields"],
         "source_hash": sample["source_hash"],
         "evidence": entries,
-        "direct_values": {
-            f["field"]: f
-            for f in harmonize.extract(
-                {
-                    "data": {
-                        "sources": [
-                            s
-                            for s in state["sources"]
-                            if state.get("source_scopes", {}).get(s["version"]) != "study_context"
-                        ]
-                    }
-                },
-                {},
-            )
-            if f["field"] in wanted and f["status"] == "known"
-        },
+        "full_evidence": catalog.evidence_index(state["sources"]),
+        "direct_values": direct_values(state, wanted, entries),
         "candidate_prediction": [
             f for f in sample.get("candidate", {}).get("fields", []) if f["field"] in wanted
         ]
@@ -180,6 +224,8 @@ def save(root: Path, key: str, sid: str, actor: str, body: dict[str, Any]) -> di
     if body.get("source_hash") != sample["source_hash"] or set(labels) != set(sample["fields"]):
         raise ValueError("Audit requires judgments for the exact frozen fields and sources")
     entries = catalog.evidence_index(sample["state"]["sources"])
+    if sample.get("audit_fields"):
+        entries += catalog.evidence_index(sample["state"]["sources"], compact_xml=True)
     for label in labels.values():
         if not isinstance(label, dict) or label.get("status") not in {
             "known",
