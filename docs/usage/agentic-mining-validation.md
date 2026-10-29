@@ -99,3 +99,8 @@ compares every pre-existing catalog table with its pre-migration fingerprint.
 The model service is not restarted. Failed deployment restores the previous app image
 and pre-migration data. Evaluation runs are isolated and are not imported into the
 live reviewer database.
+
+Deployment verification passed: all 33 pre-existing catalog tables were unchanged
+at schema 8, the app health check passed, and authenticated mining, review queue and
+audit endpoints responded successfully. No evaluation runs were present in the live
+mining list. The model service remained running throughout deployment.
