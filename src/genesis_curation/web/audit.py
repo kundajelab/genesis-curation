@@ -18,16 +18,27 @@ def create(root: Path, samples: list[dict[str, Any]], title: str, actor: str) ->
     cards = []
     for sample in samples:
         state = sample["state"]
-        fields = studies.required_fields(state)
-        context = next(
-            (
-                f["field"]
-                for f in state["fields"]
-                if f["field"]
-                in {"genotype", "cultivar", "developmental_stage", "treatment", "environment"}
-                and f["evidence"]
-            ),
-            None,
+        explicit = sample.get("audit_fields")
+        if explicit is not None and (
+            not isinstance(explicit, list)
+            or not explicit
+            or any(not isinstance(f, str) or f not in harmonize.FIELDS for f in explicit)
+        ):
+            raise ValueError("Audit fields must name supported metadata fields")
+        fields = set(explicit) if explicit is not None else studies.required_fields(state)
+        context = (
+            None
+            if explicit is not None
+            else next(
+                (
+                    f["field"]
+                    for f in state["fields"]
+                    if f["field"]
+                    in {"genotype", "cultivar", "developmental_stage", "treatment", "environment"}
+                    and f["evidence"]
+                ),
+                None,
+            )
         )
         if context:
             fields.add(context)

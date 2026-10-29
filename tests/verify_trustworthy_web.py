@@ -133,6 +133,20 @@ def main() -> None:
                 if field["field"] == "organism":
                     field["value"] = "Oryza sativa"
         audit_id = audit.create(registry, snapshots, "Synthetic reference", "curator")
+        fixed = copy.deepcopy(snapshots[:1])
+        fixed[0]["audit_fields"] = ["organism", "genotype"]
+        fixed_id = audit.create(registry, fixed, "Fixed fields", "curator")
+        assert audit.view(registry, fixed_id, ids[0], "curator")["fields"] == [
+            "genotype",
+            "organism",
+        ]
+        fixed[0]["audit_fields"] = ["unsupported-field"]
+        try:
+            audit.create(registry, fixed, "Invalid fields", "curator")
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("Unknown audit field accepted")
         before = fingerprint([catalog.get(registry, sid) for sid in ids])
         first = audit.view(registry, audit_id, ids[0], "curator")
         assert first["prediction"] is None and first["answer"] is None
