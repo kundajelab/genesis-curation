@@ -154,6 +154,32 @@ def expansion() -> None:
                 ).fetchone()[0]
                 == 2
             )
+        with store.write(registry) as db:
+            workspace.add_row(
+                db,
+                "duplicate",
+                "ATAC",
+                0,
+                {"experiment_accession": "SRX123456", "study_accession": "SRP123456"},
+                {},
+                "Bulk ATAC",
+                "https://www.ncbi.nlm.nih.gov/sra/SRX123456",
+            )
+            representative = dict(
+                db.execute("SELECT * FROM workspace_rows WHERE subject=?", (ids[0],)).fetchone()
+            )
+            assert studies.coverage_pending(db, studies.read(db, key)) == 0
+        assert campaigns.materialize(root, representative, campaign, None) == ids[0]
+        with contextlib.closing(store.connect(registry)) as db:
+            assert (
+                db.execute("SELECT subject FROM workspace_rows WHERE batch='duplicate'").fetchone()[
+                    0
+                ]
+                == ids[0]
+            )
+        print(
+            "PASS duplicate references reuse exact experiment identity without false coverage gaps"
+        )
         print("PASS UUID study expansion, shared accession checkpoint and complete source coverage")
 
 

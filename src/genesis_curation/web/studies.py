@@ -279,10 +279,10 @@ def coverage_pending(db: sqlite3.Connection, study: dict[str, Any]) -> int:
     if not study.get("accession"):
         return 0
     return db.execute(
-        "SELECT count(DISTINCT entity) FROM workspace_rows WHERE study=? AND "
-        "NOT (status='Expanded' AND COALESCE(json_extract(body,'$.expanded_study'),'')=?) AND "
-        "(subject IS NULL OR subject='' OR subject NOT IN "
-        "(SELECT subject FROM curation_members WHERE study=?))",
+        "SELECT count(DISTINCT r.entity) FROM workspace_rows r WHERE r.study=? AND "
+        "NOT (r.status='Expanded' AND COALESCE(json_extract(r.body,'$.expanded_study'),'')=?) "
+        "AND NOT EXISTS (SELECT 1 FROM workspace_rows linked JOIN curation_members m "
+        "ON m.subject=linked.subject WHERE linked.entity=r.entity AND m.study=?)",
         (study["accession"], study["id"], study["id"]),
     ).fetchone()[0]
 

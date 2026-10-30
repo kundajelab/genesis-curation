@@ -365,6 +365,26 @@ def materialize(
             )
         return None
     if row["subject"]:
+        with store.write(registry) as db:
+            linked = db.execute(
+                "UPDATE workspace_rows SET subject=? WHERE entity=? AND "
+                "(subject IS NULL OR subject='')",
+                (row["subject"], entity),
+            )
+            if linked.rowcount:
+                workspace.event(
+                    db,
+                    campaign["id"],
+                    entity,
+                    "entity-linked",
+                    subject=row["subject"],
+                    records=linked.rowcount,
+                )
+                db.execute(
+                    "UPDATE curation_queue_owners SET dirty=1 WHERE owner IN "
+                    "(SELECT study FROM curation_members WHERE subject=?)",
+                    (row["subject"],),
+                )
         return row["subject"]
     if (
         raw["origin"] == "discovery"
