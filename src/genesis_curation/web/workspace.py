@@ -455,28 +455,48 @@ def export_bundle(root: Path, key: str, clean: bool = False) -> dict[str, Any]:
     import io
     import zipfile
 
-    from . import results
+    from . import results, studies
 
     tables: dict[str, list[dict[str, Any]]] = {m: [] for m in MODALITIES}
     with contextlib.closing(store.connect(root / "catalog")) as db:
         db.execute("BEGIN")
+        signed: dict[str, dict[str, Any]] = {}
+        releases: dict[str, str] = {}
+        if clean:
+            for entry in db.execute("SELECT body FROM curation_studies"):
+                study = loads(entry[0])
+                if not study.get("approval"):
+                    continue
+                release = db.execute(
+                    "SELECT body FROM curation_releases WHERE version=? AND study=?",
+                    (study["approval"], study["id"]),
+                ).fetchone()
+                if not release:
+                    continue
+                body = loads(release[0])
+                if body["study_revision"] != studies.revision(
+                    study, studies.members(db, study["id"])
+                ):
+                    continue
+                releases[study["id"]] = study["approval"]
+                signed.update({record["id"]: record["metadata"] for record in body["records"]})
         rows = db.execute(
             "SELECT r.*,p.body AS proposal FROM workspace_rows r LEFT JOIN cur"
             "ation_result_rows p ON r.subject=p.subject ORDER BY r.modality,r."
             "id"
         )
         for r in rows:
-            if clean and r["status"] not in {"Ready", "Reviewed"}:
+            if clean and (r["subject"] not in signed or r["status"] == "Excluded"):
                 continue
             raw = loads(r["body"])
-            values = dict(raw["values"])
-            if r["proposal"] and r["status"] in {"Ready", "Reviewed"}:
+            values = dict(signed[r["subject"]] if clean else raw["values"])
+            if not clean and r["proposal"] and r["status"] in {"Ready", "Reviewed"}:
                 values.update(
                     {k: v for k, v in loads(r["proposal"]).items() if v not in (None, "", [])}
                 )
             values.update(
                 record_id=r["id"],
-                status=r["status"],
+                status="Reviewed" if clean else r["status"],
                 origin=raw["origin"],
                 source_tab=r["tab"],
                 source_row=r["row_number"],
@@ -503,6 +523,7 @@ def export_bundle(root: Path, key: str, clean: bool = False) -> dict[str, Any]:
             "kind": "clean-metadata" if clean else "metadata-working-copy",
             "created": now(),
             "source_data_modified": False,
+            "study_releases": releases,
             "rows": sum(map(len, tables.values())),
             "scientific_qc": "External QC columns retained; not rerun",
             "source_snapshots": [

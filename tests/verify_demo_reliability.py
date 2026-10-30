@@ -7,6 +7,7 @@ import json
 import os
 import tempfile
 import threading
+import zipfile
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from unittest.mock import patch
@@ -25,6 +26,7 @@ from genesis_curation.web import (
     storage,
     studies,
     table,
+    workbook,
     workspace,
 )
 
@@ -179,6 +181,50 @@ def expansion() -> None:
             )
         print(
             "PASS duplicate references reuse exact experiment identity without false coverage gaps"
+        )
+        studies.preparation(registry, key, {"status": "COMPLETED"})
+        for _ in range(20):
+            study = studies.get(registry, key)
+            remaining = [task for task in study["tasks"] if task["status"] != "done"]
+            if not remaining:
+                break
+            task = remaining[0]
+            studies.resolve(
+                registry,
+                task["id"],
+                {
+                    "study": key,
+                    "version": task["version"],
+                    "action": "unknown",
+                    "reason": "Synthetic unresolved metadata",
+                },
+                "tester",
+            )
+        studies.approve(registry, key, studies.get(registry, key)["version"], "tester")
+        with store.write(registry) as db:
+            db.execute(
+                "UPDATE workspace_rows SET body=json_set(body,'$.values.tissue',?)",
+                ("unreviewed-tissue-fixture",),
+            )
+        exported = workspace.export_bundle(root, "signed", clean=True)
+        assert exported["rows"] == 2
+        with zipfile.ZipFile(root / "exports" / exported["filename"]) as archive:
+            assert loads(archive.read("manifest.json").decode())["study_releases"]
+            xlsx = root / "signed.xlsx"
+            xlsx.write_bytes(archive.read("metadata.xlsx"))
+            assert "unreviewed-tissue-fixture" not in canonical(workbook.read(xlsx))
+        catalog.attach(
+            registry,
+            ids[0],
+            catalog.get(registry, ids[0])["version"],
+            "New synthetic evidence",
+            "snapshot:changed",
+            "public",
+            "tester",
+        )
+        assert workspace.export_bundle(root, "stale", clean=True)["rows"] == 0
+        print(
+            "PASS clean workbook requires current study sign-off and excludes raw unreviewed claims"
         )
         print("PASS UUID study expansion, shared accession checkpoint and complete source coverage")
 

@@ -213,6 +213,8 @@ def main() -> None:
             tabs = workbook.read(xlsx)
             assert len(tabs["DAP-seq"]) == 3
             assert "changes.json" in archive.namelist()
+        with store.write(root / "catalog") as db:
+            db.execute("UPDATE workspace_rows SET status='Ready'")
         clean = workspace.export_bundle(root, "clean", clean=True)
         assert clean["rows"] == 0
         state = catalog.get(root / "catalog", new["subject"])
