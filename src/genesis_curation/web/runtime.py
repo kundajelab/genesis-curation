@@ -130,6 +130,9 @@ def enqueue(root: Path, kind: str, actor: str, payload: dict[str, Any]) -> str:
         "workspace-export",
     }:
         raise ValueError("Unknown job type")
+    from .storage import require_space
+
+    require_space(root)
     key = str(uuid.uuid4())
     with connection(root) as db:
         db.execute("BEGIN IMMEDIATE")

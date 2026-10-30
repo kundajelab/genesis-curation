@@ -10,6 +10,11 @@ x-app: &app
   cap_drop: [ALL]
   security_opt: [no-new-privileges:true]
   restart: unless-stopped
+  logging:
+    driver: json-file
+    options:
+      max-size: "10m"
+      max-file: "3"
   volumes:
     - ${WEB_ROOT:?}/data:/data
     - ${WEB_ROOT:?}/config:/config:ro

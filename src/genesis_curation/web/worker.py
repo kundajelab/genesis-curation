@@ -123,6 +123,10 @@ def execute(
 
 
 def once(root: Path, config_path: Path) -> bool:
+    from . import storage
+
+    if storage.paused(root):
+        return False
     task = runtime.claim(root)
     if not task:
         return False
