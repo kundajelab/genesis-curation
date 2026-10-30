@@ -53,6 +53,7 @@ input:focus,select:focus,textarea:focus{outline-color:#60a5fa}
 .inventory-counts {display:flex;flex-wrap:wrap;gap:.6rem;margin-bottom:.6rem}
 .inventory-counts button {display:flex;flex-direction:column;gap:.3rem;min-width:110px;text-align:left}
 .inventory-counts strong {font-size:1.3rem;color:#0f172a}
+.source-evidence summary {overflow-wrap:anywhere;cursor:pointer;line-height:1.5}
 .event-list {max-height:55vh;overflow:auto;margin-top:1rem}
 .event-list>details {border-top:1px solid #e2e8f0;padding:.5rem 0}
 .event-list time {color:#64748b;font-variant-numeric:tabular-nums;margin-right:.5rem}

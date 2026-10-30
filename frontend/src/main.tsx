@@ -1,7 +1,7 @@
 import {Results, clearTableCache} from './Results';
 import {JobProgress} from './JobProgress';
 import {LocalModels} from './LocalModels';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useState, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
 import { AddStudy } from './StudyWorkspace';
@@ -107,6 +107,7 @@ function sourceExcerpts(source?: Source): {locator: string; quote: string}[] {
 }
 function App() {
     const [actor, setActor] = useState(''), [boot, setBoot] = useState(true), [error, setError] = useState(''), [notice, setNotice] = useState('');
+    const panelHeading = useRef<HTMLHeadingElement>(null);
     const [subjects, setSubjects] = useState<Subject[]>([]), [active, setActive] = useState<Subject | null>(null), [jobs, setJobs] = useState<Job[]>([]);
     const [providers, setProviders] = useState<Provider[]>([]), [provider, setProvider] = useState(''), [skillList, setSkillList] = useState<{
         id: string;
@@ -121,6 +122,11 @@ function App() {
     const [initialModality,setInitialModality]=useState('Bulk ATAC');
     const [storage,setStorage]=useState<{warning:boolean;blocked:boolean;free_bytes:number;unavailable?:string[]}|null>(null);
     const [view, setView] = useState('mining'), [query, setQuery] = useState(''), [filter, setFilter] = useState('all'), [selected, setSelected] = useState('');
+    useLayoutEffect(() => {
+        if (!actor) return;
+        panelHeading.current?.focus({preventScroll: true});
+        window.scrollTo({top: 0, left: 0, behavior: 'instant'});
+    }, [view, actor]);
     const [reason, setReason] = useState(''), [edit, setEdit] = useState(false), [value, setValue] = useState(''), [source, setSource] = useState(''), [locator, setLocator] = useState(''), [quote, setQuote] = useState('');
     const [question, setQuestion] = useState(''), [feedback, setFeedback] = useState(''), [busy, setBusy] = useState(false), [history, setHistory] = useState<unknown[] | null>(null);
     const [filename, setFilename] = useState(''), [text, setText] = useState(''), [preview, setPreview] = useState<Record<string, unknown>[]>([]), [idColumn, setIdColumn] = useState(''), [namespace, setNamespace] = useState(''), [classification, setClassification] = useState('local-only'), [accession, setAccession] = useState(''), [accessionJob, setAccessionJob] = useState('');
@@ -213,7 +219,7 @@ function App() {
             csrf: string;
         }>('/login', { username: d.get('username'), password: d.get('password') }); csrf = s.csrf; setActor(s.actor); }); }}><label>Curator<input name="username" autoComplete="username" required defaultValue="curator"/></label><label>Password<input name="password" type="password" autoComplete="current-password" required/></label><button disabled={busy}>Sign in →</button></form>{error && <p role="alert" className="error">{error}</p>}</div></main>;
     return <div className="app"><aside className="sidebar"><div className="brand">genesis-curation</div><p className="eyebrow">CURATION WORKSPACE</p><nav aria-label="Main navigation"><button disabled={studyDirty} className={view === 'mining' ? 'current' : ''} onClick={() => setView('mining')}>Discover</button><button disabled={studyDirty} className={view === 'results' ? 'current' : ''} onClick={() => setView('results')}>Curation</button><button disabled={studyDirty} className={view === 'guided' ? 'current' : ''} onClick={() => setView('guided')}>Review</button><details><summary>Tools</summary><button disabled={studyDirty} className={view === 'audit' ? 'current' : ''} onClick={() => setView('audit')}>Quality audit</button><button disabled={studyDirty} className={view === 'review' ? 'current' : ''} onClick={() => setView('review')}>Record history</button><button disabled={studyDirty} className={view === 'settings' ? 'current' : ''} onClick={() => setView('settings')}>Models &amp; skills</button></details></nav><div className="sidebar-bottom"><span className="avatar">{actor[0].toUpperCase()}</span><div>{actor}<small>Human reviewer</small></div><button disabled={studyDirty} aria-label="Sign out" onClick={() => void work(async () => { await api('/logout', {}); clearTableCache(); setActor(''); })}>↗</button></div></aside>
- <main className="workspace"><header><div><p className="eyebrow">GENESIS / {view === 'import' ? 'IMPORT' : view === 'settings' ? 'CONFIGURATION' : 'METADATA'}</p><h1>{view === 'import' ? 'Add a dataset' : view === 'settings' ? 'Models & skills' : view === 'guided' ? 'Review' : view === 'mining' ? 'Discover' : view === 'audit' ? 'Plant reference audit' : view === 'results' ? 'Curation' : view === 'inbox' ? 'Study review' : 'Record details'}</h1></div><div className="header-actions"><label>Model<select aria-label="Active curation model" value={provider} onChange={e=>selectProvider(e.target.value)}>{providers.map(p=><option key={p.id} value={p.id} disabled={p.mode==='disabled'}>{p.mode==='disabled'?p.id+' · not configured':p.model}</option>)}</select></label></div></header>
+ <main className="workspace"><header><div><p className="eyebrow">GENESIS / {view === 'import' ? 'IMPORT' : view === 'settings' ? 'CONFIGURATION' : 'METADATA'}</p><h1 ref={panelHeading} tabIndex={-1}>{view === 'import' ? 'Add a dataset' : view === 'settings' ? 'Models & skills' : view === 'guided' ? 'Review' : view === 'mining' ? 'Discover' : view === 'audit' ? 'Plant reference audit' : view === 'results' ? 'Curation' : view === 'inbox' ? 'Study review' : 'Record details'}</h1></div><div className="header-actions"><label>Model<select aria-label="Active curation model" value={provider} onChange={e=>selectProvider(e.target.value)}>{providers.map(p=><option key={p.id} value={p.id} disabled={p.mode==='disabled'}>{p.mode==='disabled'?p.id+' · not configured':p.model}</option>)}</select></label></div></header>
  {storage?.warning&&<div role="alert" className="notice storage-banner">{storage.unavailable?.length?'Shared storage is unavailable. New work is paused.':`Storage: ${(storage.free_bytes/1024**3).toFixed(1)} GiB free. ${storage.blocked?'New work is blocked.':'Avoid large jobs until space is recovered.'}`}</div>}
  {view==='guided'&&jobs.find(j=>['QUEUED','RUNNING'].includes(j.status))&&<JobProgress api={api} id={jobs.find(j=>['QUEUED','RUNNING'].includes(j.status))!.id}/>}
  {error && <div role="alert" className="error banner">{error}<button onClick={() => setError('')}>×</button></div>}{notice && <div role="status" className="notice banner">{notice}</div>}

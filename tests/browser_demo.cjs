@@ -28,10 +28,22 @@ const fs=require('node:fs');
  await page.getByRole('button',{name:'History',exact:true}).first().click();await page.getByRole('dialog',{name:'Record history'}).waitFor();await page.getByRole('button',{name:'Review study',exact:true}).click();await page.getByRole('heading',{name:'SRP162628',exact:true}).waitFor();
  assert.equal(await page.locator('.study-sidebar').getByText(/Source identity needed ·/).count(),0);
  await page.getByRole('button',{name:/Check uncertain assay/}).click();await page.getByRole('region',{name:'Current decision'}).waitFor();await page.waitForFunction(()=>document.querySelector('.decision-panel small[role="status"]')?.textContent==='Saved');
+ const sourceEvidence=page.locator('.source-evidence').first();
+ assert.equal(await sourceEvidence.getAttribute('open'),null);
+ const exactQuote=await sourceEvidence.locator('mark').textContent();
+ assert.ok(exactQuote.length>360);
+ assert.equal(await sourceEvidence.locator('blockquote').isVisible(),false);
+ await sourceEvidence.locator('summary').click();
+ assert.equal(await sourceEvidence.locator('blockquote').isVisible(),true);
+ assert.equal(await sourceEvidence.locator('mark').textContent(),exactQuote);
+ await sourceEvidence.locator('summary').click();
  const note=page.getByLabel('Review note',{exact:true});const originalNote=await note.inputValue();
  if(process.env.GENESIS_BROWSER_WRITE==='1'){
-  await note.fill('Isolated browser test draft');await page.waitForFunction(()=>document.querySelector('.decision-panel small[role="status"]')?.textContent==='Saved');
-  await page.reload();await nav('Review').click();await page.getByRole('heading',{name:'SRP162628',exact:true}).waitFor();await page.getByRole('button',{name:/Check uncertain assay/}).click();await page.waitForFunction(()=>document.querySelector('textarea[aria-label="Review note"]')?.value==='Isolated browser test draft');await page.getByLabel('Review note',{exact:true}).fill(originalNote);await page.waitForFunction(()=>document.querySelector('.decision-panel small[role="status"]')?.textContent==='Saved');
+  const savedDraft=page.waitForResponse(r=>r.url().includes('/review-tasks/')&&r.url().endsWith('/draft')&&r.request().method()==='POST');
+  await note.fill('Isolated browser test draft');assert.equal((await savedDraft).status(),200);await page.waitForFunction(()=>document.querySelector('.decision-panel small[role="status"]')?.textContent==='Saved');
+  await page.reload();await nav('Review').click();await page.getByRole('heading',{name:'SRP162628',exact:true}).waitFor();await page.getByRole('button',{name:/Check uncertain assay/}).click();await page.waitForFunction(()=>document.querySelector('textarea[aria-label="Review note"]')?.value==='Isolated browser test draft');
+  const restoredDraft=page.waitForResponse(r=>r.url().includes('/review-tasks/')&&r.url().endsWith('/draft')&&r.request().method()==='POST');
+  await page.getByLabel('Review note',{exact:true}).fill(originalNote);assert.equal((await restoredDraft).status(),200);await page.waitForFunction(()=>document.querySelector('.decision-panel small[role="status"]')?.textContent==='Saved');
  }
  if(process.env.GENESIS_BROWSER_WRITE==='1'){
   await page.getByRole('button',{name:'Defer',exact:true}).click();await page.getByText('Decision saved. Continue this study’s checklist.').waitFor();
@@ -40,7 +52,13 @@ const fs=require('node:fs');
  assert.equal(await page.getByRole('button',{name:'Sign off study',exact:true}).isDisabled(),true);
  await page.getByRole('button',{name:'Record summary · original → prepared values'}).click();await page.locator('.summary-table tbody tr').first().waitFor();await page.getByText('Change history',{exact:true}).click();await page.waitForFunction(()=>[...document.querySelectorAll('details[open] pre')].some(e=>e.textContent.startsWith('[')));
  await page.getByRole('navigation').getByText('Tools',{exact:true}).click();await page.getByRole('button',{name:'Models & skills',exact:true}).click();await page.getByRole('heading',{name:'Local models',exact:true}).waitFor();
+ await page.evaluate(()=>window.scrollTo(0,900));
  await measured('Discover warm',async()=>{await nav('Discover').click();await page.locator('.inventory-counts strong').first().waitFor();});
+ assert.deepEqual(await page.evaluate(()=>({scrollY,focused:document.activeElement===document.querySelector('main h1')})),{scrollY:0,focused:true});
+ for(const name of ['Curation','Review','Discover']){
+  await page.evaluate(()=>window.scrollTo(0,900));await nav(name).click();
+  assert.deepEqual(await page.evaluate(()=>({scrollY,focused:document.activeElement===document.querySelector('main h1')})),{scrollY:0,focused:true});
+ }
  const metrics=await page.evaluate(async()=>{const results=[];for(const path of ['/api/workspace','/api/workspace/events','/api/workspace/rows?modality=Bulk%20ATAC&query=SRP162628','/api/study-review']){const times=[];let bytes=0;for(let i=0;i<5;i++){const t=performance.now(),r=await fetch(path),text=await r.text();if(!r.ok)throw new Error(path+' '+r.status);bytes=text.length;times.push(Math.round(performance.now()-t));}results.push({path,bytes,times});}return results;});api.push(...metrics);
  if(process.env.GENESIS_BROWSER_SCREENSHOT)await page.screenshot({path:process.env.GENESIS_BROWSER_SCREENSHOT,fullPage:true});
  await page.getByRole('button',{name:'Sign out',exact:true}).click();await page.getByRole('heading',{name:'Sign in',exact:true}).waitFor();
