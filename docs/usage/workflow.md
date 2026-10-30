@@ -31,6 +31,10 @@ Search by accession or title. Records without a study identity are available und
 values remain visible. Decisions record the actor and reason. Study sign-off is separate
 from field suggestions. Export the working copy for inspection, or the clean export for
 signed-off metadata; exports include originals and change history.
+Each bundle includes `metadata.xlsx` and the complete `metadata.json`. Values exceeding
+Excel's cell limit are visibly shortened only in the spreadsheet; `xlsx-truncations.json`
+lists those cells, and the JSON retains every character. Clean metadata includes only
+current human-signed study values, never unreviewed reference claims.
 
 ## Import
 

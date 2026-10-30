@@ -204,6 +204,11 @@ def main() -> None:
         assert extracted["tissue"]["value"] == "root"
         assert any(s["data"]["snapshot"] == report for s in state["sources"])
         print("PASS raw archive retention and deterministic sample-field extraction")
+        with store.write(root / "catalog") as db:
+            db.execute(
+                "UPDATE workspace_rows SET body=json_set(body,'$.values.long_text',?)",
+                ("long-value-" * 4000,),
+            )
         export = workspace.export_bundle(root, "fixture")
         with zipfile.ZipFile(root / "exports" / export["filename"]) as archive:
             manifest_export = loads(archive.read("manifest.json").decode())
@@ -213,6 +218,11 @@ def main() -> None:
             tabs = workbook.read(xlsx)
             assert len(tabs["DAP-seq"]) == 3
             assert "changes.json" in archive.namelist()
+            assert manifest_export["xlsx_truncated_cells"] > 0
+            full = loads(archive.read("metadata.json").decode())
+            assert full["DAP-seq"][0]["long_text"] == "long-value-" * 4000
+            assert "Full value in metadata.json" in canonical(tabs)
+            assert archive.read("xlsx-truncations.json") != b"[]"
         with store.write(root / "catalog") as db:
             db.execute("UPDATE workspace_rows SET status='Ready'")
         clean = workspace.export_bundle(root, "clean", clean=True)

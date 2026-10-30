@@ -532,12 +532,35 @@ def export_bundle(root: Path, key: str, clean: bool = False) -> dict[str, Any]:
         }
     folder = root / "exports"
     folder.mkdir(exist_ok=True)
+    truncated: list[dict[str, Any]] = []
+
+    def spreadsheet_rows(
+        name: str, rows: list[dict[str, Any]], full_file: str
+    ) -> list[dict[str, Any]]:
+        output = []
+        for number, row in enumerate(rows, 2):
+            shown = dict(row)
+            for field, value in row.items():
+                text = canonical(value) if isinstance(value, (list, dict)) else str(value or "")
+                if len(text.encode("utf-16-le")) // 2 > 32767:
+                    shown[field] = text[:16000] + f"\n[Full value in {full_file}]"
+                    truncated.append({"sheet": name, "row": number, "column": field})
+            output.append(shown)
+        return output
+
+    shown_tables = {
+        name: spreadsheet_rows(name, rows, "metadata.json") for name, rows in tables.items()
+    }
+    shown_manifest = spreadsheet_rows(
+        "Manifest", [{"property": k, "value": v} for k, v in manifest.items()], "manifest.json"
+    )
+    manifest["xlsx_truncated_cells"] = len(truncated)
+    shown_manifest.append({"property": "xlsx_truncated_cells", "value": len(truncated)})
     stream = io.BytesIO()
     with zipfile.ZipFile(stream, "w", zipfile.ZIP_DEFLATED) as archive:
-        archive.writestr(
-            "metadata.xlsx",
-            results.xlsx(tables, [{"property": k, "value": v} for k, v in manifest.items()]),
-        )
+        archive.writestr("metadata.xlsx", results.xlsx(shown_tables, shown_manifest))
+        archive.writestr("metadata.json", canonical(tables))
+        archive.writestr("xlsx-truncations.json", canonical(truncated))
         archive.writestr("manifest.json", canonical(manifest))
         archive.writestr("originals.json", canonical(raw_rows))
         archive.writestr("discovery-history.json", canonical(log))
