@@ -5,13 +5,29 @@ bounded searches using the source catalog and repository recipes. The worker rec
 queries, source URLs, returned records and failures. Only actual searches appear in the
 activity log. No sequencing files are downloaded.
 
-Curation displays paginated modality tables. Select rows or a modality to retrieve
-archive and publication evidence and prepare suggestions. Work runs in durable jobs;
+Curation displays paginated modality tables. Select records or narrow the filters,
+then preview the study and record counts before starting curation. Selecting a record
+includes the other known records in its study. Filtered selections are limited to 200
+initial rows; larger expanded studies require the displayed confirmation. Search leads
+without an archive identity remain marked **Needs source**, not annotation subjects.
+Work runs in durable jobs;
 progress appears while the GUI remains available. Requests respect configured context,
 input and output budgets. Pause and resume preserve completed work. A local model must
 be active before its queued requests run.
 
-Review groups unresolved decisions into a to-do list. Evidence and original/proposed
+The progress card reports queueing, source retrieval, model work and validation.
+For local providers with a verified streaming capability it also counts received output
+characters. These are activity indicators, not validated annotations or an estimated
+percentage complete. A stale heartbeat or failed request remains visible.
+
+Activity initially shows recent compact entries. Open a source receipt for the complete
+record, or load older activity. Pause an old campaign before archiving it. Archiving
+hides activity from the default view without deleting records, evidence or decisions;
+restoring it does not automatically restart work.
+
+Review starts with identified studies and groups unresolved decisions into a to-do list.
+Search by accession or title. Records without a study identity are available under
+**Source identity needed**. Evidence and original/proposed
 values remain visible. Decisions record the actor and reason. Study sign-off is separate
 from field suggestions. Export the working copy for inspection, or the clean export for
 signed-off metadata; exports include originals and change history.

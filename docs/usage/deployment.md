@@ -27,3 +27,40 @@ weights and account credentials separately when replacing a deployment.
 Back up both application state and immutable catalog data while workers are stopped.
 Monitor disk space: campaigns pause when scratch space is insufficient. Source retrieval,
 LLM inference and publication access can fail independently; inspect the activity log.
+
+## Shared public evidence and disk headroom
+
+The optional `deploy/web/shared-storage.yaml` overlay mounts `WEB_SHARED_ROOT` at
+`/shared` and its `source-snapshots` directory at `/data/source-snapshots`. Create these
+directories on a mounted shared filesystem and place a `.genesis-storage` marker in
+its root before starting the services. Keep SQLite, credentials, private backups and
+reference imports on local protected storage. Only use this overlay for public evidence.
+When moving an existing snapshot directory, stop retrieval, copy and verify every file,
+start with the overlay, then remove only verified unused local duplicates.
+
+The app checks both filesystems. A missing marker or a share on the same device as local
+state blocks background work instead of silently writing into the root disk. Below
+6 GiB free the UI warns; below 2 GiB it latches a pause. After restoring storage, resume
+explicitly from Review. Keep at least 8 GiB free before larger demonstrations.
+
+The worker trims only replaceable, hash-named search and URL caches every ten minutes:
+128 MiB per cache and a seven-day age limit. Immutable source snapshots and review
+history are never evicted. Deployment containers use rotated logs (10 MiB, three files).
+Run the host model controller under a process supervisor; it needs access to Docker,
+but the web application does not. Preserve one tested rollback image and a consistent
+private database backup before replacing app or worker containers.
+
+## Demo acceptance
+
+Run `scripts/check.sh` and the Node 24 frontend build. The suite includes a 100,000-row
+synthetic selection fixture, recent activity pagination, archive/restore, storage guards
+and a fragmented streaming transport fixture. These checks establish software behavior,
+not biological accuracy.
+
+With an already installed Playwright runtime, run `tests/browser_demo.cjs` using Node
+and `NODE_PATH` as needed. Supply `GENESIS_BROWSER_URL`, `GENESIS_BROWSER_USER` and
+`GENESIS_BROWSER_PASSWORD` through the environment. The test reads the demonstration
+studies, opens evidence and checks response times without approving scientific claims.
+Use `GENESIS_BROWSER_WRITE=1` only on an isolated copy to test saving and restoring a
+review draft. Record live model probes, bounded discovery/curation results and a sustained
+browser session separately; offline tests cannot establish those outcomes.
