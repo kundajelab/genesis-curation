@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-export type API = <T>(path: string, data?: unknown) => Promise<T>;
+export type API = <T>(path: string, data?: unknown, signal?: AbortSignal) => Promise<T>;
 type Citation = {source_version: string; locator: string; quote: string};
 type Field = {field: string; value: string | number | null; status: string; rationale: string; evidence: Citation[]};
 type Source = {version: string; data: {snapshot: string; location: string}};

@@ -1,4 +1,5 @@
-import {Results} from './Results';
+import {Results, clearTableCache} from './Results';
+import {JobProgress} from './JobProgress';
 import {LocalModels} from './LocalModels';
 import React, { useEffect, useState, useRef } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -71,8 +72,9 @@ type Provider = {
     allowed_classifications: string[];
 };
 let csrf = '';
-async function api<T>(path: string, data?: unknown): Promise<T> {
-    const r = await fetch('/api' + path, { credentials: 'same-origin', method: data === undefined ? 'GET' : 'POST', headers: data === undefined ? {} : { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf }, body: data === undefined ? undefined : JSON.stringify(data) });
+async function api<T>(path: string, data?: unknown, signal?: AbortSignal): Promise<T> {
+    const r = await fetch('/api' + path, { signal: signal ? AbortSignal.any([signal, AbortSignal.timeout(30000)]) : AbortSignal.timeout(30000), credentials: 'same-origin', method: data === undefined ? 'GET' : 'POST', headers: data === undefined ? {} : { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf }, body: data === undefined ? undefined : JSON.stringify(data) });
+    if(r.status===401 && path!=='/login'){clearTableCache();window.dispatchEvent(new Event('session-expired'));throw new Error('Your session expired. Sign in again.');}
     const v = await r.json();
     if (!r.ok)
         throw new Error(v.error || `Request failed (${r.status})`);
@@ -116,6 +118,8 @@ function App() {
     }[]>([]), [skill, setSkill] = useState('plant-metadata');
     const [studyDirty, setStudyDirty] = useState(false);
     const [auditRemaining,setAuditRemaining]=useState(0);
+    const [initialModality,setInitialModality]=useState('Bulk ATAC');
+    const [storage,setStorage]=useState<{warning:boolean;blocked:boolean;free_bytes:number;unavailable?:string[]}|null>(null);
     const [view, setView] = useState('mining'), [query, setQuery] = useState(''), [filter, setFilter] = useState('all'), [selected, setSelected] = useState('');
     const [reason, setReason] = useState(''), [edit, setEdit] = useState(false), [value, setValue] = useState(''), [source, setSource] = useState(''), [locator, setLocator] = useState(''), [quote, setQuote] = useState('');
     const [question, setQuestion] = useState(''), [feedback, setFeedback] = useState(''), [busy, setBusy] = useState(false), [history, setHistory] = useState<unknown[] | null>(null);
@@ -137,7 +141,10 @@ function App() {
     finally {
         setBusy(false);
     } }
-    async function refresh() { setJobs(await api<Job[]>('/jobs')); }
+    const refreshing=useRef(false);
+    async function refresh() {if(refreshing.current)return;refreshing.current=true;try{setJobs(await api<Job[]>('/jobs'));}finally{refreshing.current=false;}}
+    useEffect(()=>{const expired=()=>{setActor('');setError('Your session expired. Sign in again.');};window.addEventListener('session-expired',expired);return()=>window.removeEventListener('session-expired',expired);},[]);
+    useEffect(()=>{if(!actor)return;let alive=true;const check=()=>void api<typeof storage>('/storage').then(s=>{if(alive)setStorage(s);}).catch(()=>{});check();const t=setInterval(check,15000);return()=>{alive=false;clearInterval(t);};},[actor]);
     useEffect(()=>{if(actor && view==='review')void api<Subject[]>('/subjects').then(setSubjects).catch(e=>setError(String(e)));},[actor,view]);
     function selectProvider(id:string) { void work(async()=>{
         const [manager,models]=await Promise.all([api<{available:boolean;active_provider:string|null}>('/model-manager'),api<{id:string}[]>('/local-models')]);
@@ -153,12 +160,12 @@ function App() {
     useEffect(() => { api<{
         actor: string;
         csrf: string;
-    }>('/session').then(s => { csrf = s.csrf; setActor(s.actor); }).catch(() => { }).finally(() => setBoot(false)); }, []);
+    }>('/auth-state').then(s => { csrf = s.csrf; setActor(s.actor); }).catch(() => { }).finally(() => setBoot(false)); }, []);
     useEffect(() => {
         if (!actor)
             return;
         void work(async () => { await refresh(); const [p, s, manager] = await Promise.all([api<Provider[]>('/providers'), api<typeof skillList>('/skills'), api<{active_provider:string|null}>('/model-manager')]); setProviders(p); setProvider(p.find(x => x.id === manager.active_provider)?.id || p.find(x => x.mode !== 'disabled' && !x.external)?.id || ''); setSkillList(s); });
-        const t = setInterval(() => { if (!document.hidden) void refresh().catch(() => { }); }, 15000);
+        const t = setInterval(() => { if (!document.hidden) void refresh().catch(() => { }); }, 2000);
         return () => clearInterval(t);
     }, [actor]);
     useEffect(() => { if (!accessionJob)
@@ -205,12 +212,14 @@ function App() {
             actor: string;
             csrf: string;
         }>('/login', { username: d.get('username'), password: d.get('password') }); csrf = s.csrf; setActor(s.actor); }); }}><label>Curator<input name="username" autoComplete="username" required defaultValue="curator"/></label><label>Password<input name="password" type="password" autoComplete="current-password" required/></label><button disabled={busy}>Sign in →</button></form>{error && <p role="alert" className="error">{error}</p>}</div></main>;
-    return <div className="app"><aside className="sidebar"><div className="brand">genesis-curation</div><p className="eyebrow">CURATION WORKSPACE</p><nav aria-label="Main navigation"><button disabled={studyDirty} className={view === 'mining' ? 'current' : ''} onClick={() => setView('mining')}>Discover</button><button disabled={studyDirty} className={view === 'results' ? 'current' : ''} onClick={() => setView('results')}>Curation</button><button disabled={studyDirty} className={view === 'guided' ? 'current' : ''} onClick={() => setView('guided')}>Review</button><details><summary>Tools</summary><button disabled={studyDirty} className={view === 'audit' ? 'current' : ''} onClick={() => setView('audit')}>Quality audit</button><button disabled={studyDirty} className={view === 'review' ? 'current' : ''} onClick={() => setView('review')}>Record history</button><button disabled={studyDirty} className={view === 'settings' ? 'current' : ''} onClick={() => setView('settings')}>Models &amp; skills</button></details></nav><div className="sidebar-bottom"><span className="avatar">{actor[0].toUpperCase()}</span><div>{actor}<small>Human reviewer</small></div><button disabled={studyDirty} aria-label="Sign out" onClick={() => void work(async () => { await api('/logout', {}); setActor(''); })}>↗</button></div></aside>
+    return <div className="app"><aside className="sidebar"><div className="brand">genesis-curation</div><p className="eyebrow">CURATION WORKSPACE</p><nav aria-label="Main navigation"><button disabled={studyDirty} className={view === 'mining' ? 'current' : ''} onClick={() => setView('mining')}>Discover</button><button disabled={studyDirty} className={view === 'results' ? 'current' : ''} onClick={() => setView('results')}>Curation</button><button disabled={studyDirty} className={view === 'guided' ? 'current' : ''} onClick={() => setView('guided')}>Review</button><details><summary>Tools</summary><button disabled={studyDirty} className={view === 'audit' ? 'current' : ''} onClick={() => setView('audit')}>Quality audit</button><button disabled={studyDirty} className={view === 'review' ? 'current' : ''} onClick={() => setView('review')}>Record history</button><button disabled={studyDirty} className={view === 'settings' ? 'current' : ''} onClick={() => setView('settings')}>Models &amp; skills</button></details></nav><div className="sidebar-bottom"><span className="avatar">{actor[0].toUpperCase()}</span><div>{actor}<small>Human reviewer</small></div><button disabled={studyDirty} aria-label="Sign out" onClick={() => void work(async () => { await api('/logout', {}); clearTableCache(); setActor(''); })}>↗</button></div></aside>
  <main className="workspace"><header><div><p className="eyebrow">GENESIS / {view === 'import' ? 'IMPORT' : view === 'settings' ? 'CONFIGURATION' : 'METADATA'}</p><h1>{view === 'import' ? 'Add a dataset' : view === 'settings' ? 'Models & skills' : view === 'guided' ? 'Review' : view === 'mining' ? 'Discover' : view === 'audit' ? 'Plant reference audit' : view === 'results' ? 'Curation' : view === 'inbox' ? 'Study review' : 'Record details'}</h1></div><div className="header-actions"><label>Model<select aria-label="Active curation model" value={provider} onChange={e=>selectProvider(e.target.value)}>{providers.map(p=><option key={p.id} value={p.id} disabled={p.mode==='disabled'}>{p.mode==='disabled'?p.id+' · not configured':p.model}</option>)}</select></label></div></header>
+ {storage?.warning&&<div role="alert" className="notice storage-banner">{storage.unavailable?.length?'Shared storage is unavailable. New work is paused.':`Storage: ${(storage.free_bytes/1024**3).toFixed(1)} GiB free. ${storage.blocked?'New work is blocked.':'Avoid large jobs until space is recovered.'}`}</div>}
+ {view==='guided'&&jobs.find(j=>['QUEUED','RUNNING'].includes(j.status))&&<JobProgress api={api} id={jobs.find(j=>['QUEUED','RUNNING'].includes(j.status))!.id}/>}
  {error && <div role="alert" className="error banner">{error}<button onClick={() => setError('')}>×</button></div>}{notice && <div role="status" className="notice banner">{notice}</div>}
 
  {trackedJob && currentJob && <div className="job-banner" role="status"><span>{jobRunning ? 'Preparing your results… You can keep reviewing.' : currentJob.status === 'SUCCEEDED' ? 'Your AI results are ready.' : `AI task ${currentJob.status.toLowerCase()}. ${currentJob.error || 'You can try again from the record.'}`}</span>{currentJob.status === 'SUCCEEDED' && <button onClick={() => void work(async () => { await open(trackedJob.subject); setTrackedJob(null); })}>View {currentJob.kind === 'chat' ? 'answer' : 'suggestions'} →</button>}{!jobRunning && <button className="text-button" aria-label="Dismiss AI task notification" onClick={() => setTrackedJob(null)}>Dismiss</button>}</div>}
- {view === 'results' ? <Results api={api} provider={provider} onRecord={id=>void work(async()=>{const linked=await api<{studies:string[]}>('/subject-study/'+id);if(linked.studies[0]){await api('/review-tasks/guided/draft',{study:linked.studies[0]});setView('guided');}else throw new Error('This record has no study yet. Curate it first.');})}/> : view === 'mining' ? <Discovery api={api} provider={provider} onCuration={()=>setView('results')}/> : view === 'guided' ? <>{auditRemaining>0&&<section className="panel"><h2>Quality audit</h2><p>{auditRemaining} records pending.</p><button disabled={studyDirty} onClick={()=>setView('audit')}>Continue quality review</button></section>}<GuidedReview api={api} provider={provider} onDirty={setStudyDirty} onBrowse={()=>setView('inbox')}/></> : view === 'audit' ? <Audit api={api} onDirty={setStudyDirty}/> : view === 'inbox' ? <AddStudy api={api} provider={provider} onAdded={async result=>{if(result.studies?.[0])await api('/review-tasks/guided/draft',{study:result.studies[0]});setView('guided');}}/> : view === 'import' ? <section className="panel import"><p className="eyebrow">01 / ADD SOURCES</p><h2>Paste a study ID or upload a table</h2><p>Preview the records before importing. Original metadata is preserved; suggestions never become accepted values without your review.</p><div className="import-options"><label className="file-drop">Upload CSV, TSV or JSON<input type="file" accept=".csv,.tsv,.json" onChange={e => { const f = e.target.files?.[0]; if (f)
+ {view === 'results' ? <Results api={api} provider={provider} initialModality={initialModality} onRecord={id=>void work(async()=>{const linked=await api<{studies:string[]}>('/subject-study/'+id);if(linked.studies[0]){await api('/review-tasks/guided/draft',{study:linked.studies[0]});setView('guided');}else throw new Error('This record has no study yet. Curate it first.');})}/> : view === 'mining' ? <Discovery api={api} provider={provider} onCuration={modality=>{setInitialModality(modality||'Bulk ATAC');setView('results');}}/> : view === 'guided' ? <>{auditRemaining>0&&<section className="panel"><h2>Quality audit</h2><p>{auditRemaining} records pending.</p><button disabled={studyDirty} onClick={()=>setView('audit')}>Continue quality review</button></section>}<GuidedReview api={api} provider={provider} onDirty={setStudyDirty} onBrowse={()=>setView('inbox')}/></> : view === 'audit' ? <Audit api={api} onDirty={setStudyDirty}/> : view === 'inbox' ? <AddStudy api={api} provider={provider} onAdded={async result=>{if(result.studies?.[0])await api('/review-tasks/guided/draft',{study:result.studies[0]});setView('guided');}}/> : view === 'import' ? <section className="panel import"><p className="eyebrow">01 / ADD SOURCES</p><h2>Paste a study ID or upload a table</h2><p>Preview the records before importing. Original metadata is preserved; suggestions never become accepted values without your review.</p><div className="import-options"><label className="file-drop">Upload CSV, TSV or JSON<input type="file" accept=".csv,.tsv,.json" onChange={e => { const f = e.target.files?.[0]; if (f)
             void work(() => loadFile(f)); }}/><small>Up to 2 MiB · 1,000 records per import</small></label><form onSubmit={e => { e.preventDefault(); void work(async () => { const j = await api<{
             id: string;
         }>('/jobs', { kind: 'accession', payload: { accession } }); setAccessionJob(j.id); setPreview([]); setNotice('Fetching public metadata. No sequencing data will be downloaded.'); await refresh(); }); }}><label>GEO / ENA / SRA accession<input value={accession} onChange={e => setAccession(e.target.value)} placeholder="GSE… or SRP…" required/></label><button className="secondary" disabled={busy}>Fetch preview</button></form></div>
