@@ -45,6 +45,7 @@ def event(
         "INSERT INTO workspace_events(campaign,entity,created,body) VALUES(?,?,?,?)",
         (campaign, entity, now(), canonical({"action": action, **details})),
     )
+    db.execute("UPDATE curation_queue_owners SET dirty=1 WHERE kind='study'")
     assert cursor.lastrowid is not None
     return cursor.lastrowid
 

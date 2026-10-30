@@ -5,7 +5,6 @@ from __future__ import annotations
 import contextlib
 import json
 import re
-import shutil
 import threading
 import uuid
 import xml.etree.ElementTree as ET
@@ -23,6 +22,7 @@ from . import (
     mining_sources,
     research_search,
     runtime,
+    storage,
     studies,
     table,
     workspace,
@@ -31,6 +31,7 @@ from .discovery_catalog import ASSAYS, VERSION
 
 
 def create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str) -> dict[str, Any]:
+    storage.require_space(root)
     mode = body.get("mode", "curate")
     if mode not in {"curate", "discover"}:
         raise ValueError("Unknown campaign mode")
@@ -70,12 +71,18 @@ def create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str)
             "INSERT INTO workspace_campaigns VALUES(?,?,?)", (key, "QUEUED", canonical(campaign))
         )
         if mode == "curate":
-            clause = "id IN (" + ",".join("?" for _ in selection) + ")" if selection else "1"
+            placeholders = ",".join("?" for _ in selection)
+            clause = (
+                "id IN (" + placeholders + ") OR (study!='' AND study IN "
+                "(SELECT study FROM workspace_rows WHERE id IN (" + placeholders + ")))"
+                if selection
+                else "1"
+            )
             for r in db.execute(
                 "SELECT entity,min(id) AS representative FROM workspace_rows WHERE "
                 + clause
                 + " GROUP BY entity",
-                selection,
+                selection + selection,
             ).fetchall():
                 db.execute(
                     "INSERT INTO workspace_items VALUES(?,?,?,?)",
@@ -407,7 +414,7 @@ def step(
     if cancel and cancel.is_set():
         save(root, campaign, "PAUSED")
         return {"campaign": campaign["id"], "pending": False}
-    if shutil.disk_usage(root).free < 512 * 1024**2:
+    if storage.status(root)["blocked"]:
         save(root, campaign, "PAUSED")
         with store.write(registry) as db:
             workspace.event(
@@ -415,7 +422,10 @@ def step(
                 campaign["id"],
                 "",
                 "storage-pause",
-                reason="Less than 512 MiB free; completed work preserved",
+                reason=(
+                    "Less than 2 GiB free; completed work preserved. "
+                    "Resume manually after freeing space."
+                ),
             )
         return {"campaign": campaign["id"], "pending": False}
     config = providers.select(config_path, campaign["provider"])
@@ -475,7 +485,7 @@ def step(
                 (
                     "SELECT i.entity,r.* FROM workspace_items i JOIN workspace_rows r "
                     "ON r.id=json_extract(i.body,'$.row') WHERE i.campaign=? AND i.sta"
-                    "tus='QUEUED' ORDER BY r.modality,r.study,i.entity LIMIT 20"
+                    "tus='QUEUED' ORDER BY r.study,i.entity"
                 ),
                 (campaign["id"],),
             ).fetchall()
@@ -486,7 +496,7 @@ def step(
         selected = [
             dict(r)
             for r in pending
-            if r["study"] == first["study"] and r["modality"] == first["modality"]
+            if (r["study"] == first["study"] if first["study"] else r["entity"] == first["entity"])
         ]
         replayed = campaign.setdefault("replayed_studies", [])
         if first["study"] and first["study"] not in replayed:
@@ -547,9 +557,10 @@ def step(
                 group["study"] = studies.link(
                     registry,
                     group["retrieved"],
-                    "Reference re-check: " + group["rows"][0]["modality"],
+                    group["rows"][0]["study"] or "Unassigned study: " + group["rows"][0]["entity"],
                     campaign["actor"],
-                    group=fingerprint([campaign["id"], group["retrieved"]]),
+                    accession=group["rows"][0]["study"] or None,
+                    group=group["rows"][0]["entity"],
                 )
                 save(root, campaign)
             result = table.step(

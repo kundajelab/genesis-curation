@@ -24,37 +24,50 @@ def refresh(root: Path) -> None:
             summary: dict[str, Any] = {}
             if kind == "study":
                 study = studies.view(db, owner)
-                if not study["approval_current"]:
-                    summary = {
-                        "id": owner,
-                        "name": study["name"],
-                        "version": study["version"],
-                        "status": study["status"],
-                        "preparation": study["preparation"]["status"],
+                summary = {
+                    k: study[k]
+                    for k in (
+                        "id",
+                        "name",
+                        "accession",
+                        "version",
+                        "status",
+                        "member_count",
+                        "pending",
+                        "completed_tasks",
+                        "approval_current",
+                        "coverage_pending",
+                    )
+                }
+                summary["preparation"] = study["preparation"]["status"]
+                summary["assays"] = sorted(
+                    {
+                        str(r["metadata"].get("assay"))
+                        for r in study["records"]
+                        if r["metadata"].get("assay")
                     }
-                    if study["preparation"]["status"] == "COMPLETED":
-                        for task in study["tasks"]:
-                            if task["status"] in {"open", "waiting"}:
-                                rows.append(
-                                    {
-                                        k: task[k]
-                                        for k in (
-                                            "id",
-                                            "study",
-                                            "version",
-                                            "title",
-                                            "reason",
-                                            "kind",
-                                            "field",
-                                            "priority",
-                                            "status",
-                                        )
-                                    }
-                                    | {
-                                        "study_name": study["name"],
-                                        "affected": len(task["targets"]),
-                                    }
+                )
+                if not study["approval_current"]:
+                    for task in study["tasks"]:
+                        rows.append(
+                            {
+                                k: task[k]
+                                for k in (
+                                    "id",
+                                    "study",
+                                    "version",
+                                    "title",
+                                    "reason",
+                                    "kind",
+                                    "field",
+                                    "priority",
+                                    "status",
                                 )
+                            }
+                            | {"study_name": study["name"], "affected": len(task["targets"])}
+                        )
+                if study.get("superseded_by"):
+                    summary, rows = {}, []
             else:
                 run = loads(
                     db.execute("SELECT body FROM mining_runs WHERE id=?", (owner,)).fetchone()[0]
@@ -94,7 +107,7 @@ def listing(root: Path, cursor: int = 0, limit: int = 25, status: str = "open") 
         owners = [
             loads(row[0])
             for row in db.execute(
-                "SELECT body FROM curation_queue_owners WHERE kind='study' "
+                "SELECT body FROM curation_queue_owners WHERE kind='study' AND body!='{}' "
                 "AND body!='{}' ORDER BY owner"
             )
         ]
@@ -137,4 +150,91 @@ def detail(root: Path, study: str, key: str) -> dict[str, Any]:
                 if r["id"] in ids
             ],
         },
+    }
+
+
+def study_page(root: Path, cursor: int = 0, limit: int = 25) -> dict[str, Any]:
+    """Cached, paginated biological study summaries, without sample evidence payloads."""
+    if cursor < 0 or not 1 <= limit <= 100:
+        raise ValueError("Invalid study page")
+    refresh(root)
+    with contextlib.closing(store.connect(root)) as db:
+        db.execute("BEGIN")
+        total = db.execute(
+            "SELECT count(*) FROM curation_queue_owners WHERE kind='study' AND body!='{}'"
+        ).fetchone()[0]
+        rows = [
+            loads(r[0])
+            for r in db.execute(
+                "SELECT body FROM curation_queue_owners WHERE kind='study' AND body!='{}' "
+                "ORDER BY owner LIMIT ? OFFSET ?",
+                (limit, cursor),
+            )
+        ]
+    return {
+        "items": rows,
+        "total": total,
+        "next_cursor": cursor + limit if cursor + limit < total else None,
+    }
+
+
+def checklist(root: Path, key: str, cursor: int = 0, limit: int = 50) -> dict[str, Any]:
+    if cursor < 0 or not 1 <= limit <= 100:
+        raise ValueError("Invalid checklist page")
+    refresh(root)
+    with contextlib.closing(store.connect(root)) as db:
+        db.execute("BEGIN")
+        row = db.execute(
+            "SELECT body FROM curation_queue_owners WHERE owner=? AND kind='study'", (key,)
+        ).fetchone()
+        if row is None:
+            raise ValueError("Unknown study")
+        total = db.execute(
+            "SELECT count(*) FROM curation_queue_tasks WHERE owner=?", (key,)
+        ).fetchone()[0]
+        items = [
+            loads(r[0])
+            for r in db.execute(
+                "SELECT body FROM curation_queue_tasks WHERE owner=? "
+                "ORDER BY priority,task LIMIT ? OFFSET ?",
+                (key, limit, cursor),
+            )
+        ]
+    return {
+        "study": loads(row[0]),
+        "items": items,
+        "total": total,
+        "next_cursor": cursor + limit if cursor + limit < total else None,
+    }
+
+
+def sample_page(root: Path, key: str, cursor: int = 0, limit: int = 25) -> dict[str, Any]:
+    if cursor < 0 or not 1 <= limit <= 100:
+        raise ValueError("Invalid sample page")
+    with contextlib.closing(store.connect(root)) as db:
+        db.execute("BEGIN")
+        total = db.execute(
+            "SELECT count(*) FROM curation_members WHERE study=?", (key,)
+        ).fetchone()[0]
+        items = []
+        for row in db.execute(
+            "SELECT s.body FROM curation_subjects s JOIN curation_members m ON m.subject=s.id "
+            "WHERE m.study=? ORDER BY s.id LIMIT ? OFFSET ?",
+            (key, limit, cursor),
+        ):
+            state = loads(row[0])
+            items.append(
+                {
+                    "id": state["id"],
+                    "name": state["name"],
+                    "fields": [
+                        {k: f.get(k) for k in ("field", "original", "value", "status")}
+                        for f in state["fields"]
+                    ],
+                }
+            )
+    return {
+        "items": items,
+        "total": total,
+        "next_cursor": cursor + limit if cursor + limit < total else None,
     }

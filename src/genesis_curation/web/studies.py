@@ -93,10 +93,18 @@ def link(
         )
         if not existing:
             save(db, study, "create", actor, {})
+        added = []
         for subject in subjects:
             catalog.read(db, subject)
-            db.execute("INSERT OR IGNORE INTO curation_members VALUES(?,?)", (key, subject))
-        save(db, study, "membership", actor, {"subjects": subjects})
+            inserted = db.execute(
+                "INSERT OR IGNORE INTO curation_members VALUES(?,?)", (key, subject)
+            )
+            if inserted.rowcount:
+                added.append(subject)
+        if added:
+            if existing and study["preparation"]["status"] == "COMPLETED":
+                study["preparation"]["status"] = "NOT_STARTED"
+            save(db, study, "membership", actor, {"subjects": added})
     return key
 
 
@@ -266,6 +274,18 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
     return sorted(result, key=lambda t: (t["priority"], t["title"], t["id"]))
 
 
+def coverage_pending(db: sqlite3.Connection, study: dict[str, Any]) -> int:
+    """Known inventory records outside this study cannot disappear at sign-off."""
+    if not study.get("accession"):
+        return 0
+    return db.execute(
+        "SELECT count(DISTINCT entity) FROM workspace_rows WHERE study=? AND "
+        "(subject IS NULL OR subject='' OR subject NOT IN "
+        "(SELECT subject FROM curation_members WHERE study=?))",
+        (study["accession"], study["id"]),
+    ).fetchone()[0]
+
+
 def view(db: sqlite3.Connection, key: str, *, detail: bool = True) -> dict[str, Any]:
     study, rows = read(db, key), members(db, key)
     current = revision(study, rows)
@@ -277,6 +297,8 @@ def view(db: sqlite3.Connection, key: str, *, detail: bool = True) -> dict[str, 
             "SELECT body FROM curation_releases WHERE version=?", (study["approval"],)
         ).fetchone()
         signed = bool(release and loads(release[0])["study_revision"] == current)
+    missing = coverage_pending(db, study)
+    signed = signed and not missing
     prep = study["preparation"]["status"]
     status = (
         "signed"
@@ -286,7 +308,7 @@ def view(db: sqlite3.Connection, key: str, *, detail: bool = True) -> dict[str, 
         else "needs_decisions"
         if pending
         else "ready"
-        if prep == "COMPLETED"
+        if prep == "COMPLETED" and not missing
         else "not_prepared"
     )
     result = {
@@ -294,6 +316,7 @@ def view(db: sqlite3.Connection, key: str, *, detail: bool = True) -> dict[str, 
         "version": current,
         "status": status,
         "member_count": len(rows),
+        "coverage_pending": missing,
         "pending": pending,
         "completed_tasks": sum(t["status"] == "done" for t in issues),
         "approval_current": signed,
@@ -366,6 +389,16 @@ def resolve(root: Path, task_id: str, body: dict[str, Any], actor: str) -> dict[
         study, task = find_task(db, body["study"], task_id, body["version"])
         if study["preparation"]["status"] in {"RUNNING", "QUEUED"}:
             raise ValueError("Wait for preparation or cancel it before changing decisions")
+        selected = body.get("targets", [t["subject"] for t in task["targets"]])
+        allowed = {t["subject"] for t in task["targets"]}
+        if (
+            not isinstance(selected, list)
+            or not selected
+            or any(not isinstance(s, str) for s in selected)
+            or not set(selected).issubset(allowed)
+        ):
+            raise ValueError("Select affected samples from this decision")
+        task = {**task, "targets": [t for t in task["targets"] if t["subject"] in selected]}
         if task["kind"] == "failure":
             if action != "unknown":
                 raise ValueError("Retry preparation, or explicitly acknowledge its failure")
@@ -447,6 +480,8 @@ def approve(root: Path, key: str, version: str, actor: str) -> dict[str, Any]:
             raise ValueError("Stale study: reload the summary before signing")
         if study["preparation"]["status"] != "COMPLETED":
             raise ValueError("Finish preparation before signing")
+        if coverage_pending(db, study):
+            raise ValueError("Retrieve all known study records before signing")
         if any(t["status"] != "done" for t in tasks(study, rows)):
             raise ValueError("Resolve or acknowledge every outstanding task before signing")
         exported = []

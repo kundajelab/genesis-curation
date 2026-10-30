@@ -13,7 +13,7 @@ from fastapi.responses import Response
 from ..contracts.records import canonical, fingerprint, loads
 from ..llm import providers
 from ..registry import store
-from . import audit, catalog, intake, review_queue, runtime, skills, studies
+from . import audit, campaigns, catalog, intake, review_queue, runtime, skills, storage, studies
 
 
 def provider(
@@ -83,6 +83,44 @@ def queue(
 def mount(app: FastAPI, root: Path, config_path: Path) -> None:
     registry = root / "catalog"
     store.initialize(registry)
+
+    @app.get("/api/subject-study/{subject}")
+    def subject_study(subject: str) -> dict[str, Any]:
+        import contextlib
+
+        with contextlib.closing(store.connect(registry)) as db:
+            keys = [
+                r[0]
+                for r in db.execute(
+                    "SELECT m.study FROM curation_members m "
+                    "JOIN curation_studies s ON s.id=m.study "
+                    "WHERE m.subject=? AND json_extract(s.body,'$.superseded_by') IS NULL "
+                    "ORDER BY m.study",
+                    (subject,),
+                )
+            ]
+        return {"studies": keys}
+
+    @app.get("/api/storage")
+    def storage_status() -> dict[str, Any]:
+        return storage.status(root)
+
+    @app.post("/api/storage/resume")
+    def resume_storage() -> dict[str, Any]:
+        storage.resume(root)
+        return storage.status(root)
+
+    @app.get("/api/study-review")
+    def study_page(cursor: int = 0, limit: int = 25) -> dict[str, Any]:
+        return review_queue.study_page(registry, cursor, limit)
+
+    @app.get("/api/study-review/{key}")
+    def study_checklist(key: str, cursor: int = 0, limit: int = 50) -> dict[str, Any]:
+        return review_queue.checklist(registry, key, cursor, limit)
+
+    @app.get("/api/study-review/{key}/samples")
+    def study_samples(key: str, cursor: int = 0, limit: int = 25) -> dict[str, Any]:
+        return review_queue.sample_page(registry, key, cursor, limit)
 
     @app.get("/api/review-queue")
     def queue_page(cursor: int = 0, limit: int = 25, status: str = "open") -> dict[str, Any]:
@@ -175,6 +213,24 @@ def mount(app: FastAPI, root: Path, config_path: Path) -> None:
     @app.get("/api/studies/{key}")
     def detail(key: str) -> dict[str, Any]:
         return studies.get(registry, key)
+
+    @app.post("/api/studies/{key}/retrieve")
+    async def retrieve_members(key: str, request: Request) -> dict[str, Any]:
+        import contextlib
+
+        body = await request.json()
+        config = provider(root, config_path, key, body.get("provider"))
+        if config is None:
+            raise ValueError("Select a model before curating remaining records")
+        with contextlib.closing(store.connect(registry)) as db:
+            study = studies.read(db, key)
+            row = db.execute(
+                "SELECT id FROM workspace_rows WHERE study=? ORDER BY id LIMIT 1",
+                (study.get("accession"),),
+            ).fetchone()
+        if row is None:
+            raise ValueError("No known inventory records for this study")
+        return campaigns.create(root, config, {"ids": [row[0]]}, request.state.account["actor"])
 
     @app.get("/api/studies/{key}/progress")
     def progress(key: str) -> dict[str, Any]:
