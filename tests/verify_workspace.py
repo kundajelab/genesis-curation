@@ -149,7 +149,11 @@ def main() -> None:
                 "archive-fixture",
                 "ATAC",
                 1,
-                {"experiment_accession": "SRX123456", "species": "Arabidopsis thaliana"},
+                {
+                    "experiment_accession": "SRX123456",
+                    "study_accession": "SRP123456",
+                    "species": "Arabidopsis thaliana",
+                },
                 {},
                 "Bulk ATAC",
                 "snapshot:fixture:ATAC:1",

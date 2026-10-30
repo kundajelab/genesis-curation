@@ -17,7 +17,7 @@ from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_ope
 
 from ..contracts.records import canonical, dump, fingerprint, load, loads, now, record
 from ..registry import store
-from . import budget, wire
+from . import budget, progress, wire
 from .security import check, credential, endpoint, redact, response_text, schema
 
 MAX_RESPONSE = 1024 * 1024
@@ -104,6 +104,16 @@ def admission(directory: Path, config: dict[str, Any]) -> Iterator[None]:
 
 def post(config: dict[str, Any], payload: dict[str, Any], secret: str) -> tuple[int, str]:
     deadline = time.monotonic() + config["timeout_seconds"]
+    live_stream = (
+        progress.listener.get() is not None
+        and not config["external"]
+        and config.get("capabilities", {}).get("streaming", False)
+        and config.get("protocol", "openai-chat") == "openai-chat"
+        and not payload.get("stream")
+    )
+    if live_stream:
+        payload = {**payload, "stream": True, "stream_options": {"include_usage": True}}
+    progress.report(phase="Waiting for model", output_characters=0)
     suffix, headers, payload = wire.request(config, payload, secret)
     request = Request(
         endpoint(config["endpoint"], external=config["external"]) + suffix,
@@ -114,7 +124,34 @@ def post(config: dict[str, Any], payload: dict[str, Any], secret: str) -> tuple[
     opener = build_opener(NoRedirect(), ProxyHandler({}))
     try:
         with opener.open(request, timeout=config["timeout_seconds"]) as response:
-            raw = read_response(response, deadline)
+            if live_stream:
+                parts: list[bytes] = []
+                pending = b""
+                received = characters = 0
+                while True:
+                    if time.monotonic() > deadline:
+                        raise TimeoutError("Provider response deadline exceeded")
+                    chunk = response.read1(65536)
+                    if not chunk:
+                        break
+                    received += len(chunk)
+                    if received > 8 * MAX_RESPONSE:
+                        raise ValueError("Streaming transport exceeds 8 MiB")
+                    parts.append(chunk)
+                    pending += chunk
+                    while b"\n" in pending:
+                        line, pending = pending.split(b"\n", 1)
+                        if line.startswith(b"data:") and line[5:].strip() != b"[DONE]":
+                            item = loads(line[5:].decode())
+                            for choice in item.get("choices", []):
+                                characters += len(choice.get("delta", {}).get("content") or "")
+                            progress.report(
+                                phase="Generating suggestions", output_characters=characters
+                            )
+                raw = b"".join(parts)
+                raw = normalize_probe(raw.decode(), "streaming").encode()
+            else:
+                raw = read_response(response, deadline)
             status = response.status
     except HTTPError as error:
         with error:

@@ -16,7 +16,7 @@ from urllib.request import Request, build_opener
 
 from ..contracts.records import canonical, dump, fingerprint, load, now
 from ..curation import harmonize
-from ..llm import providers
+from ..llm import progress, providers
 from . import catalog, studies
 
 HOSTS = {"www.ncbi.nlm.nih.gov", "eutils.ncbi.nlm.nih.gov", "www.ebi.ac.uk", "ngdc.cncb.ac.cn"}
@@ -24,6 +24,7 @@ ACCESSION = re.compile(r"(?:GSE|GSM|[SED]RP|[SED]RS|[SED]RR|[SED]RX|PRJ[EDN][AB]
 
 
 def fetch(root: Path, url: str, cancellation: threading.Event | None = None) -> dict[str, Any]:
+    progress.report(phase="Retrieving sources", source=urlsplit(url).hostname or "")
     parsed = urlsplit(url)
     if parsed.scheme != "https" or parsed.hostname not in HOSTS or parsed.username or parsed.port:
         raise ValueError("Only fixed public metadata services are supported")
@@ -295,6 +296,7 @@ def import_accession(
             "retrieval_failures": failures,
             "selection": {
                 "available_records": available_records,
+                "subjects": list(dict.fromkeys(ids)),
                 "selected_records": len(studies.get(registry, key)["records"]),
                 "sample_offset": sample_offset,
                 "pilot_limit": sample_limit,

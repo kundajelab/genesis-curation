@@ -12,11 +12,11 @@ from typing import Any
 
 from ..contracts.records import canonical, dump, fingerprint, now
 from ..curation import harmonize
-from ..llm import budget, providers
+from ..llm import budget, progress, providers
 from ..llm.security import check, redact
 from . import assessments, catalog, preparation, skills, studies
 
-WORKFLOW = "study-table-5"
+WORKFLOW = "study-table-7"
 CHANGE = {
     "type": "object",
     "properties": {
@@ -35,6 +35,23 @@ CHANGE = {
     },
     "required": ["rows", "field", "value", "status", "evidence", "rationale", "confidence"],
     "additionalProperties": False,
+}
+# llama.cpp compiles anyOf branches independently; repeat the complete object contract.
+CHANGE = {
+    "anyOf": [
+        {
+            **CHANGE,
+            "properties": {
+                **CHANGE["properties"],
+                "status": {"enum": statuses},
+                "value": value,
+            },
+        }
+        for statuses, value in [
+            (["known"], {"type": ["string", "integer"], "maxLength": 512}),
+            (["unknown", "conflicting", "not_applicable"], {"type": "null"}),
+        ]
+    ]
 }
 # Validate individual changes separately, so a bad sample cannot discard good rows.
 SCHEMA = {
@@ -610,6 +627,14 @@ def step(
         folder.mkdir(exist_ok=True)
         dump(folder / (manifest_hash + ".json"), manifest, immutable=True)
         mock = {"reviewed_rows": list(compiled["originals"]), "changes": []}
+        progress.report(
+            phase="Preparing suggestions",
+            study=key,
+            records=len(selected),
+            completed=len(completed),
+            total=len(ids),
+            output_characters=0,
+        )
         invocation = providers.invoke(
             registry,
             actual,
@@ -624,6 +649,7 @@ def step(
             cancellation=cancellation,
             instruction=compiled["data"]["rules"],
         )
+        progress.report(phase="Validating suggestions")
         proposed, bad = validate_rows(compiled, invocation["data"]["response"])
         for row, message in bad.items():
             invalid[compiled["originals"][row]["state"]["id"]] = message

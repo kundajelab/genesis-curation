@@ -57,7 +57,7 @@ class Controller:
         self.baseline = json.loads(baseline_path.read_text())
         with sqlite3.connect(self.db_path, timeout=30) as db:
             row = db.execute("SELECT body FROM model_manager_state WHERE id=1").fetchone()
-        self.value = (
+        self.value: dict[str, Any] = (
             json.loads(row[0])
             if row
             else {"active_provider": model_manager.BASELINE, "maintenance": False}
@@ -180,6 +180,12 @@ class Controller:
             "com.docker.compose.service=model",
             "--restart",
             "unless-stopped",
+            "--log-driver",
+            "json-file",
+            "--log-opt",
+            "max-size=10m",
+            "--log-opt",
+            "max-file=3",
             "--network",
             "host",
             "--health-cmd",

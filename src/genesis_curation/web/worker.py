@@ -15,7 +15,7 @@ from ..curation import harmonize
 from ..llm import providers
 from ..llm.security import redact
 from ..registry import store
-from . import catalog, intake, mining, preparation, runtime, skills, studies
+from . import activity, catalog, intake, mining, preparation, runtime, skills, studies
 
 
 def execute(
@@ -125,6 +125,7 @@ def execute(
 def once(root: Path, config_path: Path) -> bool:
     from . import storage
 
+    storage.maintain(root)
     if storage.paused(root):
         return False
     task = runtime.claim(root)
@@ -143,7 +144,8 @@ def once(root: Path, config_path: Path) -> bool:
     try:
         if runtime.job(root, task["id"])["cancel"]:
             raise ValueError("Request cancelled")
-        result = execute(root, config_path, task, cancellation)
+        with activity.track(root, task):
+            result = execute(root, config_path, task, cancellation)
         if result.get("pending"):
             if runtime.yield_job(root, task, result) and task["kind"] not in {
                 "mining",

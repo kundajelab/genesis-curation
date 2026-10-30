@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 import threading
+import time
 import urllib.request
 from pathlib import Path
 from typing import Any
@@ -21,8 +22,29 @@ def search(
     if not query.strip() or len(query) > 4000 or offset < 0:
         raise ValueError("Invalid search query")
     if source == "web":
+        health_path = root / "search-health.json"
+        health = load(health_path) if health_path.exists() else {}
+        available = [
+            engine for engine in ("google", "brave") if health.get(engine, 0) <= time.time()
+        ]
+        if not available:
+            return {
+                "source": source,
+                "query": query,
+                "rows": [],
+                "errors": [["web", "Engines cooling down; archive searches continue"]],
+                "coverage": "unavailable",
+                "next_offset": None,
+                "retrieved_at": now(),
+                "cached": False,
+            }
         url = "http://127.0.0.1:18888/search?" + urlencode(
-            {"q": query, "format": "json", "pageno": offset // 20 + 1, "engines": "google,brave"}
+            {
+                "q": query,
+                "format": "json",
+                "pageno": offset // 20 + 1,
+                "engines": ",".join(available),
+            }
         )
         cache = root / "search-cache" / (fingerprint(url) + ".json")
         if cache.exists():
@@ -32,7 +54,8 @@ def search(
             if (
                 datetime.now(UTC) - datetime.fromisoformat(old["retrieved_at"])
             ).total_seconds() < 86400:
-                return old | {"cached": True}
+                if not old.get("errors"):
+                    return old | {"cached": True}
         if cancel and cancel.is_set():
             raise ValueError("Search cancelled")
         with urllib.request.urlopen(url, timeout=20) as response:
@@ -40,6 +63,10 @@ def search(
         if len(raw) > 2 * 1024**2:
             raise ValueError("Search response exceeded budget")
         data = json.loads(raw)
+        for failure in data.get("unresponsive_engines", []):
+            if isinstance(failure, list) and failure and failure[0] in available:
+                health[failure[0]] = time.time() + 900
+        dump(health_path, health)
         rows = [
             {
                 "title": r.get("title", ""),
@@ -56,6 +83,7 @@ def search(
             "retrieved_at": now(),
             "cached": False,
             "errors": data.get("unresponsive_engines", []),
+            "coverage": "partial" if data.get("unresponsive_engines") else "returned",
             "next_offset": offset + 20 if len(rows) == 20 else None,
             "response_hash": fingerprint(data),
         }

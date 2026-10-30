@@ -153,24 +153,44 @@ def detail(root: Path, study: str, key: str) -> dict[str, Any]:
     }
 
 
-def study_page(root: Path, cursor: int = 0, limit: int = 25) -> dict[str, Any]:
+def study_page(
+    root: Path, cursor: int = 0, limit: int = 25, scope: str = "all", query: str = ""
+) -> dict[str, Any]:
     """Cached, paginated biological study summaries, without sample evidence payloads."""
     if cursor < 0 or not 1 <= limit <= 100:
         raise ValueError("Invalid study page")
+    if scope not in {"all", "named", "unassigned"} or len(query) > 200:
+        raise ValueError("Invalid study filter")
     refresh(root)
+    where = "kind='study' AND body!='{}'"
+    args: list[Any] = []
+    if scope != "all":
+        where += " AND coalesce(json_extract(body,'$.accession'),'')" + (
+            "!=''" if scope == "named" else "=''"
+        )
+    if query:
+        where += " AND json_extract(body,'$.name') LIKE ?"
+        args.append("%" + query + "%")
     with contextlib.closing(store.connect(root)) as db:
         db.execute("BEGIN")
         total = db.execute(
-            "SELECT count(*) FROM curation_queue_owners WHERE kind='study' AND body!='{}'"
+            "SELECT count(*) FROM curation_queue_owners WHERE " + where, args
         ).fetchone()[0]
         rows = [
             loads(r[0])
             for r in db.execute(
-                "SELECT body FROM curation_queue_owners WHERE kind='study' AND body!='{}' "
-                "ORDER BY owner LIMIT ? OFFSET ?",
-                (limit, cursor),
+                "SELECT body FROM curation_queue_owners WHERE "
+                + where
+                + " ORDER BY CASE WHEN json_extract(body,'$.approval_current')=1 "
+                "THEN 1 ELSE 0 END, "
+                "CASE WHEN coalesce(json_extract(body,'$.accession'),'')='' THEN 1 ELSE 0 END, "
+                "json_extract(body,'$.name'),owner LIMIT ? OFFSET ?",
+                (*args, limit, cursor),
             )
         ]
+    for row in rows:
+        if row["name"].startswith("Unassigned study: "):
+            row["name"] = "Source identity needed · " + row["id"][:8]
     return {
         "items": rows,
         "total": total,

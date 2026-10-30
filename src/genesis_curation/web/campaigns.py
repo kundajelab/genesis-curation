@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import contextlib
+import fcntl
 import json
 import re
+import sqlite3
 import threading
 import uuid
 import xml.etree.ElementTree as ET
@@ -13,7 +15,7 @@ from typing import Any
 from urllib.parse import urlencode
 
 from ..contracts.records import canonical, fingerprint, loads, now
-from ..llm import providers
+from ..llm import progress, providers
 from ..registry import store
 from . import (
     catalog,
@@ -31,6 +33,12 @@ from .discovery_catalog import ASSAYS, VERSION
 
 
 def create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str) -> dict[str, Any]:
+    with (root / "campaign-create.lock").open("a") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        return _create(root, config, body, actor)
+
+
+def _create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str) -> dict[str, Any]:
     storage.require_space(root)
     mode = body.get("mode", "curate")
     if mode not in {"curate", "discover"}:
@@ -63,10 +71,33 @@ def create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str)
         if not assays or any(a not in ASSAYS for a in assays):
             raise ValueError("Choose supported data types")
         campaign["queries"] = research_search.recipes(species, assays, campaign["goal"])
-    selection = body.get("ids", [])
-    if not isinstance(selection, list) or len(selection) > 200:
-        raise ValueError("Select at most 200 rows, or curate the complete imported workbook")
+    scope = workspace.selection(root, body) if mode == "curate" else None
+    selection = scope["ids"] if scope else []
+    if scope:
+        if body.get("scope_token") and body["scope_token"] != scope["scope_token"]:
+            raise ValueError("Stale selection; preview the affected studies again")
+        if scope["records"] > 200 and body.get("scope_token") != scope["scope_token"]:
+            raise ValueError("Preview and confirm this selection before starting")
+        campaign["scope_token"] = scope["scope_token"]
+        campaign["scope"] = {k: scope[k] for k in ("records", "studies")}
+    campaign["request_key"] = fingerprint(
+        {
+            "mode": mode,
+            "provider": config["id"],
+            "scope": scope["scope_token"] if scope else None,
+            "goal": campaign["goal"],
+            "species": body.get("species"),
+            "assays": body.get("assays"),
+        }
+    )
     with store.write(root / "catalog") as db:
+        existing = db.execute(
+            "SELECT body,status FROM workspace_campaigns WHERE status IN ('QUEUED','RUNNING') "
+            "AND json_extract(body,'$.request_key')=?",
+            (campaign["request_key"],),
+        ).fetchone()
+        if existing:
+            return loads(existing[0]) | {"status": existing[1]}
         db.execute(
             "INSERT INTO workspace_campaigns VALUES(?,?,?)", (key, "QUEUED", canonical(campaign))
         )
@@ -91,7 +122,18 @@ def create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str)
         workspace.event(
             db, key, "", "campaign-created", mode=mode, provider=config["id"], goal=campaign["goal"]
         )
-    job = runtime.enqueue(root, "workspace", actor, {"campaign": key, "provider": config["id"]})
+    try:
+        job = runtime.enqueue(
+            root,
+            "workspace",
+            actor,
+            {"campaign": key, "provider": config["id"], "interactive": mode == "curate"},
+        )
+    except ValueError as error:
+        save(root, campaign, "FAILED")
+        with store.write(root / "catalog") as db:
+            workspace.event(db, key, "", "queue-failed", error=str(error))
+        raise
     campaign["job"] = job
     save(root, campaign, "RUNNING")
     return campaign | {"status": "RUNNING"}
@@ -119,6 +161,22 @@ def control(root: Path, key: str, action: str, actor: str) -> dict[str, Any]:
         if not row:
             raise ValueError("Unknown campaign")
         campaign = loads(row[0])
+        if action in {"archive", "restore"}:
+            if row[1] in {"RUNNING", "QUEUED"}:
+                raise ValueError("Pause this activity before archiving")
+            if campaign.get("job") and runtime.job(root, campaign["job"])["status"] in {
+                "RUNNING",
+                "QUEUED",
+            }:
+                raise ValueError("Wait for the current step to finish before archiving")
+            campaign["archived"] = action == "archive"
+            db.execute(
+                "UPDATE workspace_campaigns SET body=? WHERE id=?", (canonical(campaign), key)
+            )
+            workspace.event(db, key, "", action, actor=actor)
+            return campaign | {"status": row[1]}
+        if campaign.get("archived"):
+            raise ValueError("Restore archived activity before resuming")
         if action == "pause":
             db.execute("UPDATE workspace_campaigns SET status='PAUSED' WHERE id=?", (key,))
         elif action != "resume":
@@ -133,7 +191,14 @@ def control(root: Path, key: str, action: str, actor: str) -> dict[str, Any]:
         if existing["status"] in {"QUEUED", "RUNNING"}:
             raise ValueError("Wait for the current batch to pause")
         job = runtime.enqueue(
-            root, "workspace", actor, {"campaign": key, "provider": campaign["provider"]}
+            root,
+            "workspace",
+            actor,
+            {
+                "campaign": key,
+                "provider": campaign["provider"],
+                "interactive": campaign["mode"] == "curate",
+            },
         )
         campaign["job"] = job
         save(root, campaign, "RUNNING")
@@ -189,12 +254,55 @@ def discover_step(root: Path, campaign: dict[str, Any], cancel: threading.Event 
         save(root, campaign, "COMPLETED")
         return
     query = campaign["queries"][index]
+    progress.report(
+        phase="Searching",
+        source=query["source"],
+        query=query["query"][:240],
+        completed=index,
+        total=len(campaign["queries"]),
+    )
+    taxonomy = campaign.setdefault("taxonomy", {})
+    name = query["species"]
+    if name not in taxonomy:
+        progress.report(phase="Checking species", species=name)
+        try:
+            taxonomy[name] = {"taxon": mining_sources.taxon(root, name, cancel)}
+        except (ValueError, OSError) as error:
+            taxonomy[name] = {"error": str(error)[:300]}
+            with store.write(root / "catalog") as db:
+                workspace.event(
+                    db,
+                    campaign["id"],
+                    "",
+                    "species-needs-review",
+                    species=name,
+                    error=str(error)[:300],
+                )
+    if "error" in taxonomy[name]:
+        skipped = 0
+        while (
+            campaign["query_index"] < len(campaign["queries"])
+            and campaign["queries"][campaign["query_index"]]["species"] == name
+        ):
+            campaign["query_index"] += 1
+            skipped += 1
+        campaign["skipped_queries"] = campaign.get("skipped_queries", 0) + skipped
+        save(root, campaign)
+        return
+    progress.report(phase="Searching", source=query["source"])
     with store.write(root / "catalog") as db:
         workspace.event(db, campaign["id"], "", "search-started", query=query)
     try:
         result = run_search(root, query, cancel)
         with store.write(root / "catalog") as db:
-            receipt = workspace.event(db, campaign["id"], "", "search-completed", result=result)
+            receipt = workspace.event(
+                db,
+                campaign["id"],
+                "",
+                "search-partial" if result.get("errors") else "search-completed",
+                result=result,
+                error="; ".join(str(e) for e in result.get("errors", []))[:500],
+            )
             for i, hit in enumerate(result["rows"]):
                 study = research_search.accession(canonical(hit))
                 values = {
@@ -230,14 +338,38 @@ def discover_step(root: Path, campaign: dict[str, Any], cancel: threading.Event 
 def materialize(
     root: Path, row: sqlite_row, campaign: dict[str, Any], cancel: threading.Event | None
 ) -> str | None:
+    progress.report(phase="Retrieving sources", record=row["entity"], study=row["study"])
     registry = root / "catalog"
     raw = loads(row["body"])
     values = raw["values"]
     entity = row["entity"]
+    if (
+        raw["origin"] == "discovery"
+        and not re.fullmatch(r"(?:[SED]RX|CRX)\d+", str(values.get("experiment_accession", "")))
+        and not re.fullmatch(
+            r"(?:GSE|[SED]RP|PRJ[EDN][AB])\d+", str(values.get("study_accession", ""))
+        )
+    ):
+        with store.write(registry) as db:
+            db.execute(
+                "UPDATE workspace_items SET status='SKIPPED' WHERE campaign=? AND entity=?",
+                (campaign["id"], entity),
+            )
+            db.execute("UPDATE workspace_rows SET status='Needs source' WHERE entity=?", (entity,))
+            workspace.event(
+                db,
+                campaign["id"],
+                entity,
+                "source-needed",
+                reason="Resolve a public study or experiment accession before sample annotation",
+            )
+        return None
     if row["subject"]:
         return row["subject"]
-    if raw["origin"] == "discovery" and re.fullmatch(
-        r"(?:GSE|[SED]RP|PRJ[EDN][AB])\d+", str(values.get("study_accession", ""))
+    if (
+        raw["origin"] == "discovery"
+        and not re.fullmatch(r"(?:[SED]RX|CRX)\d+", str(values.get("experiment_accession", "")))
+        and re.fullmatch(r"(?:GSE|[SED]RP|PRJ[EDN][AB])\d+", str(values.get("study_accession", "")))
     ):
         expand_study(root, row, campaign, cancel)
         return None
@@ -485,19 +617,42 @@ def step(
                 (
                     "SELECT i.entity,r.* FROM workspace_items i JOIN workspace_rows r "
                     "ON r.id=json_extract(i.body,'$.row') WHERE i.campaign=? AND i.sta"
-                    "tus='QUEUED' ORDER BY r.study,i.entity"
+                    "tus='QUEUED' ORDER BY CASE WHEN r.study='' THEN 1 ELSE 0 END,"
+                    "r.study,i.entity LIMIT 1"
                 ),
                 (campaign["id"],),
             ).fetchall()
         if not pending:
             save(root, campaign, "COMPLETED")
-            return {"campaign": campaign["id"], "pending": False}
+            with contextlib.closing(store.connect(registry)) as db:
+                counts = dict(
+                    db.execute(
+                        "SELECT status,count(*) FROM workspace_items "
+                        "WHERE campaign=? GROUP BY status",
+                        (campaign["id"],),
+                    )
+                )
+            return {
+                "campaign": campaign["id"],
+                "pending": False,
+                "prepared": counts.get("COMPLETED", 0),
+                "failed": counts.get("FAILED", 0),
+                "needs_source": counts.get("SKIPPED", 0),
+                "expanded": counts.get("EXPANDED", 0),
+            }
         first = pending[0]
-        selected = [
-            dict(r)
-            for r in pending
-            if (r["study"] == first["study"] if first["study"] else r["entity"] == first["entity"])
-        ]
+        with contextlib.closing(store.connect(registry)) as db:
+            selected = [
+                dict(r)
+                for r in db.execute(
+                    "SELECT r.* FROM workspace_items i JOIN workspace_rows r ON "
+                    "r.id=json_extract(i.body,'$.row') "
+                    "WHERE i.campaign=? AND i.status='QUEUED' AND "
+                    + ("r.study=?" if first["study"] else "r.entity=?")
+                    + " ORDER BY i.entity",
+                    (campaign["id"], first["study"] or first["entity"]),
+                )
+            ]
         replayed = campaign.setdefault("replayed_studies", [])
         if first["study"] and first["study"] not in replayed:
             try:
@@ -619,15 +774,30 @@ def expand_study(
             (campaign["id"], row["entity"]),
         ).fetchone()
     progress = loads(item[0])
-    offset = progress.get("offset", 0)
+    expansion = campaign.setdefault("study_expansions", {}).get(accession, {})
+    if expansion.get("complete"):
+        with store.write(registry) as db:
+            expanded_parent(db, campaign["id"], row, expansion["study"])
+            workspace.event(
+                db,
+                campaign["id"],
+                row["entity"],
+                "study-expansion-reused",
+                study=expansion["study"],
+            )
+        return
+    offset = expansion.get("offset", progress.get("offset", 0))
     key = intake.import_accession(
         root, accession, campaign["actor"], cancel, sample_limit=10, sample_offset=offset
     )
     study = studies.get(registry, key)
     selection = study["preparation"]["selection"]
     with store.write(registry) as db:
+        selected_subjects = set(selection["subjects"])
         for state in study["records"]:
-            number = int(state["id"][:12], 16)
+            if state["id"] not in selected_subjects:
+                continue
+            number = int(fingerprint(state["id"])[:12], 16)
             location = next(
                 (
                     s["data"]["location"]
@@ -662,10 +832,15 @@ def expand_study(
                 (campaign["id"], entity, "QUEUED", canonical({"row": child})),
             )
         more = offset + 10 < selection["available_records"]
+        campaign["study_expansions"][accession] = {
+            "offset": offset + 10,
+            "study": key,
+            "complete": not more,
+        }
         db.execute(
             "UPDATE workspace_items SET status=?,body=? WHERE campaign=? AND entity=?",
             (
-                "QUEUED" if more else "COMPLETED",
+                "QUEUED" if more else "EXPANDED",
                 canonical({**progress, "offset": offset + 10}),
                 campaign["id"],
                 row["entity"],
@@ -675,6 +850,8 @@ def expand_study(
             "UPDATE workspace_rows SET status=? WHERE id=?",
             ("Checking" if more else "Expanded", row["id"]),
         )
+        if not more:
+            expanded_parent(db, campaign["id"], row, key)
         workspace.event(
             db,
             campaign["id"],
@@ -684,3 +861,16 @@ def expand_study(
             offset=offset,
             selection=selection,
         )
+
+
+def expanded_parent(db: sqlite3.Connection, campaign: str, row: dict[str, Any], study: str) -> None:
+    """An expanded search lead is lineage, not an extra sample needing annotation."""
+    db.execute(
+        "UPDATE workspace_rows SET status='Expanded',body=json_set(body,'$.expanded_study',?) "
+        "WHERE id=?",
+        (study, row["id"]),
+    )
+    db.execute(
+        "UPDATE workspace_items SET status='EXPANDED' WHERE campaign=? AND entity=?",
+        (campaign, row["entity"]),
+    )

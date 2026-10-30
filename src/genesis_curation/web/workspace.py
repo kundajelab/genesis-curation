@@ -45,7 +45,6 @@ def event(
         "INSERT INTO workspace_events(campaign,entity,created,body) VALUES(?,?,?,?)",
         (campaign, entity, now(), canonical({"action": action, **details})),
     )
-    db.execute("UPDATE curation_queue_owners SET dirty=1 WHERE kind='study'")
     assert cursor.lastrowid is not None
     return cursor.lastrowid
 
@@ -106,7 +105,7 @@ def add_row(
         else "metadata",
         "origin": origin,
     }
-    db.execute(
+    inserted = db.execute(
         (
             "INSERT OR IGNORE INTO workspace_rows(id,batch,tab,row_number,moda"
             "lity,species,study,entity,status,body) VALUES(?,?,?,?,?,?,?,?,?,?"
@@ -125,6 +124,13 @@ def add_row(
             canonical(body),
         ),
     )
+
+    if inserted.rowcount and row.get("study_accession"):
+        db.execute(
+            "UPDATE curation_queue_owners SET dirty=1 WHERE kind='study' "
+            "AND json_extract(body,'$.accession')=?",
+            (row["study_accession"],),
+        )
 
 
 def import_workbook(root: Path, path: Path) -> dict[str, Any]:
@@ -188,7 +194,7 @@ def import_workbook(root: Path, path: Path) -> dict[str, Any]:
     return manifest
 
 
-def summary(root: Path) -> dict[str, Any]:
+def summary(root: Path, archived: bool = False) -> dict[str, Any]:
     with contextlib.closing(store.connect(root / "catalog")) as db:
         counts = [
             dict(r)
@@ -207,7 +213,9 @@ def summary(root: Path) -> dict[str, Any]:
         campaigns = [
             loads(r[0]) | {"status": r[1]}
             for r in db.execute(
-                "SELECT body,status FROM workspace_campaigns ORDER BY rowid DESC LIMIT 20"
+                "SELECT body,status FROM workspace_campaigns WHERE "
+                "coalesce(json_extract(body,'$.archived'),0)=? ORDER BY rowid DESC LIMIT 20",
+                (int(archived),),
             )
         ]
         for c in campaigns:
@@ -580,3 +588,138 @@ def import_demo(root: Path, path: Path) -> dict[str, Any]:
     destination.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(path, destination)
     return manifest
+
+
+def activity_page(
+    root: Path, campaign: str = "", after: int = 0, before: int = 0, archived: bool = False
+) -> dict[str, Any]:
+    if after < 0 or before < 0 or after and before:
+        raise ValueError("Invalid activity cursor")
+    where, args = ["1=1"], []
+    if campaign:
+        where.append("e.campaign=?")
+        args.append(campaign)
+    else:
+        with contextlib.closing(store.connect(root / "catalog")) as db:
+            archived_ids = [
+                r[0]
+                for r in db.execute(
+                    "SELECT id FROM workspace_campaigns WHERE json_extract(body,'$.archived')=1"
+                )
+            ]
+        if archived_ids:
+            where.append(
+                "e.campaign "
+                + ("IN" if archived else "NOT IN")
+                + " ("
+                + ",".join("?" for _ in archived_ids)
+                + ")"
+            )
+            args.extend(archived_ids)
+        elif archived:
+            where.append("0=1")
+    if after:
+        where.append("e.sequence>?")
+        args.append(after)
+    if before:
+        where.append("e.sequence<?")
+        args.append(before)
+    with contextlib.closing(store.connect(root / "catalog")) as db:
+        rows = db.execute(
+            "SELECT e.* FROM workspace_events e WHERE "
+            + " AND ".join(where)
+            + " ORDER BY e.sequence "
+            + ("ASC" if after else "DESC")
+            + " LIMIT 50",
+            args,
+        ).fetchall()
+    items = []
+    for row in rows:
+        body = loads(row["body"])
+        query = body.get("query", {})
+        result = body.get("result", {})
+        items.append(
+            {
+                "sequence": row["sequence"],
+                "created": row["created"],
+                "campaign": row["campaign"],
+                "action": body["action"],
+                "source": query.get("source", "") if isinstance(query, dict) else "",
+                "query": (query.get("query", "") if isinstance(query, dict) else str(query))[:300],
+                "accession": str(body.get("accession", ""))[:80],
+                "hits": len(result.get("rows", [])) if isinstance(result, dict) else 0,
+                "error": str(body.get("error", ""))[:300],
+            }
+        )
+    items.sort(key=lambda item: item["sequence"])
+    return {
+        "items": items,
+        "cursor": items[-1]["sequence"] if items else after,
+        "before": items[0]["sequence"] if len(items) == 50 else None,
+    }
+
+
+def activity_detail(root: Path, sequence: int) -> dict[str, Any]:
+    with contextlib.closing(store.connect(root / "catalog")) as db:
+        row = db.execute("SELECT * FROM workspace_events WHERE sequence=?", (sequence,)).fetchone()
+    if not row:
+        raise ValueError("Unknown activity")
+    return dict(row) | {"body": loads(row["body"])}
+
+
+def selection(root: Path, body: dict[str, Any]) -> dict[str, Any]:
+    """Resolve an explicit bounded selection, then include its complete known studies."""
+    ids = body.get("ids", [])
+    if not isinstance(ids, list) or any(not isinstance(i, str) for i in ids) or len(ids) > 200:
+        raise ValueError("Select at most 200 rows at a time")
+    filters = body.get("filters")
+    with contextlib.closing(store.connect(root / "catalog")) as db:
+        if filters is not None:
+            if ids or not isinstance(filters, dict) or filters.get("modality") not in MODALITIES:
+                raise ValueError("Choose one data type and explicit filters")
+            where, args = ["modality=?"], [filters["modality"]]
+            for field in ("species", "status"):
+                if value := filters.get(field):
+                    if not isinstance(value, str) or len(value) > 200:
+                        raise ValueError("Invalid filter")
+                    where.append(field + "=?")
+                    args.append(value)
+            if query := filters.get("query"):
+                if not isinstance(query, str) or len(query) > 200:
+                    raise ValueError("Invalid search")
+                where.append("(study LIKE ? OR body LIKE ?)")
+                args.extend(["%" + query + "%"] * 2)
+            ids = [
+                r[0]
+                for r in db.execute(
+                    "SELECT id FROM workspace_rows WHERE "
+                    + " AND ".join(where)
+                    + " ORDER BY id LIMIT 201",
+                    args,
+                )
+            ]
+        if not ids:
+            raise ValueError("Select records or narrow the table filters first")
+        if len(ids) > 200:
+            raise ValueError(
+                "More than 200 rows match. Narrow the filters or select specific studies."
+            )
+        marks = ",".join("?" for _ in ids)
+        found = db.execute(
+            "SELECT id FROM workspace_rows WHERE id IN (" + marks + ")", ids
+        ).fetchall()
+        if len(found) != len(set(ids)):
+            raise ValueError("Selected records no longer exist")
+        rows = db.execute(
+            "SELECT entity,min(id) AS representative,study FROM workspace_rows WHERE "
+            "id IN (" + marks + ") OR (study!='' AND study IN "
+            "(SELECT study FROM workspace_rows WHERE id IN (" + marks + "))) "
+            "GROUP BY entity ORDER BY entity",
+            ids + ids,
+        ).fetchall()
+    return {
+        "ids": ids,
+        "records": len(rows),
+        "studies": len({r["study"] or r["entity"] for r in rows}),
+        "scope_token": fingerprint([r["entity"] for r in rows]),
+    }

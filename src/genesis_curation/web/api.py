@@ -42,7 +42,7 @@ class Boundary(BaseHTTPMiddleware):
             except ValueError, UnicodeDecodeError:
                 return JSONResponse({"error": "Expected a valid JSON object"}, status_code=400)
         path = request.url.path
-        if path.startswith("/api/") and path != "/api/login":
+        if path.startswith("/api/") and path not in {"/api/login", "/api/auth-state"}:
             account = runtime.session(self.root, request.cookies.get("genesis_session", ""))
             if not account:
                 return JSONResponse({"error": "Login required"}, status_code=401)
@@ -64,6 +64,12 @@ class Boundary(BaseHTTPMiddleware):
                 "base-uri 'none'; form-action 'self'",
             }
         )
+        if (
+            path.startswith("/assets/")
+            and ".." not in path
+            and (Path(__file__).parent / "assets" / path.lstrip("/")).is_file()
+        ):
+            response.headers["Cache-Control"] = "private, max-age=31536000, immutable"
         if not self.dev:
             response.headers["Strict-Transport-Security"] = "max-age=31536000"
         return response
@@ -122,6 +128,15 @@ def create_app(
             path="/",
         )
         return response
+
+    @app.get("/api/auth-state")
+    def auth_state(request: Request) -> dict[str, str]:
+        account = runtime.session(root, request.cookies.get("genesis_session", ""))
+        return (
+            {"actor": account["actor"], "csrf": account["csrf"]}
+            if account
+            else {"actor": "", "csrf": ""}
+        )
 
     @app.get("/api/session")
     def session(request: Request) -> dict[str, str]:

@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import FastAPI, Request
 from fastapi.responses import FileResponse
+from starlette.concurrency import run_in_threadpool
 
 from . import campaigns, runtime, study_api, workspace
 from .discovery_catalog import ASSAYS, KNOWN_REPOSITORIES, SOURCES, VERSION
@@ -15,8 +16,8 @@ from .discovery_catalog import ASSAYS, KNOWN_REPOSITORIES, SOURCES, VERSION
 
 def mount(app: FastAPI, root: Path, config_path: Path) -> None:
     @app.get("/api/workspace")
-    def summary() -> dict[str, Any]:
-        return workspace.summary(root)
+    def summary(archived: bool = False) -> dict[str, Any]:
+        return workspace.summary(root, archived)
 
     @app.get("/api/workspace/recipes")
     def recipes() -> dict[str, Any]:
@@ -43,8 +44,18 @@ def mount(app: FastAPI, root: Path, config_path: Path) -> None:
         return workspace.history(root, key)
 
     @app.get("/api/workspace/events")
-    def events(campaign: str = "", after: int = 0) -> dict[str, Any]:
-        return workspace.events(root, campaign, after)
+    def events(
+        campaign: str = "", after: int = 0, before: int = 0, archived: bool = False
+    ) -> dict[str, Any]:
+        return workspace.activity_page(root, campaign, after, before, archived)
+
+    @app.get("/api/workspace/events/{sequence}")
+    def event_detail(sequence: int) -> dict[str, Any]:
+        return workspace.activity_detail(root, sequence)
+
+    @app.post("/api/workspace/selection")
+    async def selection(request: Request) -> dict[str, Any]:
+        return await run_in_threadpool(workspace.selection, root, await request.json())
 
     @app.post("/api/workspace/campaigns")
     async def create(request: Request) -> dict[str, Any]:
@@ -52,7 +63,9 @@ def mount(app: FastAPI, root: Path, config_path: Path) -> None:
         config = study_api.provider(root, config_path, requested=body.get("provider"))
         if not config:
             raise ValueError("Select an available model")
-        return campaigns.create(root, config, body, request.state.account["actor"])
+        return await run_in_threadpool(
+            campaigns.create, root, config, body, request.state.account["actor"]
+        )
 
     @app.post("/api/workspace/campaigns/{key}/control")
     async def control(key: str, request: Request) -> dict[str, Any]:

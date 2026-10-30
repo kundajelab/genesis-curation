@@ -111,8 +111,10 @@ def mount(app: FastAPI, root: Path, config_path: Path) -> None:
         return storage.status(root)
 
     @app.get("/api/study-review")
-    def study_page(cursor: int = 0, limit: int = 25) -> dict[str, Any]:
-        return review_queue.study_page(registry, cursor, limit)
+    def study_page(
+        cursor: int = 0, limit: int = 25, scope: str = "named", query: str = ""
+    ) -> dict[str, Any]:
+        return review_queue.study_page(registry, cursor, limit, scope, query)
 
     @app.get("/api/study-review/{key}")
     def study_checklist(key: str, cursor: int = 0, limit: int = 50) -> dict[str, Any]:

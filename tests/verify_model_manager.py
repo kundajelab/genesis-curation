@@ -37,10 +37,12 @@ def main() -> None:
         claim = runtime.claim(root)
         assert claim is not None and claim["id"] == qwen
         assert runtime.job(root, gemma)["status"] == "QUEUED"
+        assert "Activate this model" in runtime.job(root, gemma)["wait_reason"]
         runtime.finish(root, qwen, {"test": True})
         state["maintenance"] = True
         publish()
         assert runtime.claim(root) is None
+        assert "activation" in runtime.job(root, gemma)["wait_reason"]
         state.update(maintenance=False, active_provider="local-gemma-4-e4b")
         publish()
         claim = runtime.claim(root)
@@ -75,6 +77,7 @@ def main() -> None:
         state["heartbeat"] = 0
         publish()
         assert not model_manager.state(root)["available"] and runtime.claim(root) is None
+        assert "reconnect" in runtime.job(root, legacy)["wait_reason"]
         try:
             model_manager.lease(root, "stale", "local-gemma-4-e4b")
         except ValueError as error:

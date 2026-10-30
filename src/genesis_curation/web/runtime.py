@@ -154,23 +154,58 @@ def enqueue(root: Path, kind: str, actor: str, payload: dict[str, Any]) -> str:
 
 
 def jobs(root: Path) -> list[dict[str, Any]]:
+    from . import activity
+
     with connection(root) as db:
-        return [
+        rows = [
             dict(r)
             for r in db.execute(
                 "SELECT id,kind,status,created,updated,error FROM jobs "
                 "ORDER BY created DESC LIMIT 100"
             )
         ]
+    queued = [
+        row["id"]
+        for row in sorted(rows, key=lambda row: row["updated"])
+        if row["status"] == "QUEUED"
+    ]
+    for row in rows:
+        row["progress"] = activity.read(root, row["id"]) if row["status"] == "RUNNING" else {}
+        row["queue_position"] = queued.index(row["id"]) + 1 if row["id"] in queued else None
+    return rows
 
 
 def job(root: Path, key: str) -> dict[str, Any]:
+    wait_reason = ""
     with connection(root) as db:
         row = db.execute("SELECT * FROM jobs WHERE id=?", (key,)).fetchone()
+        if (
+            row
+            and row["status"] == "QUEUED"
+            and db.execute(
+                "SELECT 1 FROM sqlite_master WHERE name='model_manager_state'"
+            ).fetchone()
+        ):
+            manager = db.execute("SELECT body FROM model_manager_state WHERE id=1").fetchone()
+            if manager:
+                value = loads(manager[0])
+                provider = loads(row["payload"]).get("provider")
+                if time.time() - value.get("heartbeat", 0) >= 30:
+                    wait_reason = "Waiting for the model controller to reconnect."
+                elif value.get("maintenance"):
+                    wait_reason = "Waiting for model activation to finish."
+                elif provider in value.get("managed_providers", []) and provider != value.get(
+                    "active_provider"
+                ):
+                    wait_reason = f"Waiting for {provider}. Activate this model in Models & skills."
     if not row:
         raise ValueError("Unknown job")
+    from . import activity
+
     return {
         **dict(row),
+        "wait_reason": wait_reason,
+        "progress": activity.read(root, key) if row["status"] == "RUNNING" else {},
         "payload": loads(row["payload"]),
         "result": loads(row["result"]) if row["result"] else None,
     }
@@ -204,7 +239,8 @@ def claim(root: Path) -> dict[str, Any] | None:
             "SELECT * FROM jobs WHERE status='QUEUED' AND cancel=0 AND "
             + condition
             + " ORDER BY CASE WHEN kind IN ('propose','chat','probe') "
-            "OR json_extract(payload,'$.field') IS NOT NULL THEN 0 ELSE 1 END,updated LIMIT 1",
+            "OR json_extract(payload,'$.field') IS NOT NULL THEN 0 "
+            "WHEN json_extract(payload,'$.interactive')=1 THEN 1 ELSE 2 END,updated LIMIT 1",
             parameters,
         ).fetchone()
         if not row:
