@@ -17,6 +17,9 @@ varies; an empty or failed search is not evidence that no datasets exist.
 
 ## Development
 
+For a fresh server, follow [the development handoff](docs/development-handoff.md).
+It includes a local GUI setup, a synthetic review example, and copyable agent prompts.
+
 ```sh
 uv python install 3.14.5
 uv sync --frozen --extra web

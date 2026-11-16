@@ -1,0 +1,3 @@
+sample_id,organism,assay,tissue,description
+synthetic-leaf,Arabidopsis thaliana,RNA-seq,leaf,Synthetic software example; not a biological observation
+synthetic-unknown,Arabidopsis thaliana,RNA-seq,,Synthetic software example; tissue intentionally omitted
