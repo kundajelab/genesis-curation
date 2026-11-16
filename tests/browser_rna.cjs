@@ -1,0 +1,62 @@
+// Synthetic write checks require an isolated loopback deployment.
+const {chromium}=require('playwright');
+const assert=require('node:assert/strict');
+(async()=>{
+ const url=process.env.GENESIS_BROWSER_URL||'http://127.0.0.1:18769';
+ assert.ok(['localhost','127.0.0.1'].includes(new URL(url).hostname));
+ const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
+ const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[];
+ page.on('pageerror',e=>errors.push(e.message));
+ page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
+ page.on('response',r=>{if(r.status()>=500)errors.push(r.status()+' '+r.url());});
+ try{
+  await page.goto(url);await page.getByLabel('Curator',{exact:true}).fill('tester');
+  await page.getByLabel('Password',{exact:true}).fill(process.env.GENESIS_BROWSER_PASSWORD);
+  await page.getByRole('button',{name:'Sign in →'}).click();
+  await page.getByRole('heading',{name:'Discover',exact:true}).waitFor();
+  const nav=name=>page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name,exact:true});
+  await nav('Curation').click();
+  await page.getByRole('group',{name:'Data types'}).getByRole('button',{name:/^RNA-seq /}).click();
+  const quality=page.getByRole('region',{name:'RNA-seq quality',exact:true});
+  await quality.getByRole('heading',{name:'RNA-seq quality',exact:true}).waitFor();
+  await quality.getByText('Import measured QC',{exact:true}).click();
+  await quality.getByLabel('Measurements file').setInputFiles(process.env.GENESIS_QC_FIXTURE);
+  await quality.getByText('66 measurements imported',{exact:true}).waitFor();
+  await quality.getByText('Quality thresholds and outliers',{exact:true}).click();
+  await quality.getByLabel('q30_fraction minimum').fill('0.5');
+  const started=Date.now();await quality.getByRole('button',{name:'Evaluate quality',exact:true}).click();
+  await quality.getByText(/Quality evaluation queued|Queueing quality evaluation/).waitFor();
+  const feedback_ms=Date.now()-started;
+  await quality.locator('[aria-label="Quality filtering counts"]').waitFor({timeout:30000});
+  await quality.getByText('Quality by species',{exact:true}).click();
+  assert.ok((await quality.innerText()).includes('Sorghum bicolor'));
+  await nav('Review').click();
+  await page.getByRole('button',{name:/SRP123456/}).click();
+  const review=page.getByRole('region',{name:'Study quality review'});
+  await review.getByLabel('Quality status',{exact:true}).selectOption('needs_review');
+  await review.getByLabel('QC select varied_24',{exact:true}).check();
+  await review.getByLabel('QC review reason',{exact:true}).fill('Synthetic browser adjudication');
+  await page.waitForFunction(()=>[...document.querySelectorAll('nav[aria-label="Main navigation"] button')].find(b=>b.textContent==='Curation')?.disabled,{},{timeout:2000});
+  assert.equal(await nav('Curation').isDisabled(),true);
+  await review.getByRole('button',{name:'Retain flagged records',exact:true}).click();
+  await review.getByText(/QC decision saved/).waitFor();
+  const sign=page.getByRole('button',{name:'Sign off study',exact:true});
+  if(await sign.count()){await sign.click();await page.getByRole('status').filter({hasText:'Study signed off.'}).waitFor();}
+  await page.locator('.release-actions').getByText('Signed off',{exact:true}).waitFor();
+  await nav('Curation').click();
+  await page.getByRole('group',{name:'Data types'}).getByRole('button',{name:/^RNA-seq /}).click();
+  await page.waitForFunction(()=>{const tags=[...document.querySelectorAll('.metadata-table .tag')];return tags.length&&tags.every(t=>t.textContent==='Reviewed');});
+  await quality.getByRole('button',{name:'Export QC-filtered cohort',exact:true}).click();
+  const link=quality.getByRole('link',{name:'Download cohort + exclusions',exact:true});
+  await link.waitFor({timeout:30000});
+  const bundle=await page.evaluate(async href=>{const r=await fetch(href);if(!r.ok)throw new Error('export '+r.status);return r.json();},await link.getAttribute('href'));
+  assert.equal(bundle.retained.length,25);assert.equal(bundle.excluded.length,42);
+  assert.ok(bundle.retained.every(r=>r.metadata_signed));
+  if(process.env.GENESIS_BROWSER_SCREENSHOT)await page.screenshot({path:process.env.GENESIS_BROWSER_SCREENSHOT,fullPage:true});
+  await page.setViewportSize({width:390,height:844});
+  await nav('Discover').click();await page.getByRole('heading',{name:'Discover',exact:true}).waitFor();
+  assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
+  assert.deepEqual(errors,[]);
+  console.log(JSON.stringify({status:'PASS',feedback_ms,retained:25,excluded:42,errors,scope:'synthetic isolated browser'},null,2));
+ }finally{await browser.close();}
+})().catch(e=>{console.error(e.stack);process.exitCode=1;});
