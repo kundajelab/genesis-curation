@@ -7,8 +7,10 @@ activity log. No sequencing files are downloaded.
 
 Curation displays paginated modality tables. Select records or narrow the filters,
 then preview the study and record counts before starting curation. Selecting a record
-includes the other known records in its study. Filtered selections are limited to 200
-initial rows; larger expanded studies require the displayed confirmation. Search leads
+includes the other known records in its study. Filtered selections support up to 50,000 records, including the expanded studies.
+The server saves the selection; the browser submits its ID and preview token. Explicit
+checkbox selections are limited to 200 initial rows. Larger cohorts require the displayed
+confirmation. Search leads
 without an archive identity remain marked **Needs source**, not annotation subjects.
 Work runs in durable jobs;
 progress appears while the GUI remains available. Requests respect configured context,
@@ -71,3 +73,5 @@ uses a result limit rather than offset pagination. The application retrieves a b
 record when that limit is reached. Campaign query budgets can stop earlier; discovery
 is never presented as exhaustive. Web engines may deny or rate-limit requests; partial
 results and engine errors remain visible in the activity log.
+
+RNA-seq archive/paper enrichment and measured QC are described in [RNA curation](rna-curation.md).

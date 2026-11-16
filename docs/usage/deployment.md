@@ -19,7 +19,7 @@ model and drains in-flight inference before switching. Models are pinned by revi
 and checksum. The UI reports missing configuration or failed probes rather than treating
 them as available. Search uses the optional SearXNG service and records engine failures.
 
-This release starts with fresh state. Prototype databases are rejected. Archive old
+This release starts with fresh state (catalog schema 2). Earlier catalog schemas are rejected. Archive old
 runtime directories privately before initializing a new one; old jobs and review
 history are not imported into the new application. Preserve provider secrets, model
 weights and account credentials separately when replacing a deployment.
@@ -64,3 +64,24 @@ studies, opens evidence and checks response times without approving scientific c
 Use `GENESIS_BROWSER_WRITE=1` only on an isolated copy to test saving and restoring a
 review draft. Record live model probes, bounded discovery/curation results and a sustained
 browser session separately; offline tests cannot establish those outcomes.
+
+## Claude API on one server
+
+An Anthropic Console API key can use the existing `anthropic-messages` provider;
+no local model or Claude Code installation is needed. Keep the provider JSON and key
+in a private runtime directory outside every checkout. Use directory mode `0700`
+and key mode `0600`, owned by the application user. The key file contains just the
+key on one line. Create the key scoped to the intended Anthropic workspace.
+Reference its absolute path with `credential.file`; never put the
+key in JSON, command-line arguments, the browser, a commit or a deployment image.
+For Compose, use the private `/config` mount and its container path.
+
+Copy the Claude entry from `deploy/web/providers.example.json`, select an available
+Claude API model, configure its context/input/output limits, and set `mode` to `live`.
+Use that private provider file for both `web serve` and `web worker`. Public metadata
+is the default permitted data class. Authentication is sent only to Anthropic's HTTPS
+API; model requests are external even though the credential is stored on one server.
+A Claude Code subscription/OAuth login token is not an API key for this backend.
+Do not copy this runtime or its credential to another host when cloning the repository.
+Validate the configuration before running a live provider check. An empty key fails
+closed; model availability and billing require the account's API access.
