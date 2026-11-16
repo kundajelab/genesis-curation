@@ -14,9 +14,29 @@ from typing import Any
 
 from ..contracts.records import canonical, loads, now, validate
 
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 APPLICATION_ID = 1195595057
 SCHEMA = [
+    ("CREATE TABLE workspace_selections (id TEXT PRIMARY KEY,body TEXT NOT NULL)"),
+    ("CREATE TABLE qc_imports (id TEXT PRIMARY KEY,body TEXT NOT NULL)"),
+    (
+        "CREATE TABLE qc_observations (subject TEXT REFERENCES "
+        "curation_subjects(id),metric TEXT,body TEXT NOT NULL,PRIMARY KEY(subject,metric))"
+    ),
+    ("CREATE TABLE qc_profiles (version TEXT PRIMARY KEY,body TEXT NOT NULL)"),
+    ("CREATE TABLE qc_analyses (id TEXT PRIMARY KEY,body TEXT NOT NULL)"),
+    (
+        "CREATE TABLE qc_results (analysis TEXT REFERENCES qc_analyses(id),subject TEXT "
+        "REFERENCES curation_subjects(id),study TEXT,species TEXT,status TEXT,body "
+        "TEXT NOT NULL,PRIMARY KEY(analysis,subject))"
+    ),
+    ("CREATE INDEX qc_study ON qc_results(analysis,study,subject)"),
+    ("CREATE INDEX qc_status ON qc_results(analysis,status,subject)"),
+    (
+        "CREATE TABLE qc_decisions (sequence INTEGER PRIMARY KEY AUTOINCREMENT,analysis "
+        "TEXT,subject TEXT,body TEXT NOT NULL)"
+    ),
+    ("CREATE INDEX qc_latest_decision ON qc_decisions(analysis,subject,sequence)"),
     ("CREATE TABLE meta (key TEXT PRIMARY KEY,value TEXT NOT NULL)"),
     (
         "CREATE TABLE records (kind TEXT,id TEXT,version TEXT,body TEXT NOT NULL,crea"
@@ -194,6 +214,13 @@ SCHEMA = [
         "events BEGIN SELECT RAISE(ABORT,'immutable workspace event'); END"
     ),
 ]
+
+for _table in ("qc_imports", "qc_profiles", "qc_results", "qc_decisions", "workspace_selections"):
+    for _action in ("UPDATE", "DELETE"):
+        SCHEMA.append(
+            f"CREATE TRIGGER immutable_{_table}_{_action.lower()} BEFORE {_action} "
+            f"ON {_table} BEGIN SELECT RAISE(ABORT,'immutable {_table}'); END"
+        )
 
 
 def connect(directory: Path, *, readonly: bool = True) -> sqlite3.Connection:

@@ -179,7 +179,12 @@ def search(
     }
 
 
-def recipes(species: list[str], assays: list[str], goal: str) -> list[dict[str, Any]]:
+def recipes(
+    species: list[str],
+    assays: list[str],
+    goal: str,
+    constraints: dict[str, str] | None = None,
+) -> list[dict[str, Any]]:
     queries = []
     for organism in species:
         for assay in assays:
@@ -212,6 +217,21 @@ def recipes(species: list[str], assays: list[str], goal: str) -> list[dict[str, 
                     "offset": 0,
                 }
             )
+    # Keep broad archive coverage; explicit requirements add focused searches.
+    terms = list((constraints or {}).values())
+    if terms:
+        queries.extend(
+            [
+                {
+                    **query,
+                    "terms": terms,
+                    "query": query["query"]
+                    + " "
+                    + " ".join('"' + term.replace('"', " ") + '"' for term in terms),
+                }
+                for query in list(queries)
+            ]
+        )
     return queries
 
 

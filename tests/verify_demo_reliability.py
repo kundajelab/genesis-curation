@@ -265,7 +265,7 @@ def main() -> None:
         scope = workspace.selection(root, {"ids": [f"{0:064x}"]})
         assert scope["records"] == 4 and scope["studies"] == 1
         reject(lambda: workspace.selection(root, {}), "Select records")
-        reject(lambda: workspace.selection(root, {"filters": {"modality": "Bulk ATAC"}}), "200")
+        reject(lambda: workspace.selection(root, {"filters": {"modality": "Bulk ATAC"}}), "50,000")
         config = {"id": "fixture"}
         c = campaigns.create(root, config, {"ids": scope["ids"]}, "tester")
         assert campaigns.create(root, config, {"ids": scope["ids"]}, "tester")["id"] == c["id"]

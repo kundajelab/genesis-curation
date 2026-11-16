@@ -127,17 +127,6 @@ def select_skill(folder: Path, state: dict[str, Any]) -> dict[str, Any]:
             if state.get("source_scopes", {}).get(s["version"]) != "study_context"
         ).lower()
     )
-    modality = state.get("original", {}).get("_modality", "")
-    chosen = {
-        "TSS": "plant-tss-metadata",
-        "Bulk ATAC": "plant-atac-metadata",
-        "scATAC": "plant-atac-metadata",
-        "MPRA": "plant-mpra-metadata",
-        "Genomes": "plant-genome-metadata",
-        "DAP-seq": "plant-binding-metadata",
-    }.get(modality)
-    if chosen:
-        return skills.select(folder, chosen)
     if any(
         term in context
         for term in (
@@ -150,12 +139,34 @@ def select_skill(folder: Path, state: dict[str, Any]) -> dict[str, Any]:
         )
     ):
         return skills.select(folder, "plant-celltype-metadata")
+    modality = state.get("original", {}).get("_modality", "")
+    chosen = {
+        "TSS": "plant-tss-metadata",
+        "Bulk ATAC": "plant-atac-metadata",
+        "scATAC": "plant-atac-metadata",
+        "MPRA": "plant-mpra-metadata",
+        "Genomes": "plant-genome-metadata",
+        "DAP-seq": "plant-binding-metadata",
+        "RNA-seq": "plant-rna-metadata",
+    }.get(modality)
+    if chosen:
+        return skills.select(folder, chosen)
     if "chip" in context or "dap" in context:
         return skills.select(folder, "plant-binding-metadata")
+    if "rna-seq" in context or "rna_seq" in context:
+        return skills.select(folder, "plant-rna-metadata")
     return skills.select(folder, "plant-metadata")
 
 
 def run(
+    root: Path, config_path: Path, task: dict[str, Any], cancellation: threading.Event | None = None
+) -> dict[str, Any]:
+    from . import workflow
+
+    return workflow.run(root, config_path, task, cancellation)
+
+
+def annotate(
     root: Path, config_path: Path, task: dict[str, Any], cancellation: threading.Event | None = None
 ) -> dict[str, Any]:
     data, registry = task["payload"], root / "catalog"

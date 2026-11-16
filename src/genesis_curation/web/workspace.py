@@ -133,6 +133,45 @@ def add_row(
         )
 
 
+def register_rna(db: sqlite3.Connection, state: dict[str, Any], accession: str | None) -> None:
+    """Make native RNA imports visible in Curation without inventing discovery receipts."""
+    if db.execute("SELECT 1 FROM workspace_rows WHERE subject=?", (state["id"],)).fetchone():
+        return
+    projection = db.execute(
+        "SELECT body,modality FROM curation_result_rows WHERE subject=?", (state["id"],)
+    ).fetchone()
+    if not projection or projection["modality"] != "RNA-seq":
+        return
+    values = {**state["original"], **loads(projection["body"])}
+    values["study_accession"] = accession or values.get("study_accession", "")
+    location = next(
+        (
+            s["data"]["location"]
+            for s in state["sources"]
+            if s["data"]["location"].startswith("https:")
+        ),
+        "upload:" + state["namespace"],
+    )
+    batch, tab = "native:" + state["id"], "RNA-seq"
+    add_row(
+        db,
+        batch,
+        tab,
+        1,
+        values,
+        {},
+        "RNA-seq",
+        location,
+        "archive" if location.startswith("https:") else "upload",
+    )
+    db.execute(
+        "UPDATE workspace_rows SET subject=? WHERE id=?",
+        (state["id"], fingerprint([batch, tab, 1])),
+    )
+    event(db, batch, state["id"], "native-metadata-import", subject=state["id"], location=location)
+    sync(db, state)
+
+
 def import_workbook(root: Path, path: Path) -> dict[str, Any]:
     digest = hashlib.sha256(path.read_bytes()).hexdigest()
     registry = root / "catalog"
@@ -286,6 +325,12 @@ def page(
             values = dict(original)
             if record["status"] in {"Ready", "Reviewed"}:
                 values.update({k: v for k, v in current.items() if v not in (None, "", [])})
+            values.update(
+                {
+                    k: current.get(k, "")
+                    for k in ("subject", "metadata_supported", "paper_coverage", "taxonomy_id")
+                }
+            )
             values["confidence"] = {
                 "Ready": "Source-supported",
                 "Reviewed": "Human-reviewed",
@@ -390,8 +435,6 @@ def events(root: Path, campaign: str = "", after: int = 0) -> dict[str, Any]:
 
 def sync(db: sqlite3.Connection, state: dict[str, Any]) -> None:
     """Update only the indexed status; originals and human decisions remain immutable."""
-    if not state.get("reference_origin"):
-        return
     rows = db.execute(
         "SELECT entity FROM workspace_rows WHERE subject=? LIMIT 1", (state["id"],)
     ).fetchone()
@@ -711,14 +754,23 @@ def activity_detail(root: Path, sequence: int) -> dict[str, Any]:
     return dict(row) | {"body": loads(row["body"])}
 
 
-def selection(root: Path, body: dict[str, Any]) -> dict[str, Any]:
-    """Resolve an explicit bounded selection, then include its complete known studies."""
+def selection(root: Path, body: dict[str, Any], *, internal: bool = False) -> dict[str, Any]:
+    """Persist a previewed selection; large cohorts never travel through the browser."""
     ids = body.get("ids", [])
     if not isinstance(ids, list) or any(not isinstance(i, str) for i in ids) or len(ids) > 200:
-        raise ValueError("Select at most 200 rows at a time")
+        raise ValueError("Select at most 200 explicit rows, or use filtered results")
     filters = body.get("filters")
     with contextlib.closing(store.connect(root / "catalog")) as db:
-        if filters is not None:
+        if body.get("selection_id"):
+            if ids or filters:
+                raise ValueError("Use a saved selection or new filters, not both")
+            saved = db.execute(
+                "SELECT body FROM workspace_selections WHERE id=?", (body["selection_id"],)
+            ).fetchone()
+            if not saved:
+                raise ValueError("Unknown selection; preview the cohort again")
+            ids = loads(saved[0])["ids"]
+        elif filters is not None:
             if ids or not isinstance(filters, dict) or filters.get("modality") not in MODALITIES:
                 raise ValueError("Choose one data type and explicit filters")
             where, args = ["modality=?"], [filters["modality"]]
@@ -738,32 +790,43 @@ def selection(root: Path, body: dict[str, Any]) -> dict[str, Any]:
                 for r in db.execute(
                     "SELECT id FROM workspace_rows WHERE "
                     + " AND ".join(where)
-                    + " ORDER BY id LIMIT 201",
+                    + " ORDER BY id LIMIT 50001",
                     args,
                 )
             ]
         if not ids:
             raise ValueError("Select records or narrow the table filters first")
-        if len(ids) > 200:
-            raise ValueError(
-                "More than 200 rows match. Narrow the filters or select specific studies."
-            )
-        marks = ",".join("?" for _ in ids)
+        if len(ids) > 50000:
+            raise ValueError("Preview at most 50,000 initial rows; narrow the filters")
+        packed = canonical(sorted(set(ids)))
         found = db.execute(
-            "SELECT id FROM workspace_rows WHERE id IN (" + marks + ")", ids
-        ).fetchall()
-        if len(found) != len(set(ids)):
+            "SELECT count(*) FROM workspace_rows WHERE id IN (SELECT value FROM json_each(?))",
+            (packed,),
+        ).fetchone()[0]
+        if found != len(set(ids)):
             raise ValueError("Selected records no longer exist")
         rows = db.execute(
             "SELECT entity,min(id) AS representative,study FROM workspace_rows WHERE "
-            "id IN (" + marks + ") OR (study!='' AND study IN "
-            "(SELECT study FROM workspace_rows WHERE id IN (" + marks + "))) "
+            "id IN (SELECT value FROM json_each(?)) OR (study!='' AND study IN "
+            "(SELECT study FROM workspace_rows WHERE id IN (SELECT value FROM json_each(?)))) "
             "GROUP BY entity ORDER BY entity",
-            ids + ids,
+            (packed, packed),
         ).fetchall()
-    return {
+    if len(rows) > 50000:
+        raise ValueError("Expanded study selection exceeds 50,000 records; narrow the filters")
+    token = fingerprint([r["entity"] for r in rows])
+    key = fingerprint([packed, token])
+    result = {
         "ids": ids,
+        "selection_id": key,
         "records": len(rows),
         "studies": len({r["study"] or r["entity"] for r in rows}),
-        "scope_token": fingerprint([r["entity"] for r in rows]),
+        "scope_token": token,
     }
+    with store.write(root / "catalog") as db:
+        db.execute(
+            "INSERT OR IGNORE INTO workspace_selections VALUES(?,?)", (key, canonical(result))
+        )
+    return (
+        result if internal or len(ids) <= 200 else {k: v for k, v in result.items() if k != "ids"}
+    )

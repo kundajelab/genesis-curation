@@ -11,7 +11,7 @@ from fastapi.responses import FileResponse
 from starlette.concurrency import run_in_threadpool
 
 from . import campaigns, runtime, study_api, workspace
-from .discovery_catalog import ASSAYS, KNOWN_REPOSITORIES, SOURCES, VERSION
+from .discovery_catalog import ASSAYS, KNOWN_REPOSITORIES, RNA_PILOT_SPECIES, SOURCES, VERSION
 
 
 def mount(app: FastAPI, root: Path, config_path: Path) -> None:
@@ -26,6 +26,7 @@ def mount(app: FastAPI, root: Path, config_path: Path) -> None:
             "assays": ASSAYS,
             "sources": SOURCES,
             "repositories": KNOWN_REPOSITORIES,
+            "rna_pilot_species": RNA_PILOT_SPECIES,
         }
 
     @app.get("/api/workspace/rows")

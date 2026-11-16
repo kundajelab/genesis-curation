@@ -52,6 +52,15 @@ FIELDS = {
     "biosample_accession",
     "experiment_accession",
     "study_accession",
+    "library_source",
+    "library_selection",
+    "library_preparation",
+    "strandedness",
+    "platform",
+    "age",
+    "age_unit",
+    "reference_assembly",
+    "cell_resolution",
 }
 ALIASES = {
     "organism_ch1": "organism",
@@ -62,6 +71,10 @@ ALIASES = {
     "run_accession": "accession",
     "library_strategy": "assay",
     "dev_stage": "developmental_stage",
+    "library_prep": "library_preparation",
+    "library_construction_protocol": "library_preparation",
+    "instrument_platform": "platform",
+    "age_units": "age_unit",
 }
 CLASSIFICATIONS = {"public": 0, "internal": 1, "local-only": 2}
 

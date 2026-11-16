@@ -649,7 +649,8 @@
                 "proposal",
                 "decision",
                 "message",
-                "example"
+                "example",
+                "taxonomy"
               ]
             },
             "parent": {

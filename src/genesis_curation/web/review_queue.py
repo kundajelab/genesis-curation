@@ -40,11 +40,17 @@ def refresh(root: Path) -> None:
                     )
                 }
                 summary["preparation"] = study["preparation"]["status"]
+                flow = study["preparation"].get("workflow", {})
+                summary["workflow"] = {
+                    k: flow[k] for k in ("stage", "initial", "final") if k in flow
+                }
+                summary["workflow"]["paper_status"] = flow.get("papers", {}).get("status")
                 summary["assays"] = sorted(
                     {
-                        str(r["metadata"].get("assay"))
+                        str(f["value"])
                         for r in study["records"]
-                        if r["metadata"].get("assay")
+                        for f in r["fields"]
+                        if f["field"] == "assay" and f["status"] == "known"
                     }
                 )
                 if not study["approval_current"]:

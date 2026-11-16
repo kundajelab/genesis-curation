@@ -19,14 +19,15 @@ from ..llm import progress, providers
 from ..registry import store
 from . import (
     catalog,
+    constraints,
     intake,
     mining,
     mining_sources,
+    preparation,
     research_search,
     runtime,
     storage,
     studies,
-    table,
     workspace,
 )
 from .discovery_catalog import ASSAYS, VERSION
@@ -59,6 +60,7 @@ def _create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str
         "ledger": [],
         "planned": False,
         "goal": str(body.get("goal", "Workbook re-check"))[:4000],
+        "constraints": constraints.validate(body.get("constraints", {})),
     }
     if mode == "discover":
         species, assays = body.get("species", []), body.get("assays", [])
@@ -70,8 +72,10 @@ def _create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str
             raise ValueError("Choose plant taxonomy names")
         if not assays or any(a not in ASSAYS for a in assays):
             raise ValueError("Choose supported data types")
-        campaign["queries"] = research_search.recipes(species, assays, campaign["goal"])
-    scope = workspace.selection(root, body) if mode == "curate" else None
+        campaign["queries"] = research_search.recipes(
+            species, assays, campaign["goal"], campaign["constraints"]
+        )
+    scope = workspace.selection(root, body, internal=True) if mode == "curate" else None
     selection = scope["ids"] if scope else []
     if scope:
         if body.get("scope_token") and body["scope_token"] != scope["scope_token"]:
@@ -88,6 +92,7 @@ def _create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str
             "goal": campaign["goal"],
             "species": body.get("species"),
             "assays": body.get("assays"),
+            "constraints": campaign["constraints"],
         }
     )
     with store.write(root / "catalog") as db:
@@ -102,7 +107,7 @@ def _create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str
             "INSERT INTO workspace_campaigns VALUES(?,?,?)", (key, "QUEUED", canonical(campaign))
         )
         if mode == "curate":
-            placeholders = ",".join("?" for _ in selection)
+            placeholders = "SELECT value FROM json_each(?)"
             clause = (
                 "id IN (" + placeholders + ") OR (study!='' AND study IN "
                 "(SELECT study FROM workspace_rows WHERE id IN (" + placeholders + ")))"
@@ -113,7 +118,7 @@ def _create(root: Path, config: dict[str, Any], body: dict[str, Any], actor: str
                 "SELECT entity,min(id) AS representative FROM workspace_rows WHERE "
                 + clause
                 + " GROUP BY entity",
-                selection + selection,
+                (canonical(selection), canonical(selection)),
             ).fetchall():
                 db.execute(
                     "INSERT INTO workspace_items VALUES(?,?,?,?)",
@@ -227,7 +232,7 @@ def run_search(root: Path, query: dict[str, Any], cancel: threading.Event | None
                 "source": "ena",
                 "species": query["species"],
                 "assay": query["assay"],
-                "terms": [],
+                "terms": query.get("terms", []),
                 "offset": query.get("offset", 0),
             },
             cancel,
@@ -312,6 +317,7 @@ def discover_step(root: Path, campaign: dict[str, Any], cancel: threading.Event 
                     "search_assay": query["assay"],
                     "search_query": query["query"],
                     "search_event": receipt,
+                    "_constraints": campaign["constraints"],
                 }
                 workspace.add_row(
                     db,
@@ -738,8 +744,19 @@ def step(
                     group=group["rows"][0]["entity"],
                 )
                 save(root, campaign)
-            result = table.step(
-                root, config, {**task, "payload": {"study": group["study"]}}, cancel
+            result = preparation.run(
+                root,
+                config_path,
+                {
+                    **task,
+                    "payload": {
+                        "study": group["study"],
+                        "provider": config["id"],
+                        "provider_hash": fingerprint(config),
+                        "constraints": campaign.get("constraints", {}),
+                    },
+                },
+                cancel,
             )
             with store.write(registry) as db:
                 workspace.event(
@@ -826,17 +843,23 @@ def expand_study(
                 ),
                 "https://www.ncbi.nlm.nih.gov/sra/" + accession,
             )
-            workspace.add_row(
-                db,
-                campaign["id"],
-                accession,
-                number,
-                state["original"],
-                {},
-                row["modality"],
-                location,
-            )
-            child = fingerprint([campaign["id"], accession, number])
+            existing = db.execute(
+                "SELECT id FROM workspace_rows WHERE subject=? LIMIT 1", (state["id"],)
+            ).fetchone()
+            if existing:
+                child = existing[0]
+            else:
+                workspace.add_row(
+                    db,
+                    campaign["id"],
+                    accession,
+                    number,
+                    state["original"],
+                    {},
+                    row["modality"],
+                    location,
+                )
+                child = fingerprint([campaign["id"], accession, number])
             db.execute(
                 "UPDATE workspace_rows SET subject=?,status='Checking' WHERE id=?",
                 (state["id"], child),
@@ -846,6 +869,7 @@ def expand_study(
             ).fetchone()[0]
             state["reference_origin"] = location
             state["original"]["_modality"] = row["modality"]
+            state["original"]["_constraints"] = values.get("_constraints", {})
             catalog.save(db, state, "source", campaign["actor"], {"parent": row["id"]})
             db.execute(
                 "INSERT OR IGNORE INTO workspace_items VALUES(?,?,?,?)",

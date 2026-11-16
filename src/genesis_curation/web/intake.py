@@ -199,7 +199,8 @@ def import_accession(
             if not 1 <= sample_limit <= 1000:
                 raise ValueError("Pilot sample limit must be 1–1000")
             samples = samples[sample_offset : sample_offset + sample_limit]
-        docs, ledger = articles(root, source["text"], cancellation)
+        # Paper retrieval follows the initial archive-only annotation pass.
+        docs = [source] if accession.startswith("GSE") else []
         ledger.insert(0, {"url": source["url"], "status": "retrieved"})
         for sample in samples:
             if cancellation and cancellation.is_set():
@@ -234,7 +235,8 @@ def import_accession(
                 "result": "read_run",
                 "format": "json",
                 "fields": "run_accession,sample_accession,study_accession,experiment_accession,"
-                "scientific_name,tax_id,library_strategy,library_layout,sample_title",
+                "scientific_name,tax_id,library_strategy,library_layout,sample_title,"
+                "library_source,library_selection,library_name,instrument_platform",
             }
         )
         source = fetch(root, url, cancellation)
@@ -264,6 +266,33 @@ def import_accession(
             if cancellation and cancellation.is_set():
                 raise ValueError("Import interrupted; retry reuses cached metadata")
             state = catalog.get(registry, sid)
+            attach(registry, sid, canonical(state["original"]), source["url"], "sample", actor)
+            if "rna" in str(state["original"].get("library_strategy", "")).casefold():
+                experiment = str(state["original"].get("experiment_accession", ""))
+                if re.fullmatch(r"[SED]RX\d+", experiment):
+                    try:
+                        library = archive_xml(root, experiment)
+                        attach(registry, sid, library["text"], library["url"], "sample", actor)
+                        tree = ET.fromstring(library["text"])
+                        protocol = tree.findtext(".//LIBRARY_CONSTRUCTION_PROTOCOL", "")
+                        if protocol:
+                            attach(
+                                registry,
+                                sid,
+                                "library_preparation: " + protocol,
+                                library["url"],
+                                "sample",
+                                actor,
+                            )
+                        ledger.append({"url": library["url"], "status": "retrieved"})
+                    except (ValueError, OSError, ET.ParseError) as exc:
+                        ledger.append(
+                            {
+                                "accession": experiment,
+                                "status": "unavailable",
+                                "reason": str(exc)[:500],
+                            }
+                        )
             sample = str(state["original"].get("sample_accession", ""))
             if not re.fullmatch(r"(?:[SED]RS|SAM[END][A-Z]?)\d+", sample):
                 failures[sid] = (
@@ -273,6 +302,7 @@ def import_accession(
             sample_url = "https://www.ebi.ac.uk/ena/browser/api/xml/" + sample
             try:
                 raw = fetch(root, sample_url, cancellation)
+                attach(registry, sid, raw["text"], raw["url"], "sample", actor)
                 tree = ET.fromstring(raw["text"])
                 attributes = [
                     n.findtext("TAG", "").replace(" ", "_") + ": " + n.findtext("VALUE", "")
@@ -286,6 +316,17 @@ def import_accession(
                 ledger.append(
                     {"url": sample_url, "status": "unavailable", "reason": str(exc)[:500]}
                 )
+    # Other modalities retain their existing archive-linked literature intake.
+    if accession.startswith("GSE") and not any(
+        f["field"] == "assay" and "rna" in str(f["value"]).casefold()
+        for sid in ids
+        for f in catalog.get(registry, sid)["fields"]
+    ):
+        docs, attempts = articles(root, source["text"], cancellation)
+        ledger.extend(attempts)
+        for sid in ids:
+            for doc in docs:
+                attach(registry, sid, doc["text"], doc["url"], "study_context", actor)
     key = studies.link(registry, list(dict.fromkeys(ids)), accession, actor, accession)
     studies.preparation(
         registry,

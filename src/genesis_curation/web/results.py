@@ -11,11 +11,14 @@ from typing import Any
 
 from ..contracts.records import canonical, loads
 from ..registry import store
-from . import eligibility
+from . import assessments, eligibility
 from .discovery_catalog import MODALITIES
 
 COLUMNS = (
     "species",
+    "metadata_supported",
+    "paper_coverage",
+    "taxonomy_id",
     "assay",
     "sample_name",
     "tissue",
@@ -32,6 +35,15 @@ COLUMNS = (
     "biosample",
     "geo_sample",
     "library_layout",
+    "library_source",
+    "library_selection",
+    "library_preparation",
+    "strandedness",
+    "platform",
+    "age",
+    "age_unit",
+    "reference_assembly",
+    "cell_resolution",
     "sample_attributes",
     "modality",
     "eligibility",
@@ -60,6 +72,26 @@ def project(db: sqlite3.Connection, state: dict[str, Any]) -> None:
         "run_accessions": "run_accession",
     }
     row = {key: fields.get(aliases.get(key, key), original.get(key, "")) for key in COLUMNS}
+    checks = assessments.assess(state, state.get("fields", []))
+    relevant = {
+        "organism",
+        "tissue",
+        "genotype",
+        "developmental_stage",
+        "treatment",
+        "library_selection",
+    }
+    supported = sum(
+        checks.get(k, {}).get("support") == "quoted_value"
+        and not checks.get(k, {}).get("needs_verification")
+        for k in relevant
+    )
+    paper_sources = [
+        s
+        for s in state.get("sources", [])
+        if ("europepmc/" in s["data"]["location"] or "pubmed" in s["data"]["location"])
+        and state.get("source_scopes", {}).get(s["version"]) != "study_context"
+    ]
     provenance = state.get("preparation_provenance", {})
     row.update(
         eligibility.classify(original, fields),
@@ -67,6 +99,11 @@ def project(db: sqlite3.Connection, state: dict[str, Any]) -> None:
         subject=state["id"],
         version=state["version"],
         review_state="draft",
+        metadata_supported=f"{supported}/{len(relevant)}",
+        paper_coverage="Sample-bound evidence"
+        if paper_sources
+        else "No sample-bound paper evidence",
+        taxonomy_id=state.get("taxonomy", {}).get("id", ""),
         model=provenance.get("model", ""),
         model_revision=provenance.get("model_revision", ""),
         source_versions=[s["version"] for s in state.get("sources", [])],

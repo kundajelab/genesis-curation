@@ -5,6 +5,25 @@ from __future__ import annotations
 from typing import Any
 
 VERSION = "plant-discovery/2"
+RNA_PILOT_SPECIES = [
+    "Marchantia polymorpha",
+    "Chlamydomonas reinhardtii",
+    "Gossypium hirsutum",
+    "Vitis vinifera",
+    "Solanum lycopersicum",
+    "Solanum tuberosum",
+    "Arabidopsis lyrata",
+    "Arabidopsis thaliana",
+    "Glycine max",
+    "Medicago truncatula",
+    "Oryza sativa",
+    "Brachypodium distachyon",
+    "Triticum aestivum",
+    "Setaria italica",
+    "Setaria viridis",
+    "Zea mays",
+    "Sorghum bicolor",
+]
 ASSAYS: dict[str, dict[str, Any]] = {
     "RNA-seq": {
         "modality": "RNA-seq",

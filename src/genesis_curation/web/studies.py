@@ -95,7 +95,10 @@ def link(
             save(db, study, "create", actor, {})
         added = []
         for subject in subjects:
-            catalog.read(db, subject)
+            state = catalog.read(db, subject)
+            from . import workspace
+
+            workspace.register_rna(db, state, accession)
             inserted = db.execute(
                 "INSERT OR IGNORE INTO curation_members VALUES(?,?)", (key, subject)
             )
@@ -183,7 +186,10 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
             decision = state["reviews"].get(name)
             assessment = state.get("assessments", {}).get(name, {})
             evidence_issue = bool(assessment.get("issues") or assessment.get("needs_verification"))
-            uncertain = low_confidence(field) or evidence_issue
+            requested = preparation.get("workflow", {}).get("constraints", {}).get(state["id"], {})
+            requirement = requested.get(name, {})
+            constraint_issue = requirement.get("status") in {"contradicted", "unresolved"}
+            uncertain = low_confidence(field) or evidence_issue or constraint_issue
             prior_issue = decision and (
                 decision["original_proposal"]["status"] in {"unknown", "conflicting"}
                 or low_confidence(decision["original_proposal"])
@@ -248,7 +254,14 @@ def tasks(study: dict[str, Any], rows: list[dict[str, Any]]) -> list[dict[str, A
                         else "Confirm "
                     )
                     + name.replace("_", " "),
-                    "reason": "; ".join(assessment.get("issues", []))
+                    "reason": (
+                        "Requested "
+                        + str(requirement.get("requested"))
+                        + "; "
+                        + str(requirement.get("status"))
+                    )
+                    if constraint_issue
+                    else "; ".join(assessment.get("issues", []))
                     or (
                         "Check the interpretation against the source"
                         if evidence_issue
@@ -388,7 +401,10 @@ def resolve(root: Path, task_id: str, body: dict[str, Any], actor: str) -> dict[
         raise ValueError("Choose a decision and a reason (1–4000 characters)")
     with store.write(root) as db:
         study, task = find_task(db, body["study"], task_id, body["version"])
-        if study["preparation"]["status"] in {"RUNNING", "QUEUED"}:
+        if study["preparation"]["status"] in {"RUNNING", "QUEUED"} or (
+            study["preparation"]["status"] == "COMPLETED"
+            and study["preparation"].get("workflow", {}).get("stage", "complete") != "complete"
+        ):
             raise ValueError("Wait for preparation or cancel it before changing decisions")
         selected = body.get("targets", [t["subject"] for t in task["targets"]])
         allowed = {t["subject"] for t in task["targets"]}
@@ -479,7 +495,10 @@ def approve(root: Path, key: str, version: str, actor: str) -> dict[str, Any]:
         study, rows = read(db, key), members(db, key)
         if revision(study, rows) != version:
             raise ValueError("Stale study: reload the summary before signing")
-        if study["preparation"]["status"] != "COMPLETED":
+        if (
+            study["preparation"]["status"] != "COMPLETED"
+            or study["preparation"].get("workflow", {}).get("stage", "complete") != "complete"
+        ):
             raise ValueError("Finish preparation before signing")
         if coverage_pending(db, study):
             raise ValueError("Retrieve all known study records before signing")
@@ -537,6 +556,7 @@ def approve(root: Path, key: str, version: str, actor: str) -> dict[str, Any]:
                     "sources": state["sources"],
                     "proposal": state["proposal"],
                     "provenance": state.get("preparation_provenance", {}),
+                    "taxonomy": state.get("taxonomy"),
                 }
             )
         release = {
@@ -561,6 +581,11 @@ def approve(root: Path, key: str, version: str, actor: str) -> dict[str, Any]:
         db.execute("INSERT INTO curation_releases VALUES(?,?,?)", (digest, key, canonical(release)))
         study["approval"] = digest
         save(db, study, "sign-off", actor, {"release": digest})
+        db.execute(
+            "UPDATE workspace_rows SET status='Reviewed' WHERE subject IN "
+            "(SELECT subject FROM curation_members WHERE study=?) AND status!='Excluded'",
+            (key,),
+        )
         return release
 
 

@@ -21,7 +21,7 @@ def main() -> None:
         root = Path(folder)
         runtime.initialize(root, "curator", "synthetic-v1-password")
         with contextlib.closing(store.connect(root / "catalog")) as db:
-            assert db.execute("PRAGMA user_version").fetchone()[0] == 1
+            assert db.execute("PRAGMA user_version").fetchone()[0] == store.SCHEMA_VERSION
             assert db.execute("PRAGMA application_id").fetchone()[0] == store.APPLICATION_ID
             tables = {r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type='table'")}
             assert not tables & {"datasets", "artifacts", "attempts", "qc_reports"}
