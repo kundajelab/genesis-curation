@@ -388,6 +388,9 @@ def create_app(
     from . import workspace_api
 
     workspace_api.mount(app, root, config_path)
+    from . import qc_api
+
+    qc_api.mount(app, root)
 
     @app.get("/{path:path}")
     def frontend(path: str) -> FileResponse:

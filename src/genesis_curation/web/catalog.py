@@ -111,6 +111,10 @@ def save(
     from . import results
 
     results.project(db, state)
+    from . import qc
+
+    if previous and qc.signature(loads(previous[0])) != qc.signature(state):
+        qc.invalidate(db, state["id"])
     from . import workspace
 
     workspace.sync(db, state)

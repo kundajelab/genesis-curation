@@ -128,6 +128,8 @@ def enqueue(root: Path, kind: str, actor: str, payload: dict[str, Any]) -> str:
         "mining",
         "workspace",
         "workspace-export",
+        "qc-evaluate",
+        "qc-export",
     }:
         raise ValueError("Unknown job type")
     from .storage import require_space

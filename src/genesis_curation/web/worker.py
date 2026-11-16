@@ -22,6 +22,20 @@ def execute(
     root: Path, config_path: Path, task: dict[str, Any], cancellation: threading.Event | None = None
 ) -> dict[str, Any]:
     data, kind = task["payload"], task["kind"]
+    if kind in {"qc-evaluate", "qc-export"}:
+        from ..contracts.records import dump
+        from . import qc
+
+        if kind == "qc-evaluate":
+            try:
+                result = qc.analyse(root, data["analysis"], cancellation)
+                return {k: result[k] for k in ("id", "status", "total", "counts")}
+            except Exception as error:
+                qc.fail(root, data["analysis"], redact(str(error)))
+                raise
+        bundle = qc.export(root, data["analysis"])
+        dump(root / "exports" / (task["id"] + ".json"), bundle)
+        return {"url": "/api/qc/exports/" + task["id"]}
     if kind == "workspace":
         from . import campaigns
 
@@ -197,6 +211,18 @@ def run(root: Path, config_path: Path) -> None:
         with runtime.connection(root) as db:
             queued = {row[0] for row in db.execute("SELECT id FROM jobs WHERE status='QUEUED'")}
         studies.recover(root / "catalog", queued)
+        from . import qc
+
+        with runtime.connection(root) as db:
+            abandoned = [
+                json.loads(r[0])["analysis"]
+                for r in db.execute(
+                    "SELECT payload FROM jobs WHERE kind='qc-evaluate' "
+                    "AND status IN ('INTERRUPTED','CANCELLED','FAILED')"
+                )
+            ]
+        for key in abandoned:
+            qc.fail(root, key, "Evaluation interrupted; submit a new evaluation")
         while True:
             if not once(root, config_path):
                 time.sleep(1)
