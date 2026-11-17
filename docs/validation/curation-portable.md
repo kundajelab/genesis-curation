@@ -56,3 +56,16 @@ public hosting requires an operator-managed TLS proxy and appropriate account po
 Private acceptance logs, archived evidence and model weights remain outside Git.
 Shared-volume preservation was verified file by file with SHA-256 before removing
 its Genesis directory. No original reference spreadsheet or remote demo was changed.
+
+## Fresh-checkout deployment audit
+
+A clean temporary clone of the committed main tree was built with Docker Compose,
+without the developer virtual environment, frontend files or private credentials.
+Build, empty-workspace initialization, app/worker startup, health endpoint, CLI
+summary and all 14 packaged skills passed. A synthetic API key was configured with
+mode 0600 and a budget ledger without making an inference request. Browser login
+and skill display passed with zero browser errors. Full `scripts/check.sh` passed.
+
+This verifies the documented Linux/Docker path on the acceptance host. It does not
+claim all operating systems, architectures or GPU runtimes were tested. Optional
+SearXNG engine availability was not tested. Temporary test services were removed.
