@@ -98,6 +98,71 @@ def main() -> None:
         == "scATAC"
     )
     assert eligibility.classify({}, {"assay": "CAGE"})["eligibility"] == "uncertain"
+
+    for assay in ("single-cell RNA-seq", "single-nucleus RNA-seq", "scRNA-seq", "snRNA-seq"):
+        assert eligibility.classify({"library_strategy": assay}, {})["modality"] == "RNA-seq"
+    assert eligibility.classify({}, {"assay": "single-cell"})["modality"] == "Other"
+    protocol = harmonize.source_record(
+        '<EXPERIMENT accession="SRX123"><LIBRARY_DESCRIPTOR>'
+        "<LIBRARY_STRATEGY>ATAC-seq</LIBRARY_STRATEGY>"
+        "<LIBRARY_CONSTRUCTION_PROTOCOL>10X Genomics scATAC-seq v1.1"
+        "</LIBRARY_CONSTRUCTION_PROTOCOL></LIBRARY_DESCRIPTOR></EXPERIMENT>",
+        "synthetic:experiment",
+        "text/plain",
+    )
+    state = {"original": {"experiment_accession": "SRX123"}, "sources": [protocol]}
+    check = eligibility.record(state, {"assay": "scATAC-seq"})
+    assert check["modality"] == "scATAC"
+    assert check["reason"] == "Verify per-cell barcode and multiome modality evidence"
+    assert state["original"] == {"experiment_accession": "SRX123"}
+    assay_field = {
+        "field": "assay",
+        "status": "known",
+        "value": "scATAC-seq",
+        "evidence": [
+            {"quote": "scATAC-seq", "locator": "line:1", "source_version": protocol["version"]}
+        ],
+    }
+    assert assessments.assess(state, [assay_field])["assay"]["issues"] == [check["reason"]]
+    control = harmonize.source_record(
+        protocol["data"]["snapshot"].replace("10X Genomics scATAC-seq v1.1", "genomic DNA control"),
+        "synthetic:control-protocol",
+        "text/plain",
+    )
+    assert (
+        eligibility.record({**state, "sources": [control]}, {"assay": "ATAC-seq"})["eligibility"]
+        == "excluded"
+    )
+    # Evidence from another library, study context, or a multi-experiment payload
+    # cannot repair missing sample-specific assay evidence.
+    for bad_state in (
+        {**state, "original": {"experiment_accession": "SRX999"}},
+        {**state, "source_scopes": {protocol["version"]: "study_context"}},
+        {**state, "original": {}},
+        {
+            **state,
+            "sources": [
+                harmonize.source_record(
+                    "<SET>" + protocol["data"]["snapshot"] * 2 + "</SET>",
+                    "synthetic:multiple-experiments",
+                    "text/plain",
+                )
+            ],
+        },
+    ):
+        assert eligibility.record(bad_state, {"assay": "scATAC-seq"})["reason"] == (
+            "Missing library-level archive ATAC evidence"
+        )
+    assert (
+        eligibility.record(
+            {
+                **state,
+                "original": {"experiment_accession": "SRX123", "library_strategy": "RNA-seq"},
+            },
+            {"assay": "scATAC-seq"},
+        )["reason"]
+        == "Archive strategy conflicts with ATAC claim"
+    )
     with tempfile.TemporaryDirectory() as temporary:
         root = Path(temporary)
         store.initialize(root)
@@ -142,6 +207,7 @@ def main() -> None:
                     "version": "fixture",
                     "original": {
                         "species": "Arabidopsis thaliana",
+                        "cultivar": "Col-0",
                         "assay": "ATAC-seq",
                         "study_accession": "SRP001",
                     },
@@ -179,11 +245,13 @@ def main() -> None:
         assert first["total"] == 10000 and len(first["items"]) == 50
         assert not {r["subject"] for r in first["items"]} & {r["subject"] for r in second["items"]}
         assert all(r["review_state"] == "draft" for r in first["items"])
+        assert all(r["cultivar"] == "Col-0" for r in first["items"])
         assert results.page(root, species="Other")["total"] == 0
         export = root / "drafts.xlsx"
         export.write_bytes(results.workbook(root))
         sheets = workbook.read(export)
         assert len(sheets["Bulk ATAC"]) == 10001
+        assert workbook.table(sheets["Bulk ATAC"])[0]["values"]["cultivar"] == "Col-0"
         assert len(sheets["TSS"]) == 1 and len(sheets["Excluded"]) == 1
         assert "Manifest" in sheets
         assert "'=HYPERLINK" in results.csv_page([{"sample_name": '=HYPERLINK("bad")'}])

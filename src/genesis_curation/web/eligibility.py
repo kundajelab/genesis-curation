@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import re
+import xml.etree.ElementTree as ET
 from typing import Any
 
-VERSION = "library-eligibility/2"
+VERSION = "library-eligibility/3"
 TSS = re.compile(
     r"\b(cage(?:-seq)?|rampage|nanopare|tss-seq2?|csrna-seq|stripe-seq|nanocage)\b", re.I
 )
@@ -13,6 +14,40 @@ CELL = re.compile(r"\b(scATAC|snATAC|single[- ]cell|single[- ]nucleus|multiome)\
 CONTROL = re.compile(
     r"\b(input control|genomic DNA control|not an ATAC library|IgG control)\b", re.I
 )
+
+
+def record(state: dict[str, Any], metadata: dict[str, Any]) -> dict[str, str]:
+    """Include exact-library experiment evidence without changing imported metadata."""
+    original = dict(state.get("original", {}))
+    accession = str(original.get("experiment_accession", "")).strip()
+    if accession:
+        for source in state.get("sources", []):
+            if state.get("source_scopes", {}).get(source["version"]) == "study_context":
+                continue
+            snapshot = source["data"]["snapshot"]
+            if not snapshot.lstrip().startswith("<"):
+                continue
+            try:
+                document = ET.fromstring(snapshot)
+            except ET.ParseError:
+                continue
+            experiments = [e for e in document.iter() if e.tag.rsplit("}", 1)[-1] == "EXPERIMENT"]
+            if len(experiments) != 1 or experiments[0].get("accession") != accession:
+                continue
+            # Only the matched experiment's library descriptor is relevant. Study
+            # titles, related experiments and paper context cannot establish this.
+            for descriptor in experiments[0].iter():
+                if descriptor.tag.rsplit("}", 1)[-1] != "LIBRARY_DESCRIPTOR":
+                    continue
+                for element in descriptor:
+                    target = {
+                        "LIBRARY_STRATEGY": "library_strategy",
+                        "LIBRARY_CONSTRUCTION_PROTOCOL": "protocol",
+                    }.get(element.tag.rsplit("}", 1)[-1])
+                    if target:
+                        value = " ".join(element.itertext()).strip()
+                        original[target] = str(original.get(target, "")) + " " + value
+    return classify(original, metadata)
 
 
 def classify(original: dict[str, Any], metadata: dict[str, Any]) -> dict[str, str]:
@@ -36,7 +71,7 @@ def classify(original: dict[str, Any], metadata: dict[str, Any]) -> dict[str, st
         if TSS.search(assay + " " + claimed)
         else (
             "scATAC"
-            if CELL.search(assay + " " + claimed)
+            if "atac" in (assay + " " + claimed).casefold() and CELL.search(assay + " " + claimed)
             else "Bulk ATAC"
             if "atac" in (assay + " " + claimed).lower()
             else "Other"
@@ -48,7 +83,7 @@ def classify(original: dict[str, Any], metadata: dict[str, Any]) -> dict[str, st
             "ChIP-seq": r"\bChIP[- ]seq\b",
             "WGBS": r"\b(?:WGBS|bisulfite[- ]seq)\b",
             "MPRA": r"\b(?:MPRA|STARR[- ]seq|massively parallel reporter)\b",
-            "RNA-seq": r"\bRNA[- ]seq\b",
+            "RNA-seq": r"\b(?:sc|sn)?RNA[- ]seq\b",
         }
         modality = next(
             (

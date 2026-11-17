@@ -23,6 +23,7 @@ COLUMNS = (
     "sample_name",
     "tissue",
     "genotype",
+    "cultivar",
     "treatment",
     "dev_stage",
     "paper",
@@ -94,7 +95,7 @@ def project(db: sqlite3.Connection, state: dict[str, Any]) -> None:
     ]
     provenance = state.get("preparation_provenance", {})
     row.update(
-        eligibility.classify(original, fields),
+        eligibility.record(state, fields),
         sample_name=state["name"],
         subject=state["id"],
         version=state["version"],

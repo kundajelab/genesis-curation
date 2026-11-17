@@ -8,7 +8,7 @@ from typing import Any
 
 from ..contracts.records import fingerprint
 
-VERSION = "plant-evidence/3"
+VERSION = "plant-evidence/4"
 
 
 def sample_attributes(state: dict[str, Any]) -> dict[str, set[str]]:
@@ -111,7 +111,7 @@ def assess(state: dict[str, Any], fields: list[dict[str, Any]]) -> dict[str, Any
         if field["status"] == "known" and name == "assay":
             from . import eligibility
 
-            check = eligibility.classify(state.get("original", {}), {"assay": value})
+            check = eligibility.record(state, {"assay": value})
             if check["eligibility"] in {"excluded", "uncertain"}:
                 issues.append(check["reason"])
         supported = field["status"] == "known" and bool(citations)

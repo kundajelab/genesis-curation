@@ -475,8 +475,8 @@ def sync(db: sqlite3.Connection, state: dict[str, Any]) -> None:
             )
         ):
             supported.add(name)
-    check = eligibility.classify(
-        state.get("original", {}),
+    check = eligibility.record(
+        state,
         {k: f["value"] for k, f in fields.items() if f["status"] == "known"},
     )
     status = (

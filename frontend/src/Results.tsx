@@ -8,7 +8,7 @@ type History={status:string;subject:string;record:{original:Record<string,unknow
 const cache=new Map<string,Page>();
 export function clearTableCache(){cache.clear();}
 const text=(v:unknown)=>v==null?'':typeof v==='object'?JSON.stringify(v):String(v);
-const common=['sample_name','species','assay','tissue','genotype','treatment','developmental_stage','study_accession','library_selection','cell_resolution','confidence','metadata_supported','paper_coverage','subject'];
+const common=['sample_name','species','assay','tissue','genotype','cultivar','treatment','developmental_stage','study_accession','library_selection','cell_resolution','confidence','metadata_supported','paper_coverage','subject'];
 export function Results({api,provider,onRecord,initialModality}:{api:API;provider:string;initialModality:string;onRecord:(id:string)=>void}) {
  const [modality,setModality]=useState(initialModality),[species,setSpecies]=useState(''),[status,setStatus]=useState(''),[query,setQuery]=useState(''),[search,setSearch]=useState(''),[cursor,setCursor]=useState(''),[back,setBack]=useState<string[]>([]),[page,setPage]=useState<Page|null>(null),[error,setError]=useState(''),[notice,setNotice]=useState(''),[selected,setSelected]=useState<string[]>([]),[detail,setDetail]=useState<History|null>(null),[busy,setBusy]=useState(false),[exportJob,setExportJob]=useState(''),[download,setDownload]=useState(''),[revision,setRevision]=useState(0);
  const [summary,setSummary]=useState<{modalities:string[];species:string[];revision:number;counts:{modality:string;count:number}[]}|null>(null);
