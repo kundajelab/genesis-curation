@@ -12,24 +12,13 @@ from typing import Any
 from ..contracts.records import canonical, dump, fingerprint, loads, now
 from ..llm import providers
 from ..registry import store
-from . import intake, runtime, studies
+from . import intake, runtime, skills, studies
 from . import mining_sources as sources
 
 DEFAULTS = {"candidates": 50, "studies": 10, "samples": 200, "minutes": 30}
 MAXIMUMS = {"candidates": 500, "studies": 100, "samples": 2000, "minutes": 240}
-GUIDANCE = {
-    "id": "plant-mining",
-    "version": "3",
-    "instructions": "Search the requested plant taxa and assay. "
-    "Keep bulk and single-cell distinct. "
-    "Bulk evidence can be pooled-tissue extraction and conventional library preparation; "
-    "the literal word bulk is not required. Protoplast RNA-seq is not automatically single-cell: "
-    "look for per-cell barcodes, droplets or individually indexed cells/nuclei. "
-    "Keep biological samples, experiments and sequencing runs separate. Archive relations "
-    "establish identity; similar titles do not. Inclusion requires evidence for every user "
-    "constraint. Missing evidence means uncertain, not exclude. A paper can cover mixed "
-    "tissues, assays and organisms. Never infer a sample's condition from a sibling sample.",
-}
+GUIDANCE = skills.select(None, "plant-discovery")
+
 PLAN_SCHEMA = {
     "type": "object",
     "properties": {

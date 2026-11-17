@@ -127,7 +127,15 @@ def select_skill(folder: Path, state: dict[str, Any]) -> dict[str, Any]:
             if state.get("source_scopes", {}).get(s["version"]) != "study_context"
         ).lower()
     )
-    if any(
+    from . import eligibility
+
+    modality = eligibility.record(
+        state,
+        {f["field"]: f["value"] for f in state["fields"] if f.get("status", "known") == "known"},
+    )["modality"]
+    if modality == "Other":
+        modality = state.get("original", {}).get("_modality", "")
+    if modality in {"", "RNA-seq"} and any(
         term in context
         for term in (
             "scrna",
@@ -139,7 +147,6 @@ def select_skill(folder: Path, state: dict[str, Any]) -> dict[str, Any]:
         )
     ):
         return skills.select(folder, "plant-celltype-metadata")
-    modality = state.get("original", {}).get("_modality", "")
     chosen = {
         "TSS": "plant-tss-metadata",
         "Bulk ATAC": "plant-atac-metadata",
@@ -148,9 +155,23 @@ def select_skill(folder: Path, state: dict[str, Any]) -> dict[str, Any]:
         "Genomes": "plant-genome-metadata",
         "DAP-seq": "plant-binding-metadata",
         "RNA-seq": "plant-rna-metadata",
+        "ChIP-seq": "plant-binding-metadata",
+        "WGBS": "plant-methylation-metadata",
     }.get(modality)
     if chosen:
         return skills.select(folder, chosen)
+    # Accession intake need not carry a Discover tab label.
+    for pattern, skill_id in (
+        (r"\b(?:WGBS|bisulfite|methyl[- ]?seq|EM[- ]seq)\b", "plant-methylation-metadata"),
+        (
+            r"\b(?:CAGE|RAMPAGE|nanoPARE|TSS[- ]seq2?|csRNA[- ]seq|STRIPE[- ]seq)\b",
+            "plant-tss-metadata",
+        ),
+        (r"\b(?:sc|sn)?ATAC(?:[- ]seq)?\b", "plant-atac-metadata"),
+        (r"\b(?:MPRA|STARR[- ]seq)\b", "plant-mpra-metadata"),
+    ):
+        if re.search(pattern, context, re.I):
+            return skills.select(folder, skill_id)
     if "chip" in context or "dap" in context:
         return skills.select(folder, "plant-binding-metadata")
     if "rna-seq" in context or "rna_seq" in context:
