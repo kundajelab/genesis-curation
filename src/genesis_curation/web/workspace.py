@@ -617,66 +617,6 @@ def export_bundle(root: Path, key: str, clean: bool = False) -> dict[str, Any]:
     }
 
 
-def import_demo(root: Path, path: Path) -> dict[str, Any]:
-    """Load the current neutral JSONL demo format; no external source is contacted."""
-    import json
-
-    with path.open("rb") as source:
-        digest = hashlib.file_digest(source, "sha256").hexdigest()
-    registry = root / "catalog"
-    store.initialize(registry)
-    with contextlib.closing(store.connect(registry)) as db:
-        old = db.execute("SELECT body FROM workspace_imports WHERE id=?", (digest,)).fetchone()
-        if old:
-            return loads(old[0])
-    with path.open() as stream:
-        header = loads(stream.readline())
-        if header.get("format") != "genesis-demo/1":
-            raise ValueError("Expected genesis-demo/1 JSONL")
-        manifest = {
-            "id": digest,
-            "source": "snapshot:" + digest,
-            "origin": "demo-reference",
-            "retrieved_at": now(),
-            "rows": 0,
-            "tabs": {},
-            "source_snapshot": header["source_snapshot"],
-        }
-        with store.write(registry) as db:
-            for line in stream:
-                item = loads(line)
-                if item["modality"] not in MODALITIES:
-                    raise ValueError("Unknown demo modality")
-                if any(
-                    host in json.dumps(item) for host in ("docs.google.com", "sheets.google.com")
-                ):
-                    raise ValueError("Demo records must use snapshot identities, not workbook URLs")
-                add_row(
-                    db,
-                    digest,
-                    item["table"],
-                    item["row"],
-                    item["original"],
-                    item.get("cells", {}),
-                    item["modality"],
-                    f"snapshot:{digest}:{item['table']}:{item['row']}",
-                    origin="demo-reference",
-                )
-                counts = manifest["tabs"].setdefault(
-                    item["table"], {"rows": 0, "modality": item["modality"]}
-                )
-                counts["rows"] += 1
-                manifest["rows"] += 1
-            if manifest["rows"] != header["rows"]:
-                raise ValueError("Demo row count differs from its manifest")
-            db.execute("INSERT INTO workspace_imports VALUES(?,?)", (digest, canonical(manifest)))
-            event(db, digest, "", "demo-import", manifest=manifest)
-    destination = root / "reference-snapshots" / (digest + ".jsonl")
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    shutil.copyfile(path, destination)
-    return manifest
-
-
 def activity_page(
     root: Path, campaign: str = "", after: int = 0, before: int = 0, archived: bool = False
 ) -> dict[str, Any]:

@@ -11,7 +11,7 @@ from ..web import catalog, studies, workspace
 
 def configure(parser: argparse.ArgumentParser) -> None:
     commands = parser.add_subparsers(dest="operation", required=True)
-    for name in ("import", "load-demo", "export"):
+    for name in ("import", "export"):
         child = commands.add_parser(name)
         child.set_defaults(curation_handler=execute)
         child.add_argument("--root", type=Path, required=True)
@@ -29,8 +29,6 @@ def configure(parser: argparse.ArgumentParser) -> None:
 
 
 def execute(args: argparse.Namespace) -> tuple[Any, int]:
-    if args.operation == "load-demo":
-        return workspace.import_demo(args.root, args.file), 0
     if args.operation == "export":
         from ..contracts.records import identifier
 

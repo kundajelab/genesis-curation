@@ -1,0 +1,11 @@
+{
+  "image": "REPLACE_WITH_LLAMA_CPP_IMAGE@sha256:REPLACE_WITH_DIGEST",
+  "filename": "your-model.gguf",
+  "alias": "your-model",
+  "sha256": "REPLACE_WITH_SHA256",
+  "context": 8192,
+  "port": 19091,
+  "cpus": 4,
+  "memory": "16g",
+  "gpu": false
+}

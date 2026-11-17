@@ -13,4 +13,4 @@ COPY src/ ./src/
 COPY --from=frontend /build/src/genesis_curation/web/assets/ ./src/genesis_curation/web/assets/
 RUN uv sync --frozen --extra web --no-dev --no-editable
 ENV PATH="/app/.venv/bin:$PATH" PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
-ENTRYPOINT ["genesis", "web"]
+ENTRYPOINT ["genesis"]

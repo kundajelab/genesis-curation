@@ -39,7 +39,10 @@ def provider(
         if not match:
             raise ValueError("Selected provider is not permitted for this study")
         return match
-    return next((c for c in eligible if not c.get("external")), None)
+    default = providers.default_id(config_path) if config_path.exists() else None
+    return next((c for c in eligible if c["id"] == default), None) or next(
+        (c for c in eligible if not c.get("external")), None
+    )
 
 
 def queue(

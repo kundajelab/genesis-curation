@@ -7,7 +7,9 @@ import sqlite3
 import subprocess
 import sys
 
+from . import installation
 from .contracts.records import canonical
+from .curation import cli as curation_cli
 from .curation import metadata_cli
 from .llm import cli as ai_cli
 from .web import cli as web_cli
@@ -18,6 +20,8 @@ def main() -> None:
     commands = parser.add_subparsers(dest="command", required=True)
     for name, module in (("web", web_cli), ("metadata", metadata_cli), ("ai", ai_cli)):
         module.configure(commands.add_parser(name))
+    curation_cli.configure(commands.add_parser("curation"))
+    installation.configure(commands.add_parser("workspace"))
     args = parser.parse_args()
     try:
         result, code = args.curation_handler(args)

@@ -703,7 +703,7 @@ def step(
                 config["max_tokens"],
                 2 * run.get("last_budget", {}).get("output_tokens_reserved", 2048),
             )
-        if category in {"unavailable", "access"}:
+        if category in {"unavailable", "access", "budget"}:
             studies.preparation(
                 registry,
                 key,

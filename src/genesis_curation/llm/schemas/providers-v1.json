@@ -194,6 +194,24 @@
               "anthropic-messages",
               "conservative"
             ]
+          },
+          "pricing": {
+            "type": "object",
+            "properties": {
+              "input_per_million": {
+                "type": "number",
+                "minimum": 0
+              },
+              "output_per_million": {
+                "type": "number",
+                "minimum": 0
+              }
+            },
+            "required": [
+              "input_per_million",
+              "output_per_million"
+            ],
+            "additionalProperties": false
           }
         },
         "required": [
@@ -218,6 +236,12 @@
         ],
         "additionalProperties": false
       }
+    },
+    "default_provider": {
+      "type": [
+        "string",
+        "null"
+      ]
     }
   },
   "required": [

@@ -1,14 +1,10 @@
 results/
 __pycache__/
 references/
-.pixi/
-**/.pixi/
 **/.venv/
 **/.ruff_cache/
 work/
 workspace/
-.nextflow/
-.nextflow.log*
 **/*.egg-info/
 tests/.runs/
 
@@ -16,21 +12,16 @@ tests/.runs/
 .env
 .env.*
 .envrc
-
 .vscode/
 .zed/
 # Assistant settings are local to each contributor.
 .claude/
 .codex/
-workspace/
 .ruff_cache/
 .DS_Store
-.pixi/
 build/
 *.egg-info/
 *.so
 *.c
-
 frontend/node_modules
-
 src/genesis_curation/web/assets/

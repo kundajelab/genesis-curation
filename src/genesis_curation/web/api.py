@@ -38,7 +38,8 @@ class Boundary(BaseHTTPMiddleware):
                     return JSONResponse({"error": "Request exceeds upload budget"}, status_code=413)
             request._body = bytes(content)
             try:
-                loads(request._body.decode("utf-8"))
+                if not isinstance(loads(request._body.decode("utf-8")), dict):
+                    raise ValueError("JSON object required")
             except ValueError, UnicodeDecodeError:
                 return JSONResponse({"error": "Expected a valid JSON object"}, status_code=400)
         path = request.url.path
@@ -170,19 +171,22 @@ def create_app(
             return []
         return [
             {
-                k: p.get(k)
-                for k in (
-                    "id",
-                    "model",
-                    "mode",
-                    "external",
-                    "protocol",
-                    "allowed_classifications",
-                    "context_window_tokens",
-                    "max_input_tokens",
-                    "max_tokens",
-                    "token_counter",
-                )
+                "default": p["id"] == providers.default_id(config_path),
+                **{
+                    k: p.get(k)
+                    for k in (
+                        "id",
+                        "model",
+                        "mode",
+                        "external",
+                        "protocol",
+                        "allowed_classifications",
+                        "context_window_tokens",
+                        "max_input_tokens",
+                        "max_tokens",
+                        "token_counter",
+                    )
+                },
             }
             for p in providers.configurations(config_path)
         ]

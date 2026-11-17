@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
-import importlib.util
 import json
 import sqlite3
 import tempfile
 import time
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 from genesis_curation.web import model_manager, runtime
 
@@ -19,7 +19,7 @@ def main() -> None:
         runtime.initialize(root, "curator", "synthetic-password-for-tests")
         model_manager.initialize(root)
         state = {
-            "active_provider": "qwen38-q8",
+            "active_provider": "local-default",
             "maintenance": False,
             "heartbeat": time.time(),
             "managed_providers": list(model_manager.PROVIDERS.values()),
@@ -33,7 +33,7 @@ def main() -> None:
 
         publish()
         gemma = runtime.enqueue(root, "probe", "curator", {"provider": "local-gemma-4-e4b"})
-        qwen = runtime.enqueue(root, "probe", "curator", {"provider": "qwen38-q8"})
+        qwen = runtime.enqueue(root, "probe", "curator", {"provider": "local-default"})
         claim = runtime.claim(root)
         assert claim is not None and claim["id"] == qwen
         assert runtime.job(root, gemma)["status"] == "QUEUED"
@@ -85,17 +85,16 @@ def main() -> None:
         else:
             raise AssertionError("Stale controller accepted an evaluation")
 
-    path = Path(__file__).parents[1] / "deploy/web/model-controller.py"
-    spec = importlib.util.spec_from_file_location("model_controller_test", path)
-    assert spec and spec.loader
-    module = importlib.util.module_from_spec(spec)
-    spec.loader.exec_module(module)
+    from genesis_curation.llm import model_controller as module
+
     controller = module.Controller.__new__(module.Controller)
+    controller.name = "genesis-model-test"
+    controller.web = root
     controller.baseline = {"alias": "baseline"}
     controller.value = {
         "rollback_container": "genesis-model-rollback-test",
-        "active_provider": "qwen38-q8",
-        "previous_provider": "qwen38-q8",
+        "active_provider": "local-default",
+        "previous_provider": "local-default",
     }
     calls: list[tuple[str, ...]] = []
 
@@ -109,35 +108,48 @@ def main() -> None:
     def http(path: str, body: dict[str, Any] | None = None) -> dict[str, Any]:
         return {"data": [{"id": "baseline"}]}
 
-    controller.docker, controller.publish, controller.http = docker, publish_fake, http
-    controller.rollback()
-    assert not any(c[0] in {"rm", "stop", "rename"} for c in calls)
-    assert controller.value["rollback_container"] is None
-    calls.clear()
-    controller.value.update(
-        rollback_container="genesis-model-rollback-test", active_provider="local-gemma-4-e4b"
-    )
+    with (
+        patch.object(controller, "docker", side_effect=docker),
+        patch.object(controller, "publish", side_effect=publish_fake),
+        patch.object(controller, "http", side_effect=http),
+    ):
+        controller.rollback()
+        assert not any(c[0] in {"rm", "stop", "rename"} for c in calls)
+        assert controller.value["rollback_container"] is None
+        calls.clear()
+        controller.value.update(
+            rollback_container="genesis-model-rollback-test", active_provider="local-gemma-4-e4b"
+        )
 
-    def recovery_docker(*args: str) -> str:
-        calls.append(args)
-        if args[0] == "ps":
-            return "owned-container"
-        if args[0] == "inspect":
-            return json.dumps(
-                [{"Config": {"Labels": {"com.docker.compose.project": "genesis-curation-web"}}}]
-            )
-        return ""
+        def recovery_docker(*args: str) -> str:
+            calls.append(args)
+            if args[0] == "ps":
+                return "owned-container"
+            if args[0] == "inspect":
+                return json.dumps(
+                    [
+                        {
+                            "Config": {
+                                "Labels": {
+                                    "com.docker.compose.project": "genesis-curation-web",
+                                    "genesis.runtime": str(root.resolve()),
+                                }
+                            }
+                        }
+                    ]
+                )
+            return ""
 
-    controller.docker = recovery_docker
-    controller.rollback()
-    mutations = [call for call in calls if call[0] in {"rm", "rename", "start"}]
-    assert mutations == [
-        ("rm", "-f", module.NAME),
-        ("rename", "genesis-model-rollback-test", module.NAME),
-        ("start", module.NAME),
-    ]
-    assert controller.value["active_provider"] == "qwen38-q8"
-    assert controller.value["rollback_container"] is None
+        with patch.object(controller, "docker", side_effect=recovery_docker):
+            controller.rollback()
+        mutations = [call for call in calls if call[0] in {"rm", "rename", "start"}]
+        assert mutations == [
+            ("rm", "-f", controller.name),
+            ("rename", "genesis-model-rollback-test", controller.name),
+            ("start", controller.name),
+        ]
+        assert controller.value["active_provider"] == "local-default"
+        assert controller.value["rollback_container"] is None
     print(
         "PASS model manager: provider-bound queues, drain, stale controller, single request, "
         "exclusive evaluations, safe pre-rename and replacement recovery"

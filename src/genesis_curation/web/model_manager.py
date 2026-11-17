@@ -18,10 +18,8 @@ from typing import Any
 
 from ..llm import local_models
 
-BASELINE = "qwen38-q8"
-PROVIDERS = {"qwen-baseline": BASELINE} | {
-    p["id"]: "local-" + p["id"] for p in local_models.PRESETS
-}
+BASELINE = "local-default"
+PROVIDERS = {"default": BASELINE} | {p["id"]: "local-" + p["id"] for p in local_models.PRESETS}
 
 
 def initialize(root: Path) -> None:
@@ -112,7 +110,7 @@ def lease(root: Path, owner: str, provider: str) -> None:
 
 @contextlib.contextmanager
 def exclusive(root: Path, provider: str) -> Iterator[threading.Event]:
-    """Reserve the active model for a benchmark; cancel inference if renewal fails."""
+    """Reserve the active model for an exclusive operation; cancel inference if renewal fails."""
     owner = str(uuid.uuid4())
     lease(root, owner, provider)
     done, cancelled = threading.Event(), threading.Event()

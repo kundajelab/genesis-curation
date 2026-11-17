@@ -17,7 +17,7 @@ from urllib.request import HTTPRedirectHandler, ProxyHandler, Request, build_ope
 
 from ..contracts.records import canonical, dump, fingerprint, load, loads, now, record
 from ..registry import store
-from . import budget, progress, wire
+from . import budget, progress, spending, wire
 from .security import check, credential, endpoint, redact, response_text, schema
 
 MAX_RESPONSE = 1024 * 1024
@@ -63,12 +63,21 @@ def configurations(path: Path) -> list[dict[str, Any]]:
     configs = value["providers"]
     if len({p["id"] for p in configs}) != len(configs):
         raise ValueError("Duplicate provider IDs")
+    if value.get("default_provider") and value["default_provider"] not in {
+        p["id"] for p in configs
+    }:
+        raise ValueError("Default provider is not configured")
     for config in configs:
         if config["external"] and "local-only" in config["allowed_classifications"]:
             raise ValueError("External provider cannot allow local-only data")
         if config["endpoint"] is not None or config["mode"] == "live":
             endpoint(config["endpoint"] or "", external=config["external"])
     return configs
+
+
+def default_id(path: Path) -> str | None:
+    configurations(path)
+    return load(path).get("default_provider")
 
 
 def select(path: Path, provider_id: str) -> dict[str, Any]:
@@ -397,6 +406,7 @@ def invoke(
                     if cancellation and cancellation.is_set():
                         status = "CANCELLED"
                         raise ValueError("Request cancelled")
+                    spending.reserve(directory, config, payload)
                     try:
                         code, raw = post(config, payload, secret)
                     except OSError, URLError, TimeoutError:
@@ -587,6 +597,10 @@ def probe(directory: Path, config: dict[str, Any]) -> dict[str, Any]:
 def failure_kind(invocation: dict[str, Any]) -> str:
     """Preserve refusal/transport failures as distinct from capacity or format errors."""
     data = invocation["data"]
+    if "spending" in str(data.get("error", "")) or "require configured input/output prices" in str(
+        data.get("error", "")
+    ):
+        return "budget"
     for attempt in reversed(data["attempts"]):
         if attempt["status"] in {"0", "429", "500", "502", "503", "504"}:
             return "unavailable"
@@ -600,6 +614,8 @@ def failure_kind(invocation: dict[str, Any]) -> str:
                 "exceed_context_size_error",
             }:
                 return "context"
+            if attempt["status"] == "400":
+                return "access"
             choice = value.get("choices", [{}])[0]
             if (
                 choice.get("message", {}).get("refusal")

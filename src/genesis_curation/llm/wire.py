@@ -70,6 +70,9 @@ def grammar(value: object) -> object:
                 "maxLength",
                 "pattern",
                 "format",
+                "minItems",
+                "maxItems",
+                "uniqueItems",
             }
         }
     if isinstance(value, list):
