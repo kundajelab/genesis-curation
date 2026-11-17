@@ -1,6 +1,6 @@
 # Built-in curation skills
 
-A fresh install includes 14 versioned, hashed guidance packs. No separate skill
+A fresh install includes 14 versioned, hashed guidance packs as packaged skill folders. No separate skill
 checkout, download or hosted service is needed. The GUI lists them under Models
 and skills; `genesis curation skills` returns the same catalog. Study preparation
 selects modality guidance automatically. Single-record AI settings also allow an
@@ -65,12 +65,58 @@ web search. Skills cannot guarantee complete discovery or biological accuracy.
 
 ## Extension and verification
 
-Custom instruction-only JSON packs go in the runtime's `skills/` directory. They
-require `id`, `version`, `title`, `instructions`, and `references`; IDs must be unique,
-and the instruction budget is 16,000 characters. Skill-supplied code is never run.
-Custom packs are selectable explicitly; they do not silently replace automatic
-modality routing. Changing a pack changes its hash and invalidates affected cached
-preparation. References and examples are not evidence about a new sample.
+Built-ins live in [`src/genesis_curation/skills/`](../../src/genesis_curation/skills/).
+Each skill has a `SKILL.md` with YAML `name` and `description`, concise Markdown
+instructions, and application metadata for its version, display title and sources.
+Shared evidence rules live once in `_shared/evidence.md`; RNA-specific rules live
+in `_shared/rna-library.md` and are loaded only by the RNA and cell-type skills.
+
+```text
+src/genesis_curation/skills/
+├── _shared/
+│   ├── evidence.md
+│   └── rna-library.md
+├── plant-rna-metadata/
+│   └── SKILL.md
+├── plant-methylation-metadata/
+│   └── SKILL.md
+└── … (one folder per skill)
+```
+
+Private custom skills use the same layout under the runtime's `skills/` directory.
+For example, `skills/lab-evidence-review/SKILL.md` can contain:
+
+```yaml
+---
+name: lab-evidence-review
+description: Review ambiguous sample-to-paper mappings for this laboratory.
+metadata:
+  version: '1'
+  title: Laboratory evidence review
+---
+
+Compare exact archive sample identifiers with the article's sample table.
+Keep ambiguous matches unresolved and include the competing evidence in review.
+```
+
+Add a `references/` directory only when the skill needs supporting material. List
+required local Markdown files under `metadata.includes`; the loader adds their
+contents only when loading that skill. Custom includes must remain inside that
+skill's own folder. The built-ins explicitly share resources within the packaged
+skill tree. External source links go in `metadata.references` as `title`/`id` pairs;
+these links are attribution, not silently downloaded evidence.
+
+The loader validates identities, frontmatter, reference paths and a 16,000-character
+combined instruction budget. It never executes skill-supplied scripts. JSON skill
+packs are not supported. No redundant Codex-specific UI files or empty resource
+directories are created: this application's UI reads the frontmatter metadata.
+
+Custom skills are selectable explicitly; they do not silently replace automatic
+modality routing. Their files are re-read on use. Packaged skills are cached for
+performance: restart the application and worker after editing or updating them.
+The loaded content, including required references, determines the recorded hash;
+changed hashes invalidate affected cached preparation. The Python loader contains
+loading/validation logic, not the biological instruction catalog.
 
 `tests/verify_skills.py` checks all nine modality groups, accession-based routing,
 wrong-modality hints, shared discovery instructions, hashes and common safeguards
@@ -78,7 +124,15 @@ without external skill files. `scripts/check.sh` includes this regression along 
 provider, evidence, review, QC and scale checks. These are software tests; a blinded
 expert-labelled biological benchmark is still required before claiming accuracy.
 
-Acceptance on 2026-11-17: full `scripts/check.sh` PASS (19 verification programs,
+Earlier coverage acceptance on 2026-11-17: full `scripts/check.sh` PASS (19 verification programs,
 plus lint, formatting and type checks); GUI build PASS; all 14 packs visible in the
 browser with zero browser errors; CLI skill/provider list output PASS. No paid model
 calls or biological-accuracy claims were made in this skill-coverage acceptance run.
+
+Skill-folder acceptance: all 14 folders pass the skill-creator `quick_validate.py`
+frontmatter/scaffold checks. Full `scripts/check.sh` passes, including custom-file
+loading, included-content hashes, traversal/symlink rejection and instruction-size
+limits. A built wheel installed into a separate virtual environment exposes all 14
+skills through a fresh runtime API. The browser displays all 14 version-3 packs with
+zero browser errors. These checks validate organization and integration, not biological
+accuracy.

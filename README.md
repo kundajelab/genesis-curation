@@ -39,6 +39,7 @@ installation, checksum verification and serving commands are under `genesis ai`.
 OpenAI-compatible and Anthropic APIs are supported through explicit provider configuration.
 Credentials stay outside the repository.
 
+[Skill folders](src/genesis_curation/skills/) contain the built-in `SKILL.md` files.
 [Built-in skills and coverage](docs/usage/skills.md) describes automatic modality
 guidance, workflow safeguards, references and validation limits.
 
