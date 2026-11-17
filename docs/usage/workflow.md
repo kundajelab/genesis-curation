@@ -32,6 +32,9 @@ Choose classification according to your data policy, not convenience.
 Discover records actual search attempts and partial coverage. Curation retrieves
 archive evidence first, then targeted literature where needed. Review groups
 uncertain fields and conflicts by study. Model confidence is not human approval.
+Genotype and cultivar remain separate columns. Re-curation retains omitted prior
+proposals; explicitly marking a field unknown withdraws that proposal. Prior
+proposals are shown to the model as context, never as independent evidence.
 
 ## Decisions and exports
 
