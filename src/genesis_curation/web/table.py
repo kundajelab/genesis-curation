@@ -16,7 +16,19 @@ from ..llm import budget, progress, providers
 from ..llm.security import check, redact
 from . import assessments, catalog, preparation, skills, studies
 
-WORKFLOW = "study-table-7"
+WORKFLOW = "study-table-9"
+# Missing biological context deserves an evidence search even when it is not a
+# mandatory release field. This is a model checklist, not permission to infer.
+CONTEXT_FIELDS = {
+    "genotype",
+    "cultivar",
+    "treatment",
+    "developmental_stage",
+    "library_selection",
+    "cell_resolution",
+    "age",
+    "age_unit",
+}
 CHANGE = {
     "type": "object",
     "properties": {
@@ -142,12 +154,16 @@ def compile_table(
                 "id": row,
                 "sample": state["name"],
                 "draft": draft,
+                "prior_proposals": catalog.prior_proposals(state, extracted),
                 "needs_review": [
                     f["field"]
                     for f in extracted
                     if f["field"] in requested
                     and f["status"] == "unknown"
-                    and (f["evidence"] or f["field"] in studies.required_fields(state) | hinted)
+                    and (
+                        f["evidence"]
+                        or f["field"] in studies.required_fields(state) | hinted | CONTEXT_FIELDS
+                    )
                 ],
                 "skill": skill["id"],
                 "fields": requested,
@@ -182,8 +198,14 @@ def compile_table(
             "Resolve needs_review using sample_evidence, especially assay from explicit "
             "protocol/library descriptions and identifiers from sample relations. Do not overlook "
             "documented values merely because they are absent from the vocabulary. "
+            "Check missing genotype, cultivar, treatment, developmental stage and library context "
+            "in "
+            "sample descriptions as well as explicit attributes. Sample titles alone do not "
+            "establish these biological facts; leave unsupported values unknown. "
             "Review every row and list its id exactly once in reviewed_rows. Return only changes "
-            "beyond the draft; do not repeat unchanged fields. Group identical changes using an "
+            "beyond the draft; do not repeat unchanged fields. Prior proposals are not evidence. "
+            "Omitted fields retain prior proposals without approving them; explicitly return "
+            "unknown to withdraw an unsupported prior proposal. Group identical changes using an "
             "explicit rows list. Cite at most three directly supporting evidence IDs per change, "
             "never the entire evidence list or invented sources. Every cited ID must "
             "belong to EACH target row. Background is not a sample fact without explicit sample "

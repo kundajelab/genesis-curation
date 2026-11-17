@@ -82,6 +82,12 @@ def main() -> None:
             ref for ref, text in compiled["data"]["evidence"].items() if text == "Leaf tissue"
         )
         assert set(compiled["bindings"][leaf]) == {"r1", "r3"}
+        for row in compiled["data"]["table"]:
+            assert table.CONTEXT_FIELDS.issubset(row["needs_review"])
+        targeted = table.compile_table(
+            root, states, fields={state["id"]: ["tissue"] for state in states}
+        )
+        assert all(set(row["needs_review"]) <= {"tissue"} for row in targeted["data"]["table"])
         change: dict[str, Any] = {
             "rows": ["r1", "r3"],
             "field": "tissue",

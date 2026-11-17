@@ -15,6 +15,7 @@ from helpers import rejects
 from verify_ai import FakeHandler, configuration, inference, server
 
 from genesis_curation.contracts.records import canonical, fingerprint, loads
+from genesis_curation.curation import harmonize
 from genesis_curation.llm import wire
 from genesis_curation.registry import store
 from genesis_curation.web import catalog, inbox, runtime, skills, worker
@@ -497,6 +498,71 @@ def main() -> None:
         )
         assert sparse["fields"] == current["fields"] and not sparse["reviews"]
         print("PASS sparse proposals preserve the complete deterministic review table")
+        retained_id = catalog.import_rows(
+            registry,
+            canonical([{"id": "retained", "description": "Illumina NovaSeq"}]),
+            "retained.json",
+            "retained",
+            "id",
+            "public",
+            "curator",
+        )[0]
+        retained = catalog.get(registry, retained_id)
+        platform = next(f for f in retained["fields"] if f["field"] == "platform")
+        proposed = {
+            **platform,
+            "status": "known",
+            "value": "Illumina NovaSeq",
+            "confidence": 0.95,
+            "evidence": [
+                {
+                    "source_version": retained["sources"][0]["version"],
+                    "locator": "/description",
+                    "quote": "Illumina NovaSeq",
+                }
+            ],
+        }
+
+        def rerun(value: dict[str, Any], changes: list[dict[str, Any]]) -> dict[str, Any]:
+            return catalog.run_proposal(
+                registry,
+                retained_id,
+                value["version"],
+                {**config, "mock_response": {"fields": changes}},
+                skills.select(root, "none"),
+                "curator",
+                preserve_reviews=True,
+            )
+
+        retained = rerun(retained, [proposed])
+        old_field = next(f for f in retained["fields"] if f["field"] == "platform")
+        assert old_field["value"] == "Illumina NovaSeq"
+        retained = rerun(retained, [])
+        assert next(f for f in retained["fields"] if f["field"] == "platform") == old_field
+        assert retained["recommendations"]["platform"] == old_field
+        # The ordinary single-record proposal endpoint obeys the same omission rule.
+        retained = catalog.run_proposal(
+            registry,
+            retained_id,
+            retained["version"],
+            {**config, "mock_response": {"fields": []}},
+            skills.select(root, "none"),
+            "curator",
+        )
+        assert next(f for f in retained["fields"] if f["field"] == "platform") == old_field
+        extracted = harmonize.extract({"data": {"sources": retained["sources"]}}, {})
+        assert catalog.prior_proposals(retained, extracted) == [
+            {"field": "platform", "status": "known", "value": "Illumina NovaSeq"}
+        ]
+        cleared = rerun(
+            retained,
+            [{**proposed, "status": "unknown", "value": None, "confidence": None, "evidence": []}],
+        )
+        assert next(f for f in cleared["fields"] if f["field"] == "platform")["status"] == "unknown"
+        assert "platform" not in cleared["recommendations"]
+        assert not cleared["reviews"]
+        print("PASS re-curation preserves omitted proposals; explicit withdrawal remains possible")
+
         key = runtime.enqueue(root, "probe", "curator", {"provider": "test"})
         entered = threading.Event()
 
