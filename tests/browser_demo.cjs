@@ -11,7 +11,7 @@ const fs=require('node:fs');
  const api=[];page.on('response',async r=>{if(r.url().includes('/api/')&&r.status()>=500)errors.push(r.status()+' '+r.url());});
  const measured=async(name,fn)=>{const t=Date.now();await fn();timings.push({name,ms:Date.now()-t});};
  try{
- await page.goto(url);await page.getByLabel('Curator',{exact:true}).fill(process.env.GENESIS_BROWSER_USER||'curator');await page.getByLabel('Password',{exact:true}).fill(process.env.GENESIS_BROWSER_PASSWORD);await page.getByRole('button',{name:'Sign in →'}).click();await page.getByRole('heading',{name:'Discover',exact:true}).waitFor();
+ await page.goto(url);await page.getByLabel('Curator',{exact:true}).fill(process.env.GENESIS_BROWSER_USER||'curator');await page.getByLabel('Password',{exact:true}).fill(process.env.GENESIS_BROWSER_PASSWORD);await page.getByRole('button',{name:'Sign in'}).click();await page.getByRole('heading',{name:'Discover',exact:true}).waitFor();
  await page.getByRole('heading',{name:'Data inventory'}).waitFor();
  await page.waitForFunction(()=>document.querySelectorAll('.activity-row').length>0);
  const eventButtons=page.locator('.activity-row button');await eventButtons.first().click();await page.getByRole('heading',{name:'Source receipt'}).waitFor();await page.getByRole('button',{name:'Close receipt'}).click();

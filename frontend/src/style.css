@@ -75,3 +75,16 @@ input:focus,select:focus,textarea:focus{outline-color:#60a5fa}
 .quality-panel .inventory-counts span{font-size:12px;color:#475569}
 .quality-panel .summary-table small{display:block}
 .quality-panel details>table{display:block;overflow:auto;max-width:100%}
+
+/* Quiet navigation; the metadata table and study checklist are the primary content. */
+.sidebar{background:#fff;color:#1e293b;border-right:1px solid #e2e8f0}
+.sidebar .brand{font-family:inherit;font-size:18px;letter-spacing:-.4px;margin:0 0 28px}
+.sidebar nav button{color:#475569}
+.sidebar nav button.current{background:#eff6ff;color:#1d4ed8}
+.sidebar-bottom{border-color:#e2e8f0}
+.sidebar-bottom button{color:#475569}
+.eyebrow{display:none}
+.workspace>header{margin-bottom:20px}
+.workspace>header h1{font-size:25px;letter-spacing:-.5px}
+.panel{box-shadow:none;border-radius:7px}
+.login .brand{font-family:inherit;font-size:22px}

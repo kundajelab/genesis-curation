@@ -12,7 +12,7 @@ const assert=require('node:assert/strict');
  try{
   await page.goto(url);await page.getByLabel('Curator',{exact:true}).fill('tester');
   await page.getByLabel('Password',{exact:true}).fill(process.env.GENESIS_BROWSER_PASSWORD);
-  await page.getByRole('button',{name:'Sign in →'}).click();
+  await page.getByRole('button',{name:'Sign in'}).click();
   await page.getByRole('heading',{name:'Discover',exact:true}).waitFor();
   const nav=name=>page.getByRole('navigation',{name:'Main navigation'}).getByRole('button',{name,exact:true});
   await nav('Curation').click();
