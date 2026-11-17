@@ -6,7 +6,7 @@ never commit credentials, databases, downloaded evidence or model weights.
 ## Native setup
 
 Requires Git, uv, Python 3.14 and Node 24. Install missing system tools using your
-server's normal administration process.
+server's normal administration process. Use the npm version bundled with Node 24.
 
 ```sh
 mkdir -p "$HOME/projects/genesis/tmp"

@@ -1,6 +1,6 @@
 results/
 __pycache__/
-references/
+/references/
 **/.venv/
 **/.ruff_cache/
 work/
@@ -25,3 +25,12 @@ build/
 *.c
 frontend/node_modules
 src/genesis_curation/web/assets/
+
+# Private runtime artifacts do not belong in source control.
+/runtime/
+/cache/
+/logs/
+*.key
+*.sqlite
+*.sqlite-*
+*.gguf

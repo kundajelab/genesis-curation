@@ -9,6 +9,6 @@ services:
       options: {max-size: "10m", max-file: "3"}
     restart: unless-stopped
     volumes:
-      - ${WEB_ROOT:?}/search:/etc/searxng:rw
+      - ${GENESIS_RUNTIME:?}/config/search:/etc/searxng:rw
     environment:
       SEARXNG_BASE_URL: http://127.0.0.1:18888/

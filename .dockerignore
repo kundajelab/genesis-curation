@@ -8,3 +8,11 @@ workspace
 results
 tests/.runs
 .env*
+
+runtime
+cache
+logs
+**/*.key
+**/*.sqlite
+**/*.sqlite-*
+**/*.gguf
