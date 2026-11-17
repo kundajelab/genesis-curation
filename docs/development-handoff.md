@@ -64,7 +64,8 @@ and weights. It refuses cleanup while the worker owns its lock.
 
 ## Development task prompt
 
-> Work on this checkout in a new branch/worktree from origin/main. Read AGENTS.md.
+> Work on the main branch in this checkout. Fetch origin first and read AGENTS.md.
+> Keep a single main branch; do not create additional branches or worktrees.
 > Keep runtime files outside Git and inside my chosen workspace. Preserve original
 > evidence and human decisions. Implement the same behavior for GUI and CLI. Run
 > scripts/check.sh and relevant browser checks. Report exact failures and skipped
