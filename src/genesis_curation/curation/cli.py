@@ -164,13 +164,17 @@ def route(args: argparse.Namespace) -> tuple[str, str, Any]:
 def wait(root: Path, config: Path, key: str) -> dict[str, Any]:
     """Own a temporary worker only when no persistent worker holds the lock."""
     with (root / "worker.lock").open("a") as lock:
-        try:
-            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            owned = True
-        except BlockingIOError:
-            owned = False
+        owned = False
         previous = ""
         while True:
+            if not owned:
+                try:
+                    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+                    owned = True
+                except BlockingIOError:
+                    pass
+            # Read after acquiring ownership: a departing worker may have completed
+            # the job before releasing its lock. Never replay a RUNNING job.
             job = runtime.job(root, key)
             status = json.dumps(
                 {"job": key, "status": job["status"], "progress": job.get("progress", {})},

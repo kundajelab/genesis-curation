@@ -62,7 +62,9 @@ genesis curation --json request POST /api/OPERATION --file body.json
 
 Use the listed paths and the GUI's request bodies; placeholders above are not real
 accessions or endpoints. `--wait` runs queued work when no worker owns the runtime,
-or observes an existing worker. Progress goes to stderr; output goes to stdout.
+or observes an existing worker. If that worker exits, the CLI takes ownership of
+queued work. An interrupted running job requires explicit recovery and is never
+automatically replayed. Progress goes to stderr; output goes to stdout.
 
 Measured QC is imported, not computed from sequencing reads. `qc import`,
 `qc evaluate`, `qc rows`, `qc decide` and `qc export` use the same review workflow

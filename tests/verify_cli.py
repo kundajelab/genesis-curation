@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import copy
+import fcntl
 import json
 import tempfile
 from pathlib import Path
 from typing import Any
+from unittest.mock import patch
 
 from verify_ai import configuration
 from verify_study_web import reject
@@ -93,7 +95,39 @@ def main() -> None:
             )
         )
         job = call("POST", "/studies/" + study["id"] + "/prepare", {"version": before["version"]})
-        assert wait(state, config, job["id"])["status"] == "SUCCEEDED"
+        # A worker exits while the CLI observes a queued job. The waiter must
+        # acquire the released lock and finish it rather than poll forever.
+        with (state / "worker.lock").open("a") as owner:
+            fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            sleeps = 0
+
+            def departing_worker(seconds: float) -> None:
+                nonlocal sleeps
+                sleeps += 1
+                assert sleeps == 1, "Waiter failed to acquire the departed worker's lock"
+                fcntl.flock(owner, fcntl.LOCK_UN)
+
+            with patch("genesis_curation.curation.cli.time.sleep", departing_worker):
+                assert wait(state, config, job["id"])["status"] == "SUCCEEDED"
+            assert sleeps == 1
+            # Completed jobs return even while another worker still owns the lock.
+            fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            assert wait(state, config, job["id"])["status"] == "SUCCEEDED"
+
+        interrupted = runtime.enqueue(state, "workspace-export", "tester", {})
+        with runtime.connection(state) as db:
+            db.execute("UPDATE jobs SET status='RUNNING' WHERE id=?", (interrupted,))
+        with (state / "worker.lock").open("a") as owner:
+            fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            sleeps = 0
+            with (
+                patch("genesis_curation.curation.cli.time.sleep", departing_worker),
+                patch("genesis_curation.curation.cli.worker.once") as execute_job,
+            ):
+                reject(lambda: wait(state, config, interrupted), "interrupted")
+                execute_job.assert_not_called()
+            assert sleeps == 1
+        assert runtime.job(state, interrupted)["status"] == "RUNNING"
         current = call("GET", "/studies/" + study["id"])
         for task in current["tasks"]:
             body = {
@@ -152,7 +186,7 @@ def main() -> None:
         assert len(load(state / "spending.json")["reservations"]) == 2
     print(
         "PASS CLI: shared authenticated operations, review/sign-off/export parity, "
-        "stale decisions, session cleanup, default provider and spending cap"
+        "stale decisions, session cleanup, default provider, spending cap and worker handoff"
     )
 
 
