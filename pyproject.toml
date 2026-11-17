@@ -3,7 +3,10 @@ name = "genesis-curation"
 version = "0.1.0"
 description = "Plant metadata discovery, evidence-backed curation and human review"
 requires-python = ">=3.14"
-dependencies = ["jsonschema>=4.26,<5"]
+dependencies = [
+    "jsonschema>=4.26,<5",
+    "pyyaml>=6,<7",
+]
 
 [project.optional-dependencies]
 web = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1"]
@@ -33,4 +36,4 @@ error-on-warning = true
 exclude = ["tests/fixtures"]
 
 [tool.setuptools.package-data]
-genesis_curation = ["contracts/schemas/*.json", "llm/schemas/*.json", "llm/prompts/*.txt", "curation/vocabularies/*.json", "web/assets/*", "web/assets/assets/*"]
+genesis_curation = ["contracts/schemas/*.json", "llm/schemas/*.json", "llm/prompts/*.txt", "curation/vocabularies/*.json", "web/assets/*", "web/assets/assets/*", "skills/*/SKILL.md", "skills/_shared/*.md"]
