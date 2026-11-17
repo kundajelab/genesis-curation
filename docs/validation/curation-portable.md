@@ -69,3 +69,12 @@ and skill display passed with zero browser errors. Full `scripts/check.sh` passe
 This verifies the documented Linux/Docker path on the acceptance host. It does not
 claim all operating systems, architectures or GPU runtimes were tested. Optional
 SearXNG engine availability was not tested. Temporary test services were removed.
+
+The audit also found GitHub advisory
+[GHSA-fc5q-39xc-vjpf](https://github.com/advisories/GHSA-fc5q-39xc-vjpf) in the
+frontend build dependency chain. With no patched picomatch release available at
+inspection, the unused Vite framework layer was replaced with a small direct esbuild
+build script. The affected matcher is absent from the lockfile. `npm audit` reports
+zero vulnerabilities. The replacement Docker build and full synthetic browser
+review/sign-off/export test passed, with 62 ms queued feedback and zero browser
+errors. This is a dependency-audit result, not a guarantee against undisclosed issues.
