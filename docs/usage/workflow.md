@@ -1,77 +1,69 @@
-# Metadata workflow
+# Discover, curate, review
 
-Discover accepts a research goal, species names and assay selections. The model plans
-bounded searches using the source catalog and repository recipes. The worker records
-queries, source URLs, returned records and failures. Only actual searches appear in the
-activity log. No sequencing files are downloaded.
+Initialize a private runtime using [the handoff](../development-handoff.md).
+The GUI and CLI use the same application endpoints, permissions, evidence records,
+review versions and export gates. The local CLI requires one curator account and
+an owned private state directory; it does not impersonate arbitrary reviewers.
 
-Curation displays paginated modality tables. Select records or narrow the filters,
-then preview the study and record counts before starting curation. Selecting a record
-includes the other known records in its study. Filtered selections support up to 50,000 records, including the expanded studies.
-The server saves the selection; the browser submits its ID and preview token. Explicit
-checkbox selections are limited to 200 initial rows. Larger cohorts require the displayed
-confirmation. Search leads
-without an archive identity remain marked **Needs source**, not annotation subjects.
-Work runs in durable jobs;
-progress appears while the GUI remains available. Requests respect configured context,
-input and output budgets. Pause and resume preserve completed work. A local model must
-be active before its queued requests run.
+## Common CLI operations
 
-The progress card reports queueing, source retrieval, model work and validation.
-For local providers with a verified streaming capability it also counts received output
-characters. These are activity indicators, not validated annotations or an estimated
-percentage complete. A stale heartbeat or failed request remains visible.
-
-Activity initially shows recent compact entries. Open a source receipt for the complete
-record, or load older activity. Pause an old campaign before archiving it. Archiving
-hides activity from the default view without deleting records, evidence or decisions;
-restoring it does not automatically restart work.
-
-Review starts with identified studies and groups unresolved decisions into a to-do list.
-Search by accession or title. Records without a study identity are available under
-**Source identity needed**. Evidence and original/proposed
-values remain visible. Decisions record the actor and reason. Study sign-off is separate
-from field suggestions. Export the working copy for inspection, or the clean export for
-signed-off metadata; exports include originals and change history.
-Each bundle includes `metadata.xlsx` and the complete `metadata.json`. Values exceeding
-Excel's cell limit are visibly shortened only in the spreadsheet; `xlsx-truncations.json`
-lists those cells, and the JSON retains every character. Clean metadata includes only
-current human-signed study values, never unreviewed reference claims.
-
-## Import
+Set `GENESIS_RUNTIME` to your runtime directory. Options such as `--wait`, `--json`
+and `--output` go before the operation.
 
 ```sh
-genesis metadata import --root /path/to/state --file metadata.xlsx
-genesis metadata import --root /path/to/state --file metadata.csv --id-column sample_id
-genesis metadata export --root /path/to/state --name reviewed --clean
+genesis curation summary
+genesis curation providers
+genesis curation skills
+genesis curation --wait discover --species 'Arabidopsis thaliana' --assay RNA-seq
+genesis curation --wait intake PRJNA123456
+genesis curation import metadata.csv --namespace my-import --id-column run_accession --classification public
+genesis curation review list
+genesis curation review show STUDY_ID
+genesis curation --wait curate --study STUDY_ID --version VERSION
+genesis curation review history STUDY_ID
+genesis curation jobs list
+genesis curation jobs wait JOB_ID
 ```
 
-XLSX tables use a header row. CSV, TSV and JSON imports require an explicit identifier.
-Unknown XLSX table names appear under Other. Original cells and formulas are retained.
+Imported records remain externally supplied metadata. Public classification permits
+sending selected evidence to a hosted provider; local-only is the import default.
+Choose classification according to your data policy, not convenience.
 
-The operator can load a neutral `genesis-demo/1` JSONL snapshot with
-`genesis metadata load-demo --root /path/to/state --file demo.jsonl`. These rows are
-labelled externally curated and need independent retrieval and review. Loading is
-idempotent by content hash. This is an offline import, not a connected data source.
+Discover records actual search attempts and partial coverage. Curation retrieves
+archive evidence first, then targeted literature where needed. Review groups
+uncertain fields and conflicts by study. Model confidence is not human approval.
 
-## Skills and models
+## Decisions and exports
 
-Models & skills shows configured providers, pinned local models and reviewed skill
-content. Provider availability, installed weights and inference probes are distinct
-states. Hosted providers require operator-supplied credentials and permitted data
-classifications. Skills guide extraction but do not override source evidence or approval.
+Use `review show` to obtain the current task and study versions. Submit a decision
+JSON matching the API contract, including its reason and expected version:
 
-Alex Borowsky's plant cell-type annotation skill remains available as a reviewed,
-provenance-pinned metadata guidance resource. Gene-expression analysis and preprocessing
-are outside this application's scope.
+```sh
+genesis curation review draft TASK_ID --file draft.json
+genesis curation review decide TASK_ID --file decision.json
+genesis curation review approve STUDY_ID --version VERSION
+genesis curation --wait --output curated.zip export --clean
+```
 
-## Search coverage
+Stale decisions are rejected. Source snapshots and before/after changes remain
+available. Clean releases require human study sign-off. Unknown values remain
+unknown rather than being filled by unsupported guesses.
 
-ENA's [Portal API](https://ena-docs.readthedocs.io/en/latest/retrieval/programmatic-access/advanced-search.html)
-uses a result limit rather than offset pagination. The application retrieves a bounded
-1,000-run metadata response, caches it, and presents local pages. Receipts explicitly
-record when that limit is reached. Campaign query budgets can stop earlier; discovery
-is never presented as exhaustive. Web engines may deny or rate-limit requests; partial
-results and engine errors remain visible in the activity log.
+## Full GUI parity
 
-RNA-seq archive/paper enrichment and measured QC are described in [RNA curation](rna-curation.md).
+`genesis curation operations` lists all supported application paths. The generic
+request operation exposes every GUI operation, including campaigns, skills,
+provider probes, model requests, review drafts, QC and downloads:
+
+```sh
+genesis curation --json request GET /api/workspace
+genesis curation --json request POST /api/OPERATION --file body.json
+```
+
+Use the listed paths and the GUI's request bodies; placeholders above are not real
+accessions or endpoints. `--wait` runs queued work when no worker owns the runtime,
+or observes an existing worker. Progress goes to stderr; output goes to stdout.
+
+Measured QC is imported, not computed from sequencing reads. `qc import`,
+`qc evaluate`, `qc rows`, `qc decide` and `qc export` use the same review workflow
+as the GUI. See [RNA curation](rna-curation.md) for evidence and QC rules.

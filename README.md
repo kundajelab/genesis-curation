@@ -35,13 +35,13 @@ The repository contains metadata tooling and model serving, not sequencing prepr
 
 See [deployment](docs/usage/deployment.md) and [workflow](docs/usage/workflow.md).
 Provider examples are under `examples/curation/` and `deploy/web/`. Local model
-installation, checksum verification and deployment commands are under `genesis ai`.
+installation, checksum verification and serving commands are under `genesis ai`.
 OpenAI-compatible and Anthropic APIs are supported through explicit provider configuration.
 Credentials stay outside the repository.
 
 ## Evidence and limits
 
-Imported demo rows are externally curated examples, not results produced by this tool.
+Fresh workspaces start empty. Imported reference rows are externally curated examples, not results produced by this tool.
 Their snapshot identities are not archive verification. Real retrieval adds source
 versions and actual query receipts. The application does not connect to or modify the
 original reference spreadsheet.
