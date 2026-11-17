@@ -13,7 +13,7 @@ from typing import Any
 from urllib.parse import quote
 
 from ..application import Application
-from ..contracts.records import load, loads
+from ..contracts.records import load
 from ..web import runtime, worker
 
 
@@ -229,7 +229,7 @@ def execute(args: argparse.Namespace) -> tuple[Any, int]:
             raise ValueError("Use --output to save this download")
         args.output.write_bytes(content)
         return {"file": str(args.output), "bytes": len(content)}, 0
-    value = loads(content.decode())
+    value = json.loads(content)
     if args.wait and method == "POST" and isinstance(value, dict):
         key = value.get("job") or value.get("id")
         with runtime.connection(state) as db:

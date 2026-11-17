@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import argparse
 import copy
 import fcntl
 import json
@@ -15,7 +16,7 @@ from verify_study_web import reject
 
 from genesis_curation.application import Application
 from genesis_curation.contracts.records import load
-from genesis_curation.curation.cli import wait
+from genesis_curation.curation.cli import configure, execute, wait
 from genesis_curation.installation import initialize, private_json
 from genesis_curation.llm import providers, spending, wire
 from genesis_curation.llm.security import check
@@ -61,6 +62,26 @@ def main() -> None:
             return result if isinstance(result, dict) else {"items": result}
 
         assert call("GET", "/providers")["items"][0]["default"]
+        parser = argparse.ArgumentParser()
+        configure(parser)
+        for operation in ("skills", "providers"):
+            output = root / "tmp" / (operation + ".json")
+            value, code = execute(
+                parser.parse_args(
+                    [
+                        "--root",
+                        str(root),
+                        "--json",
+                        "--output",
+                        str(output),
+                        operation,
+                    ]
+                )
+            )
+            assert code == 0 and isinstance(value, list) and value
+            assert json.loads(output.read_text()) == value
+            text, code = execute(parser.parse_args(["--root", str(root), operation]))
+            assert code == 0 and json.loads(text) == value
         assert not call("GET", "/workspace")["counts"]
         reject(lambda: app.request("GET", "https://example.org/api/workspace"))
         reject(lambda: app.request("POST", "/login", {}))
