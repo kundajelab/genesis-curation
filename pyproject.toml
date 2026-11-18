@@ -36,4 +36,4 @@ error-on-warning = true
 exclude = ["tests/fixtures"]
 
 [tool.setuptools.package-data]
-genesis_curation = ["contracts/schemas/*.json", "llm/schemas/*.json", "llm/prompts/*.txt", "curation/vocabularies/*.json", "web/assets/*", "web/assets/assets/*", "skills/*/SKILL.md", "skills/_shared/*.md", "skills/*/references/*.md"]
+genesis_curation = ["contracts/schemas/*.json", "llm/schemas/*.json", "llm/prompts/*.txt", "curation/vocabularies/*.json", "web/assets/*", "web/assets/assets/*", "skills/*/SKILL.md", "skills/_shared/*.md", "skills/*/references/*.md", "sheets/data/*.yaml", "sheets/schemas/*.json"]
