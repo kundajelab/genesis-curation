@@ -1,12 +1,12 @@
 # Deployment
 
-The default deployment is private and listens on loopback. Each installation owns
-its runtime, credentials and optional models. No shared demo account is shipped.
+Each installation has its own runtime, credentials and optional models. No shared demo account
+ships with the app. By default the app listens only on loopback (127.0.0.1).
 
 ## Docker on Linux
 
-Requires Docker with Compose. The image builds Node 24 assets and the locked Python
-application. Choose an absolute runtime directory outside the checkout.
+You need Docker with Compose. The image builds the Node 24 assets and the locked Python
+application. Choose an absolute runtime directory outside the checkout:
 
 ```sh
 export GENESIS_RUNTIME="$HOME/projects/genesis/runtime/development"
@@ -16,19 +16,26 @@ deploy/web/manage.sh start
 deploy/web/manage.sh doctor
 ```
 
-Open http://127.0.0.1:18765, or use an SSH tunnel from your computer. `GENESIS_PORT`
-changes the loopback port. `GENESIS_PROJECT` distinguishes Compose installations;
-`GENESIS_IMAGE` selects the built image. `manage.sh stop` stops only this project's
-server and worker. For public access, configure your own TLS reverse proxy and the
-application's exact HTTPS origin; the supplied loopback development configuration
-is not a public HTTP deployment. Keep provider endpoints and keys private.
+Open http://127.0.0.1:18765, or use an SSH tunnel from your computer.
 
-For native development, follow [the handoff](../development-handoff.md).
+| Command or variable | Effect |
+| --- | --- |
+| `manage.sh stop` | Stops this installation's server and worker |
+| `manage.sh cli ARGS` | Runs `genesis ARGS` inside the image |
+| `GENESIS_PORT` | Changes the loopback port |
+| `GENESIS_PROJECT` | Separates several Compose installations on one host |
+| `GENESIS_IMAGE` | Selects the built image |
+
+The supplied configuration is for loopback use. For public access, put your own TLS reverse
+proxy in front and configure the app's exact HTTPS origin. Keep provider endpoints and keys
+private.
+
+For a native setup, see the [development guide](../development-handoff.md).
 
 ## Your API provider
 
-After initialization, configure a model available to your own account. These commands
-prompt for model ID and per-million-token prices, then privately prompt for the key:
+After `init`, configure a model your account can use. These commands ask for the model ID and
+the prices per million tokens, then prompt privately for the key:
 
 ```sh
 read -r -p "Model ID: " GENESIS_MODEL
@@ -40,39 +47,39 @@ deploy/web/manage.sh cli workspace --root "$GENESIS_RUNTIME" provider api \
 deploy/web/manage.sh cli workspace --root "$GENESIS_RUNTIME" budget --limit-usd 5
 ```
 
-This example uses the Anthropic endpoint. For your OpenAI-compatible service, use
-`--protocol openai-chat --endpoint YOUR_BASE_URL` instead. The endpoint is the API
-base (typically ending in `/v1`), not `/chat/completions`. Other supported protocols
-are listed by `workspace provider --help`. Keys are stored under the runtime's
-`config/secrets/` with private permissions; do not put them in command arguments,
-tracked files or the browser. Provider setup does not make an inference request.
+This example uses the Anthropic API. For an OpenAI-compatible service, use
+`--protocol openai-chat --endpoint YOUR_BASE_URL`. The endpoint is the API base (usually ending
+in `/v1`), not `/chat/completions`. `workspace provider --help` lists every protocol.
 
-The optional budget reserves conservative estimates before requests, including
-retries; it is not a billing report. Prices must match your provider account. The
-provider's account limit remains your final spending control. Local-only records
-cannot be sent to a hosted provider.
+Keys are stored under the runtime's `config/secrets/` with private permissions. Do not put
+them in command arguments, tracked files or the browser. Setting up a provider does not send a
+request to it.
 
-Check the installation with `manage.sh doctor` and list built-in skills with
-`manage.sh cli curation skills`. These checks do not incur inference charges.
-After changing provider configuration, restart the app and worker with
-`manage.sh stop` followed by `manage.sh start`.
+The budget reserves a conservative estimate before each request, including retries. It is not
+a billing report, and prices must match your account. Your provider's account limit is the
+final spending control. Records imported as local-only are never sent to a hosted provider.
+
+`manage.sh doctor` checks the installation, and `manage.sh cli curation skills` lists the
+built-in skills. Neither makes a model request. After changing the provider configuration,
+restart with `manage.sh stop` and then `manage.sh start`.
 
 ## Optional web search
 
-Archive and literature access does not require a metasearch service. Web-search
-coverage requires a SearXNG instance exposing JSON search on loopback port 18888.
-The optional `deploy/web/search.yaml` uses the same `GENESIS_RUNTIME` as the app.
-Copy `search-settings.example.yml` to `$GENESIS_RUNTIME/config/search/settings.yml`
-and replace its secret placeholder with your own random value before starting it.
-Use the upstream SearXNG deployment instructions for configuration and permissions;
-engine availability varies. The application records missing or failed web search
-as partial coverage. Do not expose this optional search endpoint publicly.
+Archive and literature search work without extra services. Web search needs a
+[SearXNG](https://docs.searxng.org/) instance with JSON output on loopback port 18888:
 
+1. Copy `deploy/web/search-settings.example.yml` to
+   `$GENESIS_RUNTIME/config/search/settings.yml`.
+2. Replace its secret placeholder with your own random value.
+3. Start it with `deploy/web/search.yaml`, which uses the same `GENESIS_RUNTIME`.
+
+Follow the SearXNG documentation for configuration and permissions; engine availability
+varies. When web search is missing or fails, the app records partial coverage. Do not expose
+the search endpoint publicly.
 
 ## Local models
 
-An existing OpenAI-compatible local server can be registered without downloading
-anything:
+Register an OpenAI-compatible local server you already run:
 
 ```sh
 uv run genesis workspace --root "$GENESIS_RUNTIME" provider local \
@@ -80,24 +87,27 @@ uv run genesis workspace --root "$GENESIS_RUNTIME" provider local \
   --endpoint http://127.0.0.1:19091/v1 --local --default
 ```
 
-For the optional managed llama.cpp controller, copy
-`deploy/web/model-runtime.example.json` to `config/model-runtime.json` in your
-runtime. Supply a real pinned Docker image digest, weight filename, SHA-256 and
-served alias. Put your licensed GGUF weights in `models/`. Choose context, CPU,
-memory and GPU settings suitable for your hardware. GPU mode requires a working
-host NVIDIA container runtime; the application does not install drivers.
+The app can also manage a llama.cpp server for you:
+
+1. Copy `deploy/web/model-runtime.example.json` to `config/model-runtime.json` in your
+   runtime.
+2. Fill in a pinned Docker image digest, the weight file name, its SHA-256 and the served
+   alias. Set context, CPU, memory and GPU options for your hardware.
+3. Put your licensed GGUF weights in `models/`.
+4. Run the controller under your own service manager:
 
 ```sh
 uv run genesis ai local-model serve --root "$GENESIS_RUNTIME"
 ```
 
-Run this foreground controller under your own service manager. It verifies model
-hashes, uses a runtime-specific container name, and publishes readiness for the GUI.
-The GUI can request supported installed alternatives; list/download options are
-under `genesis ai local-model --help`. Downloads are explicit. A configured model
-is not necessarily ready: check provider readiness before launching curation.
-Stopping the controller does not delete weights or the owned Docker container;
-stop that specific container when retiring the service. Never use host-wide prune.
+The controller verifies weight hashes, names its container after the runtime and reports
+readiness to the GUI. GPU mode needs a working NVIDIA container runtime on the host; the app
+does not install drivers. `genesis ai local-model --help` lists the download options, and
+downloads happen only on request. A configured model is not necessarily ready, so check
+provider readiness before starting curation.
 
-The managed local-model lifecycle has synthetic regression coverage. The current
-API-only acceptance run did not launch local weights or verify GPU inference.
+Stopping the controller does not delete the weights or its container. When you retire the
+service, stop that specific container; never use a host-wide prune.
+
+The local-model lifecycle has synthetic tests only. Local weights and GPU inference have not
+been tested in an acceptance run.

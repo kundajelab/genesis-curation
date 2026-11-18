@@ -1,12 +1,12 @@
-# Development handoff
+# Development guide
 
-Use a private workspace on your own server. Keep the checkout and runtime separate;
-never commit credentials, databases, downloaded evidence or model weights.
+Use a private workspace on your own server, and keep the checkout and the runtime separate.
+Never commit credentials, databases, downloaded evidence or model weights.
 
 ## Native setup
 
-Requires Git, uv, Python 3.14 and Node 24. Install missing system tools using your
-server's normal administration process. Use the npm version bundled with Node 24.
+You need Git, uv, Python 3.14 and Node 24 (with the npm version bundled with it). Install
+missing system tools through your server's normal process.
 
 ```sh
 mkdir -p "$HOME/projects/genesis/tmp"
@@ -21,12 +21,15 @@ uv run genesis workspace --root "$GENESIS_RUNTIME" init --username curator
 uv run genesis workspace --root "$GENESIS_RUNTIME" doctor
 ```
 
-Initialization prompts for a password and creates an empty workspace. Configure your
-own provider, then run `scripts/dev.sh`. Open http://127.0.0.1:18765. From another
-computer, forward that loopback port with SSH. The script builds the GUI and runs
-both the server and worker; stopping it stops its children.
+`init` asks for a password and creates an empty runtime. Add a model provider (below), then
+run `scripts/dev.sh`. It builds the GUI and starts the server and the worker; stopping the
+script stops both. Open http://127.0.0.1:18765, or forward that port with SSH from another
+computer.
 
-## Your API account
+`genesis sheets` needs only `uv sync`; it does not use the runtime or a provider. See
+[sample sheets](usage/sample-sheets.md).
+
+## Model provider and budget
 
 ```sh
 uv run genesis workspace --root "$GENESIS_RUNTIME" provider claude \
@@ -35,34 +38,45 @@ uv run genesis workspace --root "$GENESIS_RUNTIME" provider claude \
 uv run genesis workspace --root "$GENESIS_RUNTIME" budget --limit-usd 5
 ```
 
-The provider command prompts privately for your key. Prices are USD per million
-tokens; use the prices applicable to your account. The key is stored with mode 0600
-under `config/secrets`, outside Git. Do not paste it into a tracked configuration.
-OpenAI-compatible chat and responses endpoints are also supported; see command help.
-API access depends on your account and endpoint, not merely the model's display name.
+`provider` prompts for your API key and stores it with mode 0600 under `config/secrets/` in the
+runtime. Never put a key in a tracked file. Prices are USD per million tokens for your account.
+OpenAI-compatible chat and responses endpoints are also supported
+(`genesis workspace --root DIR provider --help`).
 
-The optional budget reserves conservative request estimates before each attempt,
-including retries. It does not report billing or refund failed calls. Without a
-budget file, no application spending cap is imposed. Your provider's account limits
-remain the final billing control.
+The budget is optional. Before each request, including retries, the app reserves a
+conservative cost estimate against the limit. It is not a billing report and does not refund
+failed calls. Without a budget, the app sets no spending cap, and your provider account's
+limits are the only control.
 
 ## Runtime layout
 
-`config/` holds provider references and secrets; `state/` holds the database and job
-ledger; `evidence/`, `exports/` and `skills/` hold durable artifacts. `models/` holds
-optional weights. `cache/`, `tmp/` and `logs/` are local runtime artifacts. Back up
-the whole runtime with services stopped. Never publish it as a Git repository.
+| Directory | Contents |
+| --- | --- |
+| `config/` | Provider configuration and secrets |
+| `state/` | Database and job ledger |
+| `evidence/`, `exports/`, `skills/` | Durable artifacts, exports and custom skills |
+| `models/` | Optional local model weights |
+| `cache/`, `tmp/`, `logs/` | Local working files |
+
+Back up the whole runtime with the services stopped. Never publish it as a Git repository.
 
 ```sh
-uv run genesis workspace --root "$GENESIS_RUNTIME" clean
-# After inspecting the preview:
-uv run genesis workspace --root "$GENESIS_RUNTIME" clean --apply
+uv run genesis workspace --root "$GENESIS_RUNTIME" clean          # preview
+uv run genesis workspace --root "$GENESIS_RUNTIME" clean --apply  # remove
 ```
 
-Cleanup removes only cache and temporary contents, preserving evidence, state, keys
-and weights. It refuses cleanup while the worker owns its lock.
+Cleanup removes only cache and temporary files; it keeps evidence, state, keys and weights.
+It refuses to run while a worker holds the runtime lock.
 
-## Development task prompt
+## Checks
+
+Run `scripts/check.sh` before committing. It runs ruff (lint and format), ty type checks and
+every `tests/verify_*.py` program offline. These are software checks; they do not establish
+biological accuracy.
+
+## Prompt for a coding agent
+
+When handing development to a coding agent, start from this prompt:
 
 > Work on the main branch in this checkout. Fetch origin first and read AGENTS.md.
 > Keep a single main branch; do not create additional branches or worktrees.
@@ -71,6 +85,5 @@ and weights. It refuses cleanup while the worker owns its lock.
 > scripts/check.sh and relevant browser checks. Report exact failures and skipped
 > checks. Ask before pushing, merging, installing system tools or paid live tests.
 
-See [deployment](usage/deployment.md), [CLI workflow](usage/workflow.md) and
-[RNA curation](usage/rna-curation.md). Synthetic checks do not establish biological
-accuracy. Fresh installs contain no reference spreadsheet or fabricated discovery history.
+See also [the CLI guide](usage/cli.md), [deployment](usage/deployment.md) and
+[RNA curation](usage/rna-curation.md).

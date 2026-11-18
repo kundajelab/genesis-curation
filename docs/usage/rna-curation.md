@@ -1,8 +1,13 @@
 # RNA-seq curation and measured QC
 
-Discover → Curation → Review remains the workflow. This implementation follows the
-RNA-seq example in slides 30–35; the other metadata modalities remain available.
-It does not run sequencing pipelines or claim the slide results as its own.
+RNA-seq has the most complete support in the curation app: evidence rules, imported
+measured QC and cohort selection. The design follows the RNA-seq example in the project
+slides (30–35). The workflow is the same as for other assays (Discover,
+Curate, Review). The app does not run sequencing pipelines, and the results reported in the
+slides are not results of this implementation.
+
+For RNA-seq sample sheets for genesis-preprocessing, use `genesis sheets build --workflow
+rna-seq` instead; see [sample sheets](sample-sheets.md).
 
 ## Discover and annotate
 
@@ -44,7 +49,7 @@ constraints enter the checklist; human decisions and unknowns remain in the reco
 ## Import measured QC
 
 In **Curation → RNA-seq → RNA-seq quality**, open **Import measured QC** and upload a
-CSV/TSV. Measurements must come from an identified external pipeline or report. The
+CSV or TSV file (or use `genesis curation qc import FILE`). Measurements must come from an identified external pipeline or report. The
 application does not estimate read quality from metadata or run preprocessing.
 
 Required columns:
