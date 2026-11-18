@@ -301,7 +301,7 @@ def overrides(species: Species) -> dict[str, Any]:
 
 def discover(species: Species, archive: Archive, log: Callable[[str], None]) -> list[Run]:
     """Runs of TSS studies of the species (see the module docstring)."""
-    taxon = f"tax_eq({species.taxon})"
+    taxon = species.tax_query
     text = " OR ".join(f'{f}="*{t}*"' for f in SEARCH_FIELDS for t in SEARCH_TERMS)
     found: dict[str, Run] = {}
     for query in (f'{taxon} AND library_selection="CAGE"', f"{taxon} AND ({text})"):

@@ -9,6 +9,8 @@
 #   mutant_terms: extra species-specific mutant patterns (allele series such as bmr).
 #   reference_lines: optional; cell lines derived from the reference genotype, which count as
 #     the reference where a sample names only the line (T87 cells come from Columbia).
+#   more_taxa: optional; further NCBI taxa searched as the same species (rice's
+#     japonica group, 39947, where most Nipponbare runs are filed).
 #   references: file names written to sheets (as in the curated sheets); they must exist in the shared references
 #     folder genesis-preprocessing runs with.
 Arabidopsis_thaliana:
@@ -37,4 +39,18 @@ Sorghum_bicolor:
     fasta: Sbicolor_730_v5.0_PtMt.fa.gz
     annotation: Sbicolor_730_v5.1_PtMt.gene_exons.gff3.gz
     genes: Sbicolor_730_v5.1_PtMt.genes.bed
+    organelle_contigs: Pt,Mt
+Oryza_sativa:
+  scientific_name: Oryza sativa
+  taxon: 4530
+  more_taxa: [39947]
+  reference_genotype: Nipponbare
+  reference_pattern: '(?<![a-z0-9])(nipponbarr?e|nippon[-_ ]?bare|nip|npb)(?![a-z0-9])'
+  title_marker: '(?<![a-z])(nipponbarr?e|nippon[-_ ]?bare|nip|npb)(?![a-z])'
+  gene_names_mean_mutant: false
+  mutant_terms: ['(?<![a-z])os[a-z]{2,8}\d{1,3}[a-z]?(?![a-z])']
+  references:
+    fasta: Oryza_sativa.IRGSP-1.0.dna.toplevel.fa.gz
+    annotation: Oryza_sativa.IRGSP-1.0.63.gff3.gz
+    genes: Oryza_sativa.IRGSP-1.0.63.genes.bed
     organelle_contigs: Pt,Mt

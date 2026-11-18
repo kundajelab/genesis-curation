@@ -54,7 +54,7 @@ WORKFLOW = "scatac-reads"
 BARCODES = {16: ("10x-atac-v1", "737K-cratac-v1.txt"), 24: ("10x-multiome-atac", "-")}
 MIN_GENOMIC = 30
 SEARCH = (
-    'txid{taxon}[Organism:noexp] AND ("atac seq"[Strategy] OR "genomic single cell"[Source] '
+    '{organism} AND ("atac seq"[Strategy] OR "genomic single cell"[Source] '
     'OR scATAC OR snATAC OR "sci-ATAC" OR multiome OR "single cell ATAC" '
     'OR "single nucleus ATAC" OR "single nuclei ATAC")'
 )
@@ -169,7 +169,7 @@ def names_species(species: Species, value: str) -> bool:
 
 def mixed_pool(species: Species, experiment: SraExperiment) -> bool:
     """A sample of another taxon (or a pool of several) that names this species."""
-    if experiment.taxon == species.taxon and len(experiment.pool) <= 1:
+    if species.has_taxon(experiment.taxon) and len(experiment.pool) <= 1:
         return False
     text = " ".join(
         (experiment.title, experiment.library_name, experiment.sample.title, experiment.organism)
@@ -190,7 +190,7 @@ def looks_single_cell(experiment: SraExperiment) -> bool:
 def candidates(species: Species, found: Iterable[SraExperiment]) -> list[SraExperiment]:
     """Experiments of the species (or pools naming it) that look single-cell, with the
     experiments sharing their BioSample in the same study."""
-    mine = [e for e in found if e.taxon == species.taxon or mixed_pool(species, e)]
+    mine = [e for e in found if species.has_taxon(e.taxon) or mixed_pool(species, e)]
     chosen = {e.accession for e in mine if looks_single_cell(e)}
     samples = {(e.study, e.sample.accession) for e in mine if e.accession in chosen}
     chosen |= {e.accession for e in mine if (e.study, e.sample.accession) in samples}
@@ -198,10 +198,10 @@ def candidates(species: Species, found: Iterable[SraExperiment]) -> list[SraExpe
 
 
 def discover(species: Species, archive: Archive, log: Callable[[str], None]) -> list[SraExperiment]:
-    uids = sra_search(archive, SEARCH.format(taxon=species.taxon))
+    uids = sra_search(archive, SEARCH.format(organism=species.ncbi_organism))
     found = {e.accession: e for e in sra_experiments(archive, uids)}
     log(f"{species.folder}: {len(found)} SRA experiments from the search")
-    studies = sorted({e.study for e in found.values() if e.taxon == species.taxon and ten_x(e)})
+    studies = sorted({e.study for e in found.values() if species.has_taxon(e.taxon) and ten_x(e)})
     for study in studies:
         for experiment in sra_experiments(archive, sra_search(archive, f"{study}[Accession]")):
             if experiment.study == study:

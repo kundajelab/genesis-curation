@@ -210,12 +210,13 @@ class Archive:
         return text
 
     def search_runs(
-        self, taxon: int, strategy: str, fields: Iterable[str] = RUN_FIELDS
+        self, tax_query: str, strategy: str, fields: Iterable[str] = RUN_FIELDS
     ) -> list[Run]:
-        """Every public run of the taxon (not its sub-taxa) with this library strategy."""
+        """Every public run of the taxa (`Species.tax_query`, not sub-taxa) with this
+        library strategy."""
         form = {
             "result": "read_run",
-            "query": f'tax_eq({taxon}) AND library_strategy="{strategy}"',
+            "query": f'{tax_query} AND library_strategy="{strategy}"',
             "fields": ",".join(fields),
             "format": "tsv",
             "limit": "0",

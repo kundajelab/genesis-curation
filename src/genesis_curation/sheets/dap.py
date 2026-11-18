@@ -101,12 +101,12 @@ def names_dap(text: str) -> bool:
     return any(not DAYS_BEFORE.search(text[: m.start()]) for m in DAP.finditer(text))
 
 
-def search(archive: Archive, taxon: int) -> list[Run]:
+def search(archive: Archive, tax_query: str) -> list[Run]:
     runs: dict[str, Run] = {}
     for name, value in SEARCHES:
         form = {
             "result": "read_run",
-            "query": f'tax_eq({taxon}) AND {name}="{value}"',
+            "query": f'{tax_query} AND {name}="{value}"',
             "fields": ",".join(FIELDS),
             "format": "tsv",
             "limit": "0",
@@ -180,7 +180,7 @@ def discover(
     species: Species, archive: Archive, log: Callable[[str], None]
 ) -> tuple[list[Run], set[str]]:
     """Candidate runs (search hits plus every run of each DAP-seq study) and the DAP studies."""
-    hits = search(archive, species.taxon)
+    hits = search(archive, species.tax_query)
     by_study: dict[str, list[Run]] = defaultdict(list)
     for run in hits:
         by_study[run["study_accession"]].append(run)
@@ -225,7 +225,7 @@ def build(
             run = item.run
             text = own_text(run) + " | " + run.get("study_title", "")
             bait = next((b.reason for b in catalog.bait_exclusions if b.match.search(text)), "")
-            other_taxon = run.get("tax_id", "") not in ("", str(species.taxon))
+            other_taxon = bool(run.get("tax_id")) and not species.has_taxon(run["tax_id"])
             item.reason = next(
                 (
                     reason

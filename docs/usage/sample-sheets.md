@@ -36,9 +36,11 @@ Prefix the commands below with `uv run`, or activate `.venv` first.
 `--species` takes the folder name used in genesis-preprocessing sheets. Species settings live in
 [`src/genesis_curation/sheets/data/species.yaml`](../../src/genesis_curation/sheets/data/species.yaml):
 taxon, reference genotype, how titles name it, and the reference file names written to the
-sheet. `Arabidopsis_thaliana` and `Sorghum_bicolor` are defined today. Adding a species means
+sheet. `Arabidopsis_thaliana`, `Sorghum_bicolor` and `Oryza_sativa` (Nipponbare, Ensembl Plants
+IRGSP-1.0 references) are defined today; rice has no gold sheets yet. Adding a species means
 adding an entry there and putting its references in the shared references folder that
-genesis-preprocessing runs with.
+genesis-preprocessing runs with. `more_taxa` adds NCBI taxa searched as the same species, such
+as rice's japonica group, where many Nipponbare runs are filed.
 
 `--references` points to a folder that holds those reference files (and, for RNA, the STAR index
 genesis-preprocessing builds, `<fasta>.<annotation>.star`). It is needed only when reads are
@@ -139,6 +141,22 @@ checksums in [`evals/gold.yaml`](../../evals/gold.yaml). The score report gives:
 - pass or fail for each trap in [`evals/traps.yaml`](../../evals/traps.yaml).
 
 `--history` appends one summary row to [`evals/HISTORY.md`](../../evals/HISTORY.md).
+
+### Every workflow at once
+
+`campaign` runs a metadata-only build of each workflow for one species and scores each against
+gold where gold exists. With `--gold-dir`, it reuses the gold runs-qc measurements
+(strandedness for RNA-seq, TSS and ATAC checks), as in the examples above:
+
+```sh
+genesis sheets campaign --species Sorghum_bicolor --out sb-all --gold-dir gold \
+    --history evals/HISTORY.md --label "sb metadata-only"
+```
+
+It writes `OUT/<workflow>/` (the build's three files and `score.json`) and `OUT/campaign.json`,
+and exits non-zero if any workflow fails. `--workflows` picks a subset, and `--atac-extra-runs`
+and `--dap-skip-runs-in` pass through to those builds. For a species without gold, such as
+rice, it only builds.
 
 The targets are precision and recall of at least 0.95, at least 0.98 on every field and all
 traps passing. Fix each miss in one of three ways: change a rule (and add a trap for it),

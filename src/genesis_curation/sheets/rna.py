@@ -88,7 +88,7 @@ def reused_calls(path: Path) -> dict[str, strand.StrandCall]:
 
 def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> list[Candidate]:
     """Every ENA RNA-Seq run of the species with its metadata reason ('' when kept so far)."""
-    runs = archive.search_runs(species.taxon, "RNA-Seq")
+    runs = archive.search_runs(species.tax_query, "RNA-Seq")
     log(f"{species.folder}: {len(runs)} ENA RNA-Seq runs")
     candidates = [Candidate(run, reason=classify.usable(run)) for run in runs]
     by_sample: dict[str, list[Candidate]] = defaultdict(list)

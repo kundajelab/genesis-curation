@@ -153,7 +153,7 @@ def gather(
     species: Species, archive: Archive, extra: Path | None, log: Callable[[str], None]
 ) -> tuple[list[Candidate], dict[str, Sample]]:
     """Candidate runs and the samples of GSA runs (ENA samples are fetched later)."""
-    runs = archive.search_runs(species.taxon, STRATEGY)
+    runs = archive.search_runs(species.tax_query, STRATEGY)
     candidates = {run["run_accession"]: Candidate(run, "ena") for run in runs}
     log(f"{species.folder}: {len(runs)} ENA {STRATEGY} runs")
     gsa_samples: dict[str, Sample] = {}
@@ -183,7 +183,7 @@ def first_reason(*reasons: str) -> str:
 def basic_reason(species: Species, item: Candidate) -> str:
     run = item.run
     taxon = run.get("tax_id", "")
-    if taxon and taxon != str(species.taxon):
+    if taxon and not species.has_taxon(taxon):
         return f"other species (taxon {taxon})"
     if run.get("instrument_platform") not in classify.SHORT_READ:
         return f"not short-read ({run.get('instrument_platform') or 'platform not stated'})"

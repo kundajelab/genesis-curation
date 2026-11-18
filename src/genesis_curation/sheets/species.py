@@ -39,6 +39,26 @@ class Species:
     mutant_terms: tuple[re.Pattern[str], ...]
     references: References
     reference_lines: re.Pattern[str] | None = None
+    more_taxa: tuple[int, ...] = ()
+
+    @property
+    def taxa(self) -> tuple[int, ...]:
+        return (self.taxon, *self.more_taxa)
+
+    @property
+    def tax_query(self) -> str:
+        """ENA portal clause for the species' taxa: tax_eq(4530), or an OR of several."""
+        clauses = [f"tax_eq({taxon})" for taxon in self.taxa]
+        return clauses[0] if len(clauses) == 1 else f"({' OR '.join(clauses)})"
+
+    @property
+    def ncbi_organism(self) -> str:
+        """NCBI Entrez clause for the species' taxa."""
+        clauses = [f"txid{taxon}[Organism:noexp]" for taxon in self.taxa]
+        return clauses[0] if len(clauses) == 1 else f"({' OR '.join(clauses)})"
+
+    def has_taxon(self, taxon: str | int) -> bool:
+        return str(taxon) in {str(t) for t in self.taxa}
 
 
 def parse(folder: str, entry: dict[str, Any]) -> Species:
@@ -58,6 +78,7 @@ def parse(folder: str, entry: dict[str, Any]) -> Species:
         reference_lines=re.compile(entry["reference_lines"], re.I)
         if entry.get("reference_lines")
         else None,
+        more_taxa=tuple(int(t) for t in entry.get("more_taxa") or ()),
     )
 
 
