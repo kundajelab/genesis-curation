@@ -18,3 +18,7 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-18 | Sorghum_bicolor | dap-seq | dap sb v1 (first build) | 1.0 | 1.0 | 1.0 | 1/1 |
 | 2026-11-18 | Arabidopsis_thaliana | dap-seq | dap at v5 | 1.0 | 1.0 | 1.0 | 11/11 |
 | 2026-11-18 | Sorghum_bicolor | dap-seq | dap sb v2 | 1.0 | 1.0 | 1.0 | 1/1 |
+| 2026-11-18 | Sorghum_bicolor | atac-seq | sb atac reused-metrics v1 | 1.0 | 0.8889 | 1.0 | 3/3 |
+| 2026-11-18 | Arabidopsis_thaliana | atac-seq | at atac reused-metrics v1 | 1.0 | 1.0 | 1.0 | 2/2 |
+| 2026-11-18 | Sorghum_bicolor | atac-seq | sb atac measured v1 | 1.0 | 0.8889 | 1.0 | 3/3 |
+| 2026-11-18 | Arabidopsis_thaliana | atac-seq | at atac measured v1 | 0.9952 | 0.9952 | 1.0 | 2/2 |

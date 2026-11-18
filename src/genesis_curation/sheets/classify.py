@@ -10,7 +10,7 @@ means a mutant) come from `species.yaml`.
 from __future__ import annotations
 
 import re
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 
 from .archives import Run, Sample
@@ -45,6 +45,18 @@ TREATED = re.compile(
     r"auxin|iaa|naa|cytokinin|gibberell|ga3|ethylene|acc\b|jasmon|meja|salicyl|brassino|"
     r"treat|inhibitor|dex|estradiol|herbicide|cadmium|metal|nitrogen|phosphate|deficien|"
     r"light|dark|uv|ozone|wound|deprivation|limitation|starvation|hours? after|h after",
+    re.I,
+)
+# Bulk ATAC treatments: no bare light/dark (sample protocols state the photoperiod, "16 h
+# light") and `dex` only as a word (not "Index" in kit names); adds regeneration designs
+# (callus- and shoot-inducing media, explants), 2,4-D and infection time courses.
+ATAC_TREATED = re.compile(
+    r"stress|drought|salt|nacl|cold|heat|hypoxia|flood|osmotic|mannitol|pathogen|infect|infest|"
+    r"pseudomonas|botrytis|fungal|virus|aphid|insect|elicitor|flg22|chitin|aba\b|abscisic|"
+    r"auxin|iaa|naa|\b2,?4-?d\b|cytokinin|gibberell|ga3|ethylene|acc\b|jasmon|meja|salicyl|"
+    r"brassino|treat|inhibitor|\bdex\b|dexamethasone|estradiol|herbicide|cadmium|metal|nitrogen|"
+    r"phosphate|deficien|uv|ozone|wound|deprivation|limitation|starvation|hours? after|h after|"
+    r"\bcim\b|\bsim\b|regenerat|callus induc|hypocotyl explant|infiltrat|inoculat|\bhpi\b|\bdpi\b",
     re.I,
 )
 # First match wins, in this order; "shoot" alone is checked after leaf and stem.
@@ -107,6 +119,18 @@ ASSAYS: tuple[tuple[re.Pattern[str], str], ...] = tuple(
         ),
     )
 )
+# Libraries in a bulk ATAC search that are not plain bulk ATAC: controls (input, genomic DNA,
+# Tn5 on naked DNA), other chromatin assays and single-cell or capture designs. The right
+# boundary allows digits ("input1"); "gDNA" is often glued to a sample name ("Col0_WTgDNA").
+ATAC_ASSAY = re.compile(
+    r"(?<![a-z0-9])(input|gdna|genomic dna|naked dna|purified dna|tn5 (only|control)|"
+    r"chip|cut&(run|tag)|cut ?and ?(run|tag)|mnase|dnase|faire|moa-?seq|hi-?c|bs-?seq|bisulfite|"
+    r"rna-?seq|sc-?atac|snatac|sci-?atac|single[- ]?(cell|nucle)|10x|plate ?\d|"
+    r"ribo|nanopore|long[- ]read)(?![a-z])",
+    re.I,
+)
+GLUED_GDNA = re.compile(r"(gdna)(?![a-z])", re.I)
+ATAC_SELECTIONS = {"ChIP", "DNase", "MNase"}
 SHAPE = re.compile(r"(?<![A-Za-z0-9])SHAPE(?![A-Za-z0-9])")  # upper case only: "leaf shape"
 TRANSGENE = re.compile(
     L + r"expressing|overexpress\w*|over ?expression|over-?expressing|transgenic|35s|"
@@ -159,8 +183,17 @@ def usable(run: Run) -> str:
     return ""
 
 
-def classify_sample(species: Species, sample: Sample, run: Run) -> SampleClass:
-    """Genotype, treatment and tissue of a sample from its attributes and one of its runs."""
+def classify_sample(
+    species: Species,
+    sample: Sample,
+    run: Run,
+    treated: re.Pattern[str] = TREATED,
+    more_genotype: Sequence[str] = (),
+    more_descriptive: Sequence[str] = (),
+) -> SampleClass:
+    """Genotype, treatment and tissue of a sample from its attributes and one of its runs.
+    `treated` names treatments; `more_genotype` adds attribute names read as genotype and
+    `more_descriptive` run fields read as description (titles)."""
     a = sample.attributes
     genotype_text = joined(
         a.get("genotype"),
@@ -172,6 +205,7 @@ def classify_sample(species: Species, sample: Sample, run: Run) -> SampleClass:
         run.get("cultivar"),
         run.get("strain"),
         a.get("line"),
+        *(a.get(name) or run.get(name) for name in more_genotype),
     )
     descriptive = joined(
         sample.title,
@@ -180,6 +214,7 @@ def classify_sample(species: Species, sample: Sample, run: Run) -> SampleClass:
         a.get("source_name"),
         run.get("sample_title"),
         run.get("experiment_title"),
+        *(run.get(name) for name in more_descriptive),
     )
     gene_allele = (
         species.gene_names_mean_mutant
@@ -222,11 +257,11 @@ def classify_sample(species: Species, sample: Sample, run: Run) -> SampleClass:
             "control / untreated"
             if CONTROL.search(treatment_text)
             else "treated"
-            if TREATED.search(treatment_text)
+            if treated.search(treatment_text)
             else "other condition"
         )
     else:
-        treatment = "treated" if TREATED.search(descriptive) else "not stated"
+        treatment = "treated" if treated.search(descriptive) else "not stated"
 
     # Tissue fields decide; source, stage and titles are fallbacks, since a stage such as
     # "between anthesis and seed set" names other organs.
@@ -288,6 +323,24 @@ def assay_flag(run: Run) -> str:
     return ""
 
 
+def atac_assay_flag(run: Run, *titles: str) -> str:
+    """'not bulk ATAC (...)' when the library source or selection, the run's titles (plus
+    `titles`, such as the sample's own title) or the study title name another design, or ''."""
+    if "SINGLE CELL" in run.get("library_source", ""):
+        return f"not bulk ATAC (library_source {run['library_source']})"
+    if run.get("library_selection") in ATAC_SELECTIONS:
+        return f"not bulk ATAC (selection {run['library_selection']})"
+    text = joined(
+        run.get("experiment_title"), run.get("sample_title"), run.get("sample_alias"), *titles
+    )
+    match = ATAC_ASSAY.search(text) or GLUED_GDNA.search(text)
+    if match:
+        return f"not bulk ATAC (title: {match.group(1)})"
+    if re.search(r"capture ATAC", run.get("study_title", ""), re.I):
+        return "not bulk ATAC (study: capture ATAC)"
+    return ""
+
+
 def transgene_flag(run: Run, reference: re.Pattern[str]) -> str:
     """A transgene, mutant or treatment word in the run's titles. The experiment title often
     describes the whole study ("RNA-seq of rog mutants"), so a word found only there does
@@ -309,16 +362,22 @@ class StudyTitles:
     wild-type or control marker that its own title lacks, or when its own title names a
     treatment (without a control marker) or a mutant/transgene."""
 
-    def __init__(self, species: Species, study_runs: Sequence[Run]) -> None:
+    def __init__(
+        self,
+        species: Species,
+        study_runs: Sequence[Run],
+        label: Callable[[Run], str] = title_label,
+    ) -> None:
         self.wild_type = re.compile(
             f"{TITLE_WILD_TYPE}|{species.title_marker.pattern}", re.I | species.title_marker.flags
         )
-        labels = [title_label(run) for run in study_runs]
+        self.label = label
+        labels = [label(run) for run in study_runs]
         self.study_wild_type = any(self.wild_type.search(label) for label in labels)
         self.study_control = any(TITLE_CONTROL.search(label) for label in labels)
 
     def flag(self, run: Run) -> str:
-        label = title_label(run)
+        label = self.label(run)
         control = TITLE_CONTROL.search(label)
         reasons = []
         if self.study_wild_type and not self.wild_type.search(label):

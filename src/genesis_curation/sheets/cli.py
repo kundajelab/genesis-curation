@@ -13,9 +13,10 @@ from typing import Any
 
 import yaml
 
-from . import dap, rna, scatac, species, tss
+from . import atac, dap, rna, scatac, species, tss
 from . import score as scoring
 from .archives import Archive
+from .measure import atac as atac_checks
 from .measure.strand import Tools
 from .tables import FIELDS, load_runs_qc, load_sheet
 
@@ -99,7 +100,33 @@ def append_history(path: Path, label: str, result: dict[str, Any]) -> None:
         handle.write("| " + " | ".join(row) + " |\n")
 
 
-BUILDERS = {"rna-seq": rna, "scatac-reads": scatac, "tss-seq": tss, "dap-seq": dap}
+BUILDERS = {
+    "rna-seq": rna,
+    "scatac-reads": scatac,
+    "tss-seq": tss,
+    "dap-seq": dap,
+    "atac-seq": atac,
+}
+
+
+def atac_options(args: argparse.Namespace, cache: Path) -> atac.Options:
+    tools = None
+    if not args.no_measure:
+        try:
+            tools = atac_checks.Tools.find(args.chromap)
+        except ValueError:
+            if not args.measure_from:  # without chromap, only runs not reused fail later
+                raise
+    return atac.Options(
+        cache=cache,
+        measure=not args.no_measure,
+        measure_from=args.measure_from,
+        extra_runs=args.extra_runs,
+        references=args.references,
+        chromap_index=args.chromap_index,
+        tools=tools,
+        pairs=args.pairs,
+    )
 
 
 def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
@@ -123,6 +150,10 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     if args.workflow == "dap-seq":
         options = dap.Options(cache, probe=not args.no_probe, skip_runs_in=args.skip_runs_in)
         summary = dap.build(chosen, archive, args.out, options, log=log)
+        (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
+        return summary, 0
+    if args.workflow == "atac-seq":
+        summary = atac.build(chosen, archive, args.out, atac_options(args, cache), log=log)
         (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
         return summary, 0
     tools = None
@@ -166,7 +197,7 @@ def configure(parser: argparse.ArgumentParser) -> None:
     build.add_argument(
         "--measure-from",
         type=Path,
-        help="tss-seq: reuse TSS signals, trims and adapters from a runs-qc TSV",
+        help="tss-seq, atac-seq: reuse read measurements from a runs-qc TSV",
     )
     build.add_argument(
         "--no-measure", action="store_true", help="Leave runs without a call out, unmeasured"
@@ -193,6 +224,13 @@ def configure(parser: argparse.ArgumentParser) -> None:
     build.add_argument("--featurecounts", help="featureCounts executable (default: on PATH)")
     build.add_argument("--gffread", help="gffread executable (default: on PATH)")
     build.add_argument("--threads", type=int, default=16)
+    atac_group = build.add_argument_group("atac-seq")
+    atac_group.add_argument(
+        "--extra-runs", type=Path, help="More candidate runs: a metadata-sheet tab export (TSV)"
+    )
+    atac_group.add_argument("--chromap", help="chromap executable (default: on PATH)")
+    atac_group.add_argument("--chromap-index", type=Path, help="Default: built into the cache")
+    atac_group.add_argument("--pairs", type=int, default=atac_checks.PAIRS, help="Pairs sampled")
     build.set_defaults(curation_handler=run_build)
 
     run = commands.add_parser("score", help="Score a candidate sheet against gold and traps")

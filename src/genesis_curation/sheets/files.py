@@ -5,17 +5,20 @@
 - ENA says PAIRED but serves one file: left out; that file holds both mates in two blocks,
   so as single-end strands mix and fragments count twice.
 - Otherwise `<run>.fastq.gz`: single-end.
+- GSA runs name their mates `<run>_f1` and `<run>_r2` (`.fastq.gz` or `.fq.gz`).
 - A file under 1 MB is left out (empty or truncated uploads).
 URLs are built only from ENA's current `fastq_ftp` list, so every URL is one ENA serves.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 
 from .archives import Run
 
 MIN_FILE_BYTES = 1_000_000
+MATE = re.compile(r"_(?:(?P<one>1|f1|r1|R1)|(?P<two>2|r2|R2))\.f(?:ast)?q\.gz$")
 
 
 @dataclass(frozen=True)
@@ -45,8 +48,9 @@ def resolve(run: Run) -> ReadFiles:
     if not files:
         return ReadFiles(reason="no read files")
     mine = {u: n for u, n in files.items() if f"/{accession}/" in u or f"/{accession}_" in u}
-    read1 = [u for u in mine if u.endswith(f"/{accession}_1.fastq.gz")]
-    read2 = [u for u in mine if u.endswith(f"/{accession}_2.fastq.gz")]
+    mates = {u: MATE.search(u.rsplit("/", 1)[-1].removeprefix(accession)) for u in mine}
+    read1 = [u for u, m in mates.items() if m and m.start() == 0 and m["one"]]
+    read2 = [u for u, m in mates.items() if m and m.start() == 0 and m["two"]]
     single = [u for u in mine if u.endswith(f"/{accession}.fastq.gz")]
     if read1 and read2:
         chosen = ReadFiles(read1[0], read2[0])
