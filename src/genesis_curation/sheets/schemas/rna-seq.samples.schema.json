@@ -1,0 +1,93 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Genesis RNA-seq sample sheet",
+  "description": "One row per library. workflows/rna-seq.nf also checks the exact header, reference files, reference IDs and per-reference consistency.",
+  "type": "array",
+  "minItems": 1,
+  "uniqueEntries": [
+    "sample_id"
+  ],
+  "items": {
+    "type": "object",
+    "required": [
+      "sample_id",
+      "species",
+      "read1_url",
+      "read2_url",
+      "strandedness",
+      "reference_fasta",
+      "reference_annotation",
+      "organelle_contigs"
+    ],
+    "properties": {
+      "sample_id": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+        "meta": [
+          "id"
+        ],
+        "errorMessage": "sample_id must start with a letter, digit or underscore and contain only letters, digits, underscores, periods and hyphens"
+      },
+      "species": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+        "meta": [
+          "species"
+        ],
+        "errorMessage": "species must start with a letter, digit or underscore and contain only letters, digits, underscores, periods and hyphens"
+      },
+      "read1_url": {
+        "type": "string",
+        "pattern": "^https?://[A-Za-z0-9_.:%~@-]+[A-Za-z0-9_./:%?=&+~@#,-]*$",
+        "meta": [
+          "read1_url"
+        ],
+        "errorMessage": "read1_url must be an HTTP or HTTPS URL"
+      },
+      "read2_url": {
+        "type": "string",
+        "pattern": "^(-|https?://[A-Za-z0-9_.:%~@-]+[A-Za-z0-9_./:%?=&+~@#,-]*)$",
+        "meta": [
+          "read2_url"
+        ],
+        "errorMessage": "read2_url must be an HTTP or HTTPS URL, or - for single-end libraries"
+      },
+      "strandedness": {
+        "type": "string",
+        "enum": [
+          "unstranded",
+          "forward",
+          "reverse"
+        ],
+        "meta": [
+          "strandedness"
+        ],
+        "errorMessage": "strandedness must be unstranded, forward or reverse"
+      },
+      "reference_fasta": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*\\.(fa|fasta|fna)\\.gz$",
+        "meta": [
+          "reference_fasta"
+        ],
+        "errorMessage": "reference_fasta must be a gzipped FASTA basename ending in .fa.gz, .fasta.gz or .fna.gz"
+      },
+      "reference_annotation": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*\\.(gff3|gff|gtf)(\\.gz)?$",
+        "meta": [
+          "reference_annotation"
+        ],
+        "errorMessage": "reference_annotation must be a GFF3 or GTF basename (.gff3, .gff or .gtf, optionally .gz) in the references folder"
+      },
+      "organelle_contigs": {
+        "type": "string",
+        "pattern": "^(-|[A-Za-z0-9_.:|-]+(,[A-Za-z0-9_.:|-]+)*)$",
+        "meta": [
+          "organelle_contigs"
+        ],
+        "errorMessage": "organelle_contigs must be comma-separated contig names, or - for none"
+      }
+    }
+  }
+}

@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Genesis scATAC sample sheet",
+  "description": "One row per library of published fragments. workflows/scatac-seq.nf also checks the exact header, reference files, reference IDs and per-reference consistency.",
+  "type": "array",
+  "minItems": 1,
+  "uniqueEntries": [
+    "sample_id"
+  ],
+  "items": {
+    "type": "object",
+    "required": [
+      "sample_id",
+      "species",
+      "fragments_url",
+      "cells_url",
+      "reference_fasta",
+      "reference_genes",
+      "organelle_contigs"
+    ],
+    "properties": {
+      "sample_id": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+        "meta": [
+          "id"
+        ],
+        "errorMessage": "sample_id must start with a letter, digit or underscore and contain only letters, digits, underscores, periods and hyphens"
+      },
+      "species": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*$",
+        "meta": [
+          "species"
+        ],
+        "errorMessage": "species must start with a letter, digit or underscore and contain only letters, digits, underscores, periods and hyphens"
+      },
+      "fragments_url": {
+        "type": "string",
+        "pattern": "^https?://[A-Za-z0-9_.:%~@-]+[A-Za-z0-9_./:%?=&+~@#,-]*$",
+        "meta": [
+          "fragments_url"
+        ],
+        "errorMessage": "fragments_url must be an HTTP or HTTPS URL of a gzipped fragments file"
+      },
+      "cells_url": {
+        "type": "string",
+        "pattern": "^https?://[A-Za-z0-9_.:%~@-]+[A-Za-z0-9_./:%?=&+~@#,-]*$",
+        "meta": [
+          "cells_url"
+        ],
+        "errorMessage": "cells_url must be an HTTP or HTTPS URL of a barcode<TAB>group cell list"
+      },
+      "reference_fasta": {
+        "type": "string",
+        "pattern": "^[A-Za-z0-9_][A-Za-z0-9_.-]*\\.(fa|fasta|fna)\\.gz$",
+        "meta": [
+          "reference_fasta"
+        ],
+        "errorMessage": "reference_fasta must be a gzipped FASTA basename ending in .fa.gz, .fasta.gz or .fna.gz"
+      },
+      "reference_genes": {
+        "type": "string",
+        "pattern": "^(-|[A-Za-z0-9_][A-Za-z0-9_.-]*\\.bed)$",
+        "meta": [
+          "reference_genes"
+        ],
+        "errorMessage": "reference_genes must be a BED6 basename ending in .bed in the references folder, or - to skip TSS enrichment"
+      },
+      "organelle_contigs": {
+        "type": "string",
+        "pattern": "^(-|[A-Za-z0-9_.:|-]+(,[A-Za-z0-9_.:|-]+)*)$",
+        "meta": [
+          "organelle_contigs"
+        ],
+        "errorMessage": "organelle_contigs must be comma-separated contig names, or - for none"
+      }
+    }
+  }
+}

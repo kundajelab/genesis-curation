@@ -1,0 +1,37 @@
+# One entry per species, keyed by the folder name genesis-preprocessing sheets use.
+# Patterns are Python regular expressions matched case-insensitively.
+#   reference_genotype: the genotype the curated sheets keep (the reference genome's).
+#   reference_pattern: names the reference genotype in genotype fields and titles.
+#   title_marker: names the reference genotype in titles (within-study title rule);
+#     defaults to reference_pattern.
+#   gene_names_mean_mutant: a bare gene-allele name (phl1, atmorc4) in a genotype field
+#     means a mutant. False where cultivars share that shape (Sorghum Tx430).
+#   mutant_terms: extra species-specific mutant patterns (allele series such as bmr).
+#   references: file names written to sheets (as in the curated sheets); they must exist in the shared references
+#     folder genesis-preprocessing runs with.
+Arabidopsis_thaliana:
+  scientific_name: Arabidopsis thaliana
+  taxon: 3702
+  reference_genotype: Col-0
+  reference_pattern: '(?<![a-z0-9])(col(umbia)?[-_ ]?0|columbia|col)(?![a-z0-9])'
+  title_marker: '(?<![a-z])col(umbia)?([-_ ]?0)?(?![a-z])'
+  gene_names_mean_mutant: true
+  mutant_terms: []
+  references:
+    fasta: Athaliana_447_TAIR10.fa.gz
+    annotation: Athaliana_447_Araport11.gene_exons.gff3.gz
+    genes: Athaliana_447_Araport11.genes.bed
+    organelle_contigs: ChrC,ChrM
+Sorghum_bicolor:
+  scientific_name: Sorghum bicolor
+  taxon: 4558
+  reference_genotype: BTx623
+  reference_pattern: '(?<![a-z0-9])b?tx[-_ ]?623(?![0-9])'
+  title_marker: '(?<![a-z])b?tx[-_ ]?623(?![a-z])'
+  gene_names_mean_mutant: false
+  mutant_terms: ['\bbmr\d']
+  references:
+    fasta: Sbicolor_730_v5.0_PtMt.fa.gz
+    annotation: Sbicolor_730_v5.1_PtMt.gene_exons.gff3.gz
+    genes: Sbicolor_730_v5.1_PtMt.genes.bed
+    organelle_contigs: Pt,Mt

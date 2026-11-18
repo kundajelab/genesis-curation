@@ -90,3 +90,34 @@ traps:
     why: >-
       FRiP 0.07 in a full Perlmutter run (TSS enrichment 2.3 on 200k pairs passed the
       metadata-stage cutoff). Gold 2026-11-17 still includes it; the test sheet dropped it.
+  - id: rna-duplicate-keeps-earliest
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR10915190, SRR12426570, SRR28087964]
+    expect: excluded
+    reason_class: duplicate
+    why: >-
+      Resubmissions of SRR7447253, SRR8352559 and SRR5040384 (same read count and first reads).
+      The earliest accession by number is kept; a string sort keeps SRR10915190 instead.
+  - id: rna-duplicate-original-kept
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR7447253, SRR8352559, SRR5040384]
+    expect: included
+    why: The first submission of each duplicated library stays in the sheet.
+  - id: rna-study-title-names-mutants
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR27054271]
+    expect: included
+    why: >-
+      The experiment title says "RNAseq of rog mutants" for the whole study, but the sample
+      title (Col0_cont-rep3) names the reference; a study-level word does not flag the sample.
+  - id: rna-10x-and-chromatin-in-titles
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR37749403, SRR3352580]
+    expect: included
+    why: >-
+      "control for 10X tpp-KO" (a fold change, not 10x Genomics) and "chromatin interaction
+      network" (the study topic, not chromatin-bound RNA) are bulk RNA-seq.

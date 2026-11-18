@@ -5,13 +5,18 @@ from __future__ import annotations
 import argparse
 import datetime
 import hashlib
+import json
+import sys
 import urllib.request
 from pathlib import Path
 from typing import Any
 
 import yaml
 
+from . import rna, species
 from . import score as scoring
+from .archives import Archive
+from .measure.strand import Tools
 from .tables import FIELDS, load_runs_qc, load_sheet
 
 EVALS = Path(__file__).resolve().parents[3] / "evals"
@@ -94,12 +99,64 @@ def append_history(path: Path, label: str, result: dict[str, Any]) -> None:
         handle.write("| " + " | ".join(row) + " |\n")
 
 
+BUILDERS = {"rna-seq": rna}
+
+
+def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
+    chosen = species.load(args.species)
+    cache = args.cache or args.out / "cache"
+    tools = None
+    if not args.no_measure:
+        tools = Tools.find(args.star, args.featurecounts, args.gffread, args.threads)
+    options = rna.Options(
+        cache=cache,
+        measure=not args.no_measure,
+        strandedness_from=args.strandedness_from,
+        references=args.references,
+        star_index=args.star_index,
+        tools=tools,
+        probe_duplicates=not args.no_probe,
+    )
+    archive = Archive(cache / "ena", offline=args.offline)
+    builder = BUILDERS[args.workflow]
+    summary = builder.build(chosen, archive, args.out, options, log=log)
+    (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
+    return summary, 0
+
+
+def log(message: str) -> None:
+    print(message, file=sys.stderr, flush=True)
+
+
 def configure(parser: argparse.ArgumentParser) -> None:
     commands = parser.add_subparsers(dest="operation", required=True)
     gold = commands.add_parser("gold-fetch", help="Download the gold sheets listed in a manifest")
     gold.add_argument("--manifest", type=Path, default=EVALS / "gold.yaml")
     gold.add_argument("--to", type=Path, required=True)
     gold.set_defaults(curation_handler=fetch)
+
+    build = commands.add_parser(
+        "build", help="Build a sample sheet and runs-qc table for one species from ENA"
+    )
+    build.add_argument("--workflow", required=True, choices=sorted(BUILDERS))
+    build.add_argument("--species", required=True, help="Folder name, e.g. Sorghum_bicolor")
+    build.add_argument("--out", type=Path, required=True)
+    build.add_argument("--cache", type=Path, help="ENA and measurement cache (default OUT/cache)")
+    build.add_argument(
+        "--strandedness-from", type=Path, help="Reuse calls from a TSV with run, strandedness"
+    )
+    build.add_argument(
+        "--no-measure", action="store_true", help="Leave runs without a call out, unmeasured"
+    )
+    build.add_argument("--no-probe", action="store_true", help="Skip the duplicate-reads probe")
+    build.add_argument("--offline", action="store_true", help="Use only cached ENA responses")
+    build.add_argument("--references", type=Path, help="Folder with the species' references")
+    build.add_argument("--star-index", type=Path, help="Default: REFERENCES/<fasta>.<gff>.star")
+    build.add_argument("--star", help="STAR executable (default: on PATH)")
+    build.add_argument("--featurecounts", help="featureCounts executable (default: on PATH)")
+    build.add_argument("--gffread", help="gffread executable (default: on PATH)")
+    build.add_argument("--threads", type=int, default=16)
+    build.set_defaults(curation_handler=run_build)
 
     run = commands.add_parser("score", help="Score a candidate sheet against gold and traps")
     run.add_argument("--workflow", required=True, choices=sorted(FIELDS))
