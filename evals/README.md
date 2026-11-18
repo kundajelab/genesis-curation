@@ -1,47 +1,33 @@
 # Evaluation
 
-`gold.yaml` lists the curated sample sheets used as gold, with checksums. `traps.yaml`
-lists runs that earlier curation rounds got wrong or nearly wrong; every trap must pass.
+These files measure how well `genesis sheets build` reproduces the curated sample sheets.
+How to build and score a sheet is in [sample sheets](../docs/usage/sample-sheets.md).
 
-```bash
-genesis sheets gold-fetch --to "$TMPDIR/gold"
-genesis sheets score --workflow rna-seq --species Sorghum_bicolor --gold-dir "$TMPDIR/gold" \
-    --candidate-sheet sheet.tsv --candidate-qc sheet.runs-qc.tsv --history evals/HISTORY.md
-```
+| File | Contents |
+| --- | --- |
+| `gold.yaml` | The gold sheets and runs-qc tables on the project's Hugging Face bucket, one entry per species and workflow, with SHA-256 checksums. `genesis sheets gold-fetch` downloads them. |
+| `traps.yaml` | Runs that earlier curation rounds got wrong or nearly wrong (trimmed uploads, mislabelled layouts, "DAP" meaning days after pollination, duplicate submissions and so on). Each trap says whether its runs must be kept or left out, and why. Every trap must pass. |
+| `HISTORY.md` | One row per scored build, appended by `genesis sheets score --history`. |
 
-The report gives run-level precision and recall (`precision_known` ignores runs gold never
-saw), per-field accuracy, how exclusion reasons map between gold and candidate, and trap
-results. Targets: precision and recall at least 0.95, every field at least 0.98, all traps
-pass. A miss is fixed in the rules, recorded as a trap, or corrected in gold with a note.
+## Targets
 
-## Building a candidate
+- Run-level precision and recall of at least 0.95. `precision_known` ignores runs that gold
+  never considered, which separates real mistakes from runs gold missed.
+- At least 0.98 accuracy on every workflow field.
+- Every trap passes.
 
-```bash
-genesis sheets build --workflow rna-seq --species Sorghum_bicolor --out "$TMPDIR/sb" \
-    --references REFS --star STAR --featurecounts FEATURECOUNTS --gffread GFFREAD
-genesis sheets build --workflow rna-seq --species Sorghum_bicolor --out "$TMPDIR/sb-meta" \
-    --no-measure --strandedness-from "$TMPDIR/gold/Sorghum_bicolor/rna-seq-curated.runs-qc.tsv"
-```
+## Fixing a miss
 
-`REFS` holds the species' `reference_fasta`, `reference_annotation` and the STAR index
-genesis-preprocessing builds (`<fasta>.<annotation>.star`). The second form reuses earlier
-strandedness calls and leaves the other runs out as "strandedness not measured", so it scores
-the metadata rules quickly; history rows say which form they used.
+Each miss is fixed in one of three ways:
 
-### atac-seq
+1. **A rule is wrong or missing.** Fix the builder and add a trap to `traps.yaml` that would
+   have caught it.
+2. **The evidence is outside the archive record** (a paper's methods, a GEO page, a read
+   check). Add an entry with that evidence to the matching file in
+   `src/genesis_curation/sheets/data/`.
+3. **Gold is wrong.** Record the correction and its evidence. Gold on Hugging Face is changed
+   only with the maintainers' agreement.
 
-```bash
-genesis sheets build --workflow atac-seq --species Sorghum_bicolor --out "$TMPDIR/sb-atac" \
-    --extra-runs bulk-atac-tab.tsv --references REFS --chromap CHROMAP
-genesis sheets build --workflow atac-seq --species Sorghum_bicolor --out "$TMPDIR/sb-atac-meta" \
-    --extra-runs bulk-atac-tab.tsv --no-measure \
-    --measure-from "$TMPDIR/gold/Sorghum_bicolor/atac-seq-curated.runs-qc.tsv"
-```
-
-`--extra-runs` is the "Bulk ATAC Fable Curated" tab of the Genesis metadata sheet exported as
-TSV; it adds INSDC runs with other library strategies and the GSA (CRR) runs, whose files are
-found on the GSA download servers. `REFS` holds the species' `reference_fasta` and
-`reference_genes`; the chromap index is built into the cache unless `--chromap-index` is given.
-Each run's first 200,000 read pairs are mapped (8 runs at a time); a run needs a mapped
-fraction of at least 0.05, an organelle fraction of at most 0.95 and TSS enrichment of at
-least 1.5. The second form reuses the gold metrics and leaves other runs out as "not measured".
+Then rescore and append the result to `HISTORY.md`. A history row notes whether reads were
+measured or reused from gold (`--no-measure` with `--strandedness-from` or `--measure-from`),
+because builds that reuse measurements test only the metadata rules.
