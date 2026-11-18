@@ -1,0 +1,31 @@
+# scatac-reads decisions the metadata rules cannot make, per species, each with its evidence.
+# The rules in scatac.py group runs into libraries and find BAM-only duplicates on their
+# own; entries here are for what SRA does not say.
+#
+#   studies.<study>: values for every library of a study
+#     genotype: the genotype when SRA does not give it (read as the sample's genotype field)
+#     treatment: what the study's treatment field means (read as the treatment field)
+#   merge: experiments that are one 10x library although SRA keeps them apart
+#     (the rules already merge experiments of one BioSample whose titles differ only by a
+#     lane or sample-index suffix)
+#     - experiments: [first, others...]   the library takes the first one's labels
+#   same_as: an experiment that repeats another experiment's library
+#     - experiment: ...  library: ...  reason: ...
+#   exclude: libraries left out by hand
+#     - experiments: [...]  reason: ...
+# Every entry needs `why`.
+Arabidopsis_thaliana:
+  studies:
+    SRP273727:
+      treatment: untreated
+      why: >-
+        The treatment field says "Fresh" for both root libraries (GSE155178, the maize
+        cis-regulatory atlas study, where Arabidopsis root is a comparison): freshly
+        isolated nuclei, the only condition of these libraries, not a treatment.
+Sorghum_bicolor:
+  studies:
+    SRP474955:
+      genotype: BTx623
+      why: >-
+        SRA and GEO (GSE248919) give no genotype; the paper's Methods (Swift 2024,
+        de-etiolation multiome) use BTx623.
