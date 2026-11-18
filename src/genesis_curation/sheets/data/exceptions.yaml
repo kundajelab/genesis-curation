@@ -1,0 +1,11 @@
+# Curated per-run decisions that the rules cannot make, each with its evidence. A listed run
+# is left out with `reason` (checked right after the assay flags, so the reason is recorded
+# even when a later rule would also leave the run out).
+rna-seq:
+  Arabidopsis_thaliana:
+    - study: PRJNA1442195
+      runs: [SRR37749405]
+      reason: sample title reports contamination
+      why: >-
+        The sample note of COL4 ("control for 10X tpp-KO") reports contamination; found in a
+        title scan of the kept runs (curation of 2026-11-17).
