@@ -180,8 +180,10 @@ def log(message: str) -> None:
 def configure(parser: argparse.ArgumentParser) -> None:
     commands = parser.add_subparsers(dest="operation", required=True)
     gold = commands.add_parser("gold-fetch", help="Download the gold sheets listed in a manifest")
-    gold.add_argument("--manifest", type=Path, default=EVALS / "gold.yaml")
-    gold.add_argument("--to", type=Path, required=True)
+    gold.add_argument(
+        "--manifest", type=Path, default=EVALS / "gold.yaml", help="Default: evals/gold.yaml"
+    )
+    gold.add_argument("--to", type=Path, required=True, help="Directory to download into")
     gold.set_defaults(curation_handler=fetch)
 
     build = commands.add_parser(
@@ -189,7 +191,12 @@ def configure(parser: argparse.ArgumentParser) -> None:
     )
     build.add_argument("--workflow", required=True, choices=sorted(BUILDERS))
     build.add_argument("--species", required=True, help="Folder name, e.g. Sorghum_bicolor")
-    build.add_argument("--out", type=Path, required=True)
+    build.add_argument(
+        "--out",
+        type=Path,
+        required=True,
+        help="Output folder for the sheet, runs-qc and build.json",
+    )
     build.add_argument("--cache", type=Path, help="ENA and measurement cache (default OUT/cache)")
     build.add_argument(
         "--strandedness-from", type=Path, help="Reuse calls from a TSV with run, strandedness"
@@ -223,26 +230,32 @@ def configure(parser: argparse.ArgumentParser) -> None:
     build.add_argument("--star", help="STAR executable (default: on PATH)")
     build.add_argument("--featurecounts", help="featureCounts executable (default: on PATH)")
     build.add_argument("--gffread", help="gffread executable (default: on PATH)")
-    build.add_argument("--threads", type=int, default=16)
+    build.add_argument("--threads", type=int, default=16, help="Threads for read measurements")
     atac_group = build.add_argument_group("atac-seq")
     atac_group.add_argument(
         "--extra-runs", type=Path, help="More candidate runs: a metadata-sheet tab export (TSV)"
     )
     atac_group.add_argument("--chromap", help="chromap executable (default: on PATH)")
     atac_group.add_argument("--chromap-index", type=Path, help="Default: built into the cache")
-    atac_group.add_argument("--pairs", type=int, default=atac_checks.PAIRS, help="Pairs sampled")
+    atac_group.add_argument(
+        "--pairs", type=int, default=atac_checks.PAIRS, help="Read pairs sampled per run"
+    )
     build.set_defaults(curation_handler=run_build)
 
     run = commands.add_parser("score", help="Score a candidate sheet against gold and traps")
     run.add_argument("--workflow", required=True, choices=sorted(FIELDS))
     run.add_argument("--species", default="", help="Species folder name, e.g. Sorghum_bicolor")
-    run.add_argument("--candidate-sheet", type=Path, required=True)
-    run.add_argument("--candidate-qc", type=Path)
+    run.add_argument("--candidate-sheet", type=Path, required=True, help="The built sheet (TSV)")
+    run.add_argument("--candidate-qc", type=Path, help="The built runs-qc table (TSV)")
     run.add_argument("--gold-sheet", type=Path, help="Overrides the manifest lookup")
-    run.add_argument("--gold-qc", type=Path)
+    run.add_argument("--gold-qc", type=Path, help="Overrides the manifest lookup")
     run.add_argument("--gold-dir", type=Path, help="Directory filled by gold-fetch")
-    run.add_argument("--manifest", type=Path, default=EVALS / "gold.yaml")
-    run.add_argument("--traps", type=Path, default=EVALS / "traps.yaml")
+    run.add_argument(
+        "--manifest", type=Path, default=EVALS / "gold.yaml", help="Default: evals/gold.yaml"
+    )
+    run.add_argument(
+        "--traps", type=Path, default=EVALS / "traps.yaml", help="Default: evals/traps.yaml"
+    )
     run.add_argument("--history", type=Path, help="Markdown table to append a summary row to")
     run.add_argument("--label", help="Candidate name for the history row")
     run.set_defaults(curation_handler=run_score)

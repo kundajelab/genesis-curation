@@ -19,17 +19,19 @@ from .web import runtime, storage
 
 
 def configure(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--root", type=Path, required=True)
+    parser.add_argument("--root", type=Path, required=True, help="Runtime directory")
     parser.set_defaults(curation_handler=execute)
     commands = parser.add_subparsers(dest="operation", required=True)
-    init = commands.add_parser("init")
+    init = commands.add_parser("init", help="Create the runtime and its curator account")
     init.add_argument("--username", default="curator")
     init.add_argument("--password-env")
-    commands.add_parser("doctor")
-    clean = commands.add_parser("clean")
+    commands.add_parser("doctor", help="Check the runtime and its configuration")
+    clean = commands.add_parser(
+        "clean", help="Preview (or --apply) removal of cache and temporary files"
+    )
     clean.add_argument("--apply", action="store_true")
     provider = commands.add_parser(
-        "provider", help="Add/update a provider; keys are prompted privately"
+        "provider", help="Add or update a model provider (the key is prompted for)"
     )
     provider.add_argument("id")
     provider.add_argument("--model", required=True)
@@ -46,7 +48,7 @@ def configure(parser: argparse.ArgumentParser) -> None:
     provider.add_argument("--max-output", type=int, default=4096)
     provider.add_argument("--input-price", type=float)
     provider.add_argument("--output-price", type=float)
-    budget = commands.add_parser("budget")
+    budget = commands.add_parser("budget", help="Set the model spending limit")
     budget.add_argument("--limit-usd", type=float, required=True)
 
 

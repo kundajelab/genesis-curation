@@ -11,8 +11,9 @@ from ..web import catalog, studies, workspace
 
 def configure(parser: argparse.ArgumentParser) -> None:
     commands = parser.add_subparsers(dest="operation", required=True)
-    for name in ("import", "export"):
-        child = commands.add_parser(name)
+    summaries = {"import": "Import a metadata table", "export": "Export the metadata workspace"}
+    for name, summary in summaries.items():
+        child = commands.add_parser(name, help=summary)
         child.set_defaults(curation_handler=execute)
         child.add_argument("--root", type=Path, required=True)
         if name != "export":

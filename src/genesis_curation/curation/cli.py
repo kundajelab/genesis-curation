@@ -18,8 +18,13 @@ from ..web import runtime, worker
 
 
 def configure(parser: argparse.ArgumentParser) -> None:
-    parser.add_argument("--root", type=Path, default=os.environ.get("GENESIS_RUNTIME"))
-    parser.add_argument("--providers", type=Path)
+    parser.add_argument(
+        "--root",
+        type=Path,
+        default=os.environ.get("GENESIS_RUNTIME"),
+        help="Runtime directory (default: $GENESIS_RUNTIME)",
+    )
+    parser.add_argument("--providers", type=Path, help="Provider configuration JSON")
     parser.add_argument("--json", action="store_true", help="Machine-readable JSON output")
     parser.add_argument("--output", type=Path, help="Save response or downloaded export")
     parser.add_argument("--wait", action="store_true", help="Wait for submitted jobs")
@@ -30,32 +35,36 @@ def configure(parser: argparse.ArgumentParser) -> None:
     raw.add_argument("path")
     raw.add_argument("--file", type=Path, help="JSON request body")
     commands.add_parser("operations", help="List the complete GUI/CLI operation contract")
-    commands.add_parser("summary")
-    commands.add_parser("skills")
-    commands.add_parser("providers")
-    discover = commands.add_parser("discover")
+    commands.add_parser("summary", help="Show the workspace overview")
+    commands.add_parser("skills", help="List the curation skills")
+    commands.add_parser("providers", help="List configured model providers")
+    discover = commands.add_parser("discover", help="Search archives and literature for datasets")
     discover.add_argument("--species", action="append", required=True)
     discover.add_argument("--assay", action="append", required=True)
     discover.add_argument("--goal", default="Find public plant datasets")
     discover.add_argument("--provider")
     discover.add_argument("--constraints", type=Path)
-    curate = commands.add_parser("curate")
+    curate = commands.add_parser("curate", help="Propose metadata for one study version")
     curate.add_argument("--study", required=True)
     curate.add_argument("--version", required=True)
     curate.add_argument("--provider")
-    intake = commands.add_parser("intake")
+    intake = commands.add_parser("intake", help="Add a study by accession")
     intake.add_argument("accession")
     intake.add_argument("--provider")
-    imported = commands.add_parser("import")
+    imported = commands.add_parser("import", help="Import a metadata table (CSV/TSV)")
     imported.add_argument("file", type=Path)
     imported.add_argument("--namespace", required=True)
     imported.add_argument("--id-column", default="sample_id")
     imported.add_argument(
         "--classification", choices=("public", "internal", "local-only"), default="local-only"
     )
-    export = commands.add_parser("export")
+    export = commands.add_parser(
+        "export", help="Export metadata; --clean exports signed-off studies only"
+    )
     export.add_argument("--clean", action="store_true")
-    review = commands.add_parser("review").add_subparsers(dest="action", required=True)
+    review = commands.add_parser(
+        "review", help="List, inspect, decide and approve review tasks"
+    ).add_subparsers(dest="action", required=True)
     review.add_parser("list")
     for action in ("show", "history", "draft", "decide", "investigate", "approve"):
         child = review.add_parser(action)
@@ -64,11 +73,15 @@ def configure(parser: argparse.ArgumentParser) -> None:
             child.add_argument("--file", type=Path, required=action != "draft")
         if action == "approve":
             child.add_argument("--version", required=True)
-    jobs = commands.add_parser("jobs").add_subparsers(dest="action", required=True)
+    jobs = commands.add_parser("jobs", help="List, show, wait for or cancel jobs").add_subparsers(
+        dest="action", required=True
+    )
     jobs.add_parser("list")
     for action in ("show", "cancel", "wait"):
         jobs.add_parser(action).add_argument("id")
-    qc = commands.add_parser("qc").add_subparsers(dest="action", required=True)
+    qc = commands.add_parser(
+        "qc", help="Import measured QC and record QC decisions"
+    ).add_subparsers(dest="action", required=True)
     qc.add_parser("summary")
     qc.add_parser("import").add_argument("file", type=Path)
     qc.add_parser("evaluate").add_argument("file", type=Path, help="QC profile JSON")

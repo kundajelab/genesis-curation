@@ -17,13 +17,21 @@ from .web import cli as web_cli
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Plant metadata discovery, curation and review")
+    parser = argparse.ArgumentParser(
+        description="Plant metadata discovery, curation and review",
+        epilog="Run 'genesis COMMAND --help' for the options of each command.",
+    )
     commands = parser.add_subparsers(dest="command", required=True)
-    for name, module in (("web", web_cli), ("metadata", metadata_cli), ("ai", ai_cli)):
-        module.configure(commands.add_parser(name))
-    curation_cli.configure(commands.add_parser("curation"))
-    installation.configure(commands.add_parser("workspace"))
-    sheets_cli.configure(commands.add_parser("sheets"))
+    groups = (
+        ("web", web_cli, "Run the web server and the job worker"),
+        ("metadata", metadata_cli, "Import or export metadata tables directly"),
+        ("ai", ai_cli, "List and check model providers; manage local models"),
+        ("curation", curation_cli, "Discover, curate, review and export (the GUI's operations)"),
+        ("workspace", installation, "Create and maintain a runtime: account, providers, budget"),
+        ("sheets", sheets_cli, "Build and score genesis-preprocessing sample sheets"),
+    )
+    for name, module, summary in groups:
+        module.configure(commands.add_parser(name, help=summary, description=summary))
     args = parser.parse_args()
     try:
         result, code = args.curation_handler(args)

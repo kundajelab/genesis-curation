@@ -13,8 +13,14 @@ from . import runtime, worker
 
 def configure(parser: argparse.ArgumentParser) -> None:
     commands = parser.add_subparsers(dest="operation", required=True)
-    for name in ("init", "reset-password", "serve", "worker"):
-        child = commands.add_parser(name)
+    summaries = {
+        "init": "Create the curator account",
+        "reset-password": "Reset the curator password",
+        "serve": "Serve the web app",
+        "worker": "Run queued jobs",
+    }
+    for name, summary in summaries.items():
+        child = commands.add_parser(name, help=summary)
         child.add_argument("--root", type=Path, required=True)
         child.set_defaults(curation_handler=execute)
         if name in {"init", "reset-password"}:
