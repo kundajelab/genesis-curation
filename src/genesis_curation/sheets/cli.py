@@ -173,6 +173,101 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     return summary, 0
 
 
+def build_namespace(**values: object) -> argparse.Namespace:
+    """`build` arguments with their defaults, overridden by `values`."""
+    defaults: dict[str, object] = {
+        "cache": None,
+        "strandedness_from": None,
+        "measure_from": None,
+        "no_measure": True,
+        "no_probe": False,
+        "vdb_dump": None,
+        "skip_runs_in": [],
+        "offline": False,
+        "references": None,
+        "star_index": None,
+        "star": None,
+        "featurecounts": None,
+        "gffread": None,
+        "threads": 16,
+        "extra_runs": None,
+        "chromap": None,
+        "chromap_index": None,
+        "pairs": atac_checks.PAIRS,
+    }
+    return argparse.Namespace(**(defaults | values))
+
+
+def run_campaign(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
+    """Metadata-only builds of several workflows for one species, each scored against gold
+    when the manifest has a gold set for it. Gold runs-qc tables, when given with
+    --gold-dir, supply the read measurements a metadata-only build cannot make."""
+    gold = {
+        entry["workflow"]: entry
+        for entry in gold_entries(args.manifest)
+        if entry["species"] == args.species
+    }
+    cache = args.cache or args.out / "cache"
+    results: dict[str, Any] = {}
+    failed = 0
+    for workflow in args.workflows:
+        out = args.out / workflow
+        entry = gold.get(workflow) if args.gold_dir else None
+        reuse = args.gold_dir / entry["runs_qc"] if entry else None
+        build_args = build_namespace(
+            workflow=workflow,
+            species=args.species,
+            out=out,
+            cache=cache / workflow,
+            offline=args.offline,
+            no_probe=args.no_probe,
+            strandedness_from=reuse if workflow == "rna-seq" else None,
+            measure_from=reuse if workflow in ("tss-seq", "atac-seq") else None,
+            extra_runs=args.atac_extra_runs if workflow == "atac-seq" else None,
+            skip_runs_in=args.dap_skip_runs_in if workflow == "dap-seq" else [],
+        )
+        log(f"campaign: {args.species} {workflow}")
+        try:
+            summary, _ = run_build(build_args)
+        except Exception as error:  # one workflow failing must not stop the others
+            failed += 1
+            results[workflow] = {"error": f"{type(error).__name__}: {error}"}
+            log(f"campaign: {workflow} failed: {error}")
+            continue
+        item: dict[str, Any] = {
+            "in_sheet": summary.get("in_sheet"),
+            "runs": summary.get("runs"),
+            "sheet": str(out / f"{workflow}.tsv") if (out / f"{workflow}.tsv").exists() else None,
+        }
+        if entry:
+            score_args = argparse.Namespace(
+                workflow=workflow,
+                species=args.species,
+                candidate_sheet=out / f"{workflow}.tsv",
+                candidate_qc=out / f"{workflow}.runs-qc.tsv",
+                gold_sheet=None,
+                gold_qc=None,
+                gold_dir=args.gold_dir,
+                manifest=args.manifest,
+                traps=args.traps,
+                history=args.history,
+                label=f"{args.label} ({workflow})" if args.label else None,
+            )
+            result, _ = run_score(score_args)
+            (out / "score.json").write_text(json.dumps(result, indent=2) + "\n")
+            traps = result.get("traps") or {}
+            item |= {
+                "precision": result["precision"],
+                "recall": result["recall"],
+                "traps": f"{traps.get('passed', 0)}/{traps.get('checked', 0)}",
+            }
+        results[workflow] = item
+    report = {"species": args.species, "workflows": results}
+    args.out.mkdir(parents=True, exist_ok=True)
+    (args.out / "campaign.json").write_text(json.dumps(report, indent=2) + "\n")
+    return report, 1 if failed else 0
+
+
 def log(message: str) -> None:
     print(message, file=sys.stderr, flush=True)
 
@@ -241,6 +336,50 @@ def configure(parser: argparse.ArgumentParser) -> None:
         "--pairs", type=int, default=atac_checks.PAIRS, help="Read pairs sampled per run"
     )
     build.set_defaults(curation_handler=run_build)
+
+    campaign = commands.add_parser(
+        "campaign",
+        help="Metadata-only builds of several workflows for one species, scored against gold",
+    )
+    campaign.add_argument("--species", required=True, help="Folder name, e.g. Sorghum_bicolor")
+    campaign.add_argument(
+        "--out", type=Path, required=True, help="Output folder; one subfolder per workflow"
+    )
+    campaign.add_argument(
+        "--workflows",
+        nargs="+",
+        choices=sorted(BUILDERS),
+        default=sorted(BUILDERS),
+        help="Default: all",
+    )
+    campaign.add_argument(
+        "--gold-dir",
+        type=Path,
+        help="Directory filled by gold-fetch: scores each workflow that has gold, and reuses "
+        "its read measurements",
+    )
+    campaign.add_argument("--cache", type=Path, help="Default: OUT/cache")
+    campaign.add_argument("--offline", action="store_true", help="Use only cached responses")
+    campaign.add_argument("--no-probe", action="store_true", help="Skip read probes")
+    campaign.add_argument(
+        "--atac-extra-runs", type=Path, help="atac-seq: more candidate runs (TSV, see build)"
+    )
+    campaign.add_argument(
+        "--dap-skip-runs-in",
+        type=Path,
+        action="append",
+        default=[],
+        help="dap-seq: leave out studies in this sheet; repeatable",
+    )
+    campaign.add_argument(
+        "--manifest", type=Path, default=EVALS / "gold.yaml", help="Default: evals/gold.yaml"
+    )
+    campaign.add_argument(
+        "--traps", type=Path, default=EVALS / "traps.yaml", help="Default: evals/traps.yaml"
+    )
+    campaign.add_argument("--history", type=Path, help="Markdown table to append rows to")
+    campaign.add_argument("--label", help="Candidate name for the history rows")
+    campaign.set_defaults(curation_handler=run_campaign)
 
     run = commands.add_parser("score", help="Score a candidate sheet against gold and traps")
     run.add_argument("--workflow", required=True, choices=sorted(FIELDS))

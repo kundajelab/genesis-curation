@@ -297,7 +297,8 @@ def check_build() -> None:
         ).read_text()
         # Without reused metrics nothing is measured, and every run says why.
         bare = atac.Options(cache=root / "cache", measure=False, extra_runs=FIXTURES / "tab.tsv")
-        rejects(lambda: atac.build(SB, offline, root / "bare", bare, log=quiet), "non-empty")
+        atac.build(SB, offline, root / "bare", bare, log=quiet)
+        assert not (root / "bare" / "atac-seq.tsv").exists()  # no sheet with no runs
         qc = load_runs_qc(root / "bare" / "atac-seq.runs-qc.tsv")
         assert qc["SRR5748780"]["reason_left_out"] == "not measured"
         rejects(

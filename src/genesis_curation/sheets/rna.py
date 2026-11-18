@@ -203,8 +203,8 @@ def build(
             item.reason = value
 
     rows, qc = sheet_rows(species, candidates)
-    writers.write_sheet(out / f"{WORKFLOW}.tsv", WORKFLOW, rows)
     writers.write_runs_qc(out / f"{WORKFLOW}.runs-qc.tsv", qc)
+    writers.write_sheet(out / f"{WORKFLOW}.tsv", WORKFLOW, rows)
     reasons = Counter(
         re.sub(r" of \S+", "", row["reason_left_out"].split(" (")[0].split(":")[0]) for row in qc
     )

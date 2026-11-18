@@ -78,6 +78,11 @@ def write_tsv(path: Path, columns: Sequence[str], rows: Sequence[dict[str, str]]
 
 
 def write_sheet(path: Path, workflow: str, rows: Sequence[dict[str, str]]) -> None:
+    """Write the sheet, or none when no run is kept (a metadata-only build with nothing to
+    reuse measures no runs, and genesis-preprocessing refuses an empty sheet)."""
+    if not rows:
+        path.unlink(missing_ok=True)
+        return
     validate(workflow, rows)
     write_tsv(path, header(workflow), sorted(rows, key=lambda row: row["sample_id"]))
 

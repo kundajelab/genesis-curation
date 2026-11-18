@@ -20,6 +20,7 @@ import xml.etree.ElementTree as ET
 from collections.abc import Callable, Iterable
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
+from http.client import HTTPException
 from pathlib import Path
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -188,7 +189,7 @@ class Archive:
             try:
                 text = self.fetcher(url, data)
                 break
-            except (HTTPError, URLError, TimeoutError, ConnectionError) as error:
+            except (HTTPError, URLError, TimeoutError, ConnectionError, HTTPException) as error:
                 code = error.code if isinstance(error, HTTPError) else None
                 if code is not None and code < 500 and code != 429:
                     raise ValueError(f"ENA request failed: HTTP {code} for {url}") from error
