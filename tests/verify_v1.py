@@ -36,7 +36,7 @@ def main() -> None:
     help_text = subprocess.check_output(
         [sys.executable, "-m", "genesis_curation.cli", "--help"], text=True
     )
-    assert "{web,metadata,ai,curation,workspace}" in help_text
+    assert "{web,metadata,ai,curation,workspace,sheets}" in help_text
     print("PASS metadata-only command surface")
 
 

@@ -1,0 +1,92 @@
+# Known traps from earlier curation rounds. Each one is checked by `genesis sheets score`
+# against the candidate sheet and runs-qc table for the same species and workflow.
+# expect: included | excluded. Optional: reason_class (see sheets/score.py REASON_CLASSES)
+# for excluded runs, fields (sheet values) for included runs.
+traps:
+  - id: dap-trimmed-uploads
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR28539611, SRR35903219, SRR9702094]
+    expect: excluded
+    reason_class: files
+    why: >-
+      Reads were trimmed before upload (first 100 reads differ in length); the DAP
+      workflow's METADATA step requires untrimmed reads (PRJNA1095882, PRJNA1354843, PRJNA551415).
+  - id: dap-mates-in-two-runs
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR28418942]
+    expect: excluded
+    reason_class: files
+    why: >-
+      Read 2 of the input SRR28418943 was uploaded as its own run; read names differ from
+      read 1, so bwa refuses to pair them. The study runs single-end (PRJNA1090874).
+  - id: dap-input-single-end
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR28418943]
+    expect: included
+    fields: {layout: single}
+    why: The input whose mate is a separate run is used single-end, with its treatments.
+  - id: dap-days-after-pollination
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [ERR17427126]
+    expect: excluded
+    reason_class: assay
+    why: '"DAP" in the title means days after pollination, not DNA affinity purification.'
+  - id: scatac-interleaved-instruments
+    species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    runs: [SRR38507144, SRR38507142]
+    expect: excluded
+    reason_class: files
+    why: >-
+      Each SRA run interleaves MiSeq and NovaSeq reads whose barcodes read in opposite
+      orientations; the workflow sets one orientation from the first reads (SRP699388).
+  - id: rna-paired-served-as-one-file
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR20079009, SRR20079006]
+    expect: excluded
+    reason_class: files
+    why: ENA lists the run as PAIRED but serves one file holding both mates in two blocks.
+  - id: rna-single-cell-in-bulk
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR9618710]
+    expect: excluded
+    reason_class: assay
+    why: Labelled RNA-Seq, but read 1 holds only the cell barcode.
+  - id: rna-other-assays-behind-underscores
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR12272506, SRR26414733]
+    expect: excluded
+    reason_class: assay
+    why: >-
+      QuantSeq and m6A IP runs whose titles put the assay after an underscore; a `\b`
+      regex misses them (underscore is a word character).
+  - id: rna-smar2c2-labelled-rna-seq
+    species: Sorghum_bicolor
+    workflow: rna-seq
+    runs: [SRR18098724, SRR18098725, SRR18098726, SRR18098727]
+    expect: excluded
+    reason_class: assay
+    why: Smar2C2 TSS libraries submitted as RNA-Seq.
+  - id: rna-duplicate-submissions
+    species: Sorghum_bicolor
+    workflow: rna-seq
+    runs: [SRR26087269, SRR26087270]
+    expect: excluded
+    reason_class: duplicate
+    why: Same reads as SRR26087205 and SRR26087208, submitted twice.
+  - id: atac-low-frip-gsa
+    species: Sorghum_bicolor
+    workflow: atac-seq
+    runs: [CRR145290]
+    expect: excluded
+    reason_class: qc
+    why: >-
+      FRiP 0.07 in a full Perlmutter run (TSS enrichment 2.3 on 200k pairs passed the
+      metadata-stage cutoff). Gold 2026-11-17 still includes it; the test sheet dropped it.

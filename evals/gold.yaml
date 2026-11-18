@@ -1,0 +1,58 @@
+# Gold sample sheets used by `genesis sheets score`. Fetch with `genesis sheets gold-fetch --to DIR`.
+# They are the curated sheets on the Stanford-Genesis Hugging Face bucket as of 2026-11-17.
+base_url: https://huggingface.co/buckets/Stanford-Genesis/genesis-curation/resolve/curated-sample-sheets
+gold:
+  - species: Arabidopsis_thaliana
+    workflow: rna-seq
+    sheet: Arabidopsis_thaliana/rna-seq-curated.tsv
+    sheet_sha256: 2f6649cacb1f84182bfec7730d86c80be988e7c3aa49e4f7f04cc361b7e3ff01
+    runs_qc: Arabidopsis_thaliana/rna-seq-curated.runs-qc.tsv
+    runs_qc_sha256: 4d4de261e26dd7933bb7503513c948f2ea9aa07da8f7b68fbc6448c9647a63d4
+  - species: Arabidopsis_thaliana
+    workflow: atac-seq
+    sheet: Arabidopsis_thaliana/atac-seq-curated.tsv
+    sheet_sha256: 9bec22d116337f58297dbe40523a15198225f7764747e9729414cdf8773c5f84
+    runs_qc: Arabidopsis_thaliana/atac-seq-curated.runs-qc.tsv
+    runs_qc_sha256: 618d3c48a9c746382290bbdd5532e6ba04431e7bf6e6b62ac6f71da84667d8e8
+  - species: Arabidopsis_thaliana
+    workflow: dap-seq
+    sheet: Arabidopsis_thaliana/dap-seq-curated.tsv
+    sheet_sha256: 4bcf2b25c1ae28d00d656e73cfd33c94de74e34776c9f3a0b184da08aecc8417
+    runs_qc: Arabidopsis_thaliana/dap-seq-curated.runs-qc.tsv
+    runs_qc_sha256: e13293cfebbf7c6a9cb46e215f8352732b3b2ec7d9978672dcaaaabe7f61701a
+  - species: Arabidopsis_thaliana
+    workflow: tss-seq
+    sheet: Arabidopsis_thaliana/tss-seq-curated.tsv
+    sheet_sha256: 7bbd74cedecb18dbfd7ec5c2e9c596e03c3cfa7da3d7bdd6ca5daa44876fd27f
+    runs_qc: Arabidopsis_thaliana/tss-seq-curated.runs-qc.tsv
+    runs_qc_sha256: 164a643a009cc8fdbe2c97b0d2c3ab09fee58873d2add061b2fdf37cbf0afe0c
+  - species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    sheet: Arabidopsis_thaliana/scatac-reads-curated.tsv
+    sheet_sha256: a4558a6c6a1b0fcc6bb94a7c82d3b1b03190690a1321d6f9a872833bad9d8e2c
+    runs_qc: Arabidopsis_thaliana/scatac-reads-curated.runs-qc.tsv
+    runs_qc_sha256: ea6ae60651d7e1e23afdcb1cc6d15ad7c778b03b61b1e1c20922caa7aa1691a0
+  - species: Sorghum_bicolor
+    workflow: rna-seq
+    sheet: Sorghum_bicolor/rna-seq-curated.tsv
+    sheet_sha256: af6804d29dcf564add8223dd029d6ca86e88339d60fc0cf2810a00fc74f5aec6
+    runs_qc: Sorghum_bicolor/rna-seq-curated.runs-qc.tsv
+    runs_qc_sha256: ff5f98083a5ea05116c3854a703416c27c628175538721693005c73f4f16f1a5
+  - species: Sorghum_bicolor
+    workflow: atac-seq
+    sheet: Sorghum_bicolor/atac-seq-curated.tsv
+    sheet_sha256: 84d7928edeadb711eb0234435d4c5bd1012be0ea3f89102ac0716dbc196841c1
+    runs_qc: Sorghum_bicolor/atac-seq-curated.runs-qc.tsv
+    runs_qc_sha256: fe0fc3669cac193a54f47fb41faa28d4698f47daadbc1ef755ac9eceb971eae3
+  - species: Sorghum_bicolor
+    workflow: dap-seq
+    sheet: Sorghum_bicolor/dap-seq-curated.tsv
+    sheet_sha256: d3a2d17073db9b3cdb10cdb2f2cfb9dd99a1b6e0cfe0e5c61c644d11961841ec
+    runs_qc: Sorghum_bicolor/dap-seq-curated.runs-qc.tsv
+    runs_qc_sha256: 53237f5c20960ccab79b3597f9762fd29bf98de8a9216070fac683d98e566295
+  - species: Sorghum_bicolor
+    workflow: scatac-reads
+    sheet: Sorghum_bicolor/scatac-reads-curated.tsv
+    sheet_sha256: b3c7ee512e5a43df161fd435ed3f1563043620776cc4be9550f7b51448ac3c2b
+    runs_qc: Sorghum_bicolor/scatac-reads-curated.runs-qc.tsv
+    runs_qc_sha256: 355b868cb775ce8cc845ea66048a4f4ca1493413650a1ee053e4676d0b01f32c

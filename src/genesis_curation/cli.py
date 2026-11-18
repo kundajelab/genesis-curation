@@ -12,6 +12,7 @@ from .contracts.records import canonical
 from .curation import cli as curation_cli
 from .curation import metadata_cli
 from .llm import cli as ai_cli
+from .sheets import cli as sheets_cli
 from .web import cli as web_cli
 
 
@@ -22,6 +23,7 @@ def main() -> None:
         module.configure(commands.add_parser(name))
     curation_cli.configure(commands.add_parser("curation"))
     installation.configure(commands.add_parser("workspace"))
+    sheets_cli.configure(commands.add_parser("sheets"))
     args = parser.parse_args()
     try:
         result, code = args.curation_handler(args)
