@@ -9,3 +9,14 @@ rna-seq:
       why: >-
         The sample note of COL4 ("control for 10X tpp-KO") reports contamination; found in a
         title scan of the kept runs (curation of 2026-11-17).
+atac-seq:
+  Sorghum_bicolor:
+    - study: CRA002789
+      runs: [CRR145290]
+      reason: low FRiP in a full pipeline run (0.066)
+      why: >-
+        The full atac-seq run (genesis-preprocessing test sheets, 2026-11-17) gave FRiP 0.066
+        with TSS enrichment 2.69; the 200k-pair check passes it (TSS enrichment 2.30). Its
+        share of cut sites near TSSs (promoter_fraction 0.091, input control 0.063) is as low
+        as that of the study's other three runs, which have no full run, so no read rule
+        separates it; they stay in the sheet.

@@ -163,9 +163,17 @@ class Archive:
         self.requests = 0
         self.lock = threading.Lock()
 
-    def request(self, url: str, form: dict[str, str] | None = None, keep: bool = True) -> str:
+    def request(
+        self,
+        url: str,
+        form: dict[str, str] | None = None,
+        keep: bool = True,
+        attempts: int | None = None,
+    ) -> str:
         """The response text, from the cache when present; `keep=False` skips caching (for
-        sample XML, which `samples` keeps per accession instead)."""
+        sample XML, which `samples` keeps per accession instead). `attempts` overrides the
+        archive's number of tries."""
+        attempts = attempts or self.attempts
         key = hashlib.sha256(json.dumps([url, form], sort_keys=True).encode()).hexdigest()
         path = self.cache / "requests" / f"{key[:2]}" / f"{key}.json"
         if path.exists():
@@ -173,7 +181,7 @@ class Archive:
         if self.offline and keep:
             raise ValueError(f"Not cached and offline: {url} {form or ''}".strip())
         data = urlencode(form).encode() if form else None
-        for attempt in range(self.attempts):
+        for attempt in range(attempts):
             try:
                 text = self.fetcher(url, data)
                 break
@@ -181,7 +189,7 @@ class Archive:
                 code = error.code if isinstance(error, HTTPError) else None
                 if code is not None and code < 500 and code != 429:
                     raise ValueError(f"ENA request failed: HTTP {code} for {url}") from error
-                if attempt == self.attempts - 1:
+                if attempt == attempts - 1:
                     raise ValueError(f"ENA request failed after retries: {error}") from error
                 retry = error.headers.get("Retry-After", "") if isinstance(error, HTTPError) else ""
                 self.sleep(min(120.0, float(retry) if retry.isdigit() else 2.0 ** (attempt + 1)))
@@ -238,11 +246,13 @@ class Archive:
         if self.offline:
             raise ValueError(f"GSA files of {run} not cached and offline")
         files: list[tuple[str, int]] = []
+        failed = False
         for server in GSA_SERVERS:
             folder = f"{GSA_DOWNLOAD}{server}/{study}/{run}/"
             try:
-                page = self.request(folder, keep=False)
-            except ValueError:  # 404 on servers without the run, or one that keeps failing
+                page = self.request(folder, keep=False, attempts=2)
+            except ValueError as error:  # 404 on servers without the run
+                failed = failed or "HTTP 404" not in str(error)
                 continue
             files = [
                 (f"{folder.removeprefix('https://')}{name}", int(size))
@@ -250,6 +260,8 @@ class Archive:
             ]
             if files:
                 break
+        if failed and not files:  # a server did not answer: ask again on the next build
+            return []
         with self.lock:
             known = json.loads(store.read_text()) if store.exists() else {}
             known[run] = files

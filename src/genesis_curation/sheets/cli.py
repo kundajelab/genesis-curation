@@ -13,9 +13,10 @@ from typing import Any
 
 import yaml
 
-from . import rna, species
+from . import atac, rna, species
 from . import score as scoring
 from .archives import Archive
+from .measure import atac as atac_checks
 from .measure.strand import Tools
 from .tables import FIELDS, load_runs_qc, load_sheet
 
@@ -99,12 +100,37 @@ def append_history(path: Path, label: str, result: dict[str, Any]) -> None:
         handle.write("| " + " | ".join(row) + " |\n")
 
 
-BUILDERS = {"rna-seq": rna}
+BUILDERS = {"rna-seq": rna, "atac-seq": atac}
+
+
+def atac_options(args: argparse.Namespace, cache: Path) -> atac.Options:
+    tools = None
+    if not args.no_measure:
+        try:
+            tools = atac_checks.Tools.find(args.chromap)
+        except ValueError:
+            if not args.measure_from:  # without chromap, only runs not reused fail later
+                raise
+    return atac.Options(
+        cache=cache,
+        measure=not args.no_measure,
+        measure_from=args.measure_from,
+        extra_runs=args.extra_runs,
+        references=args.references,
+        chromap_index=args.chromap_index,
+        tools=tools,
+        pairs=args.pairs,
+    )
 
 
 def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     chosen = species.load(args.species)
     cache = args.cache or args.out / "cache"
+    archive = Archive(cache / "ena", offline=args.offline)
+    if args.workflow == "atac-seq":
+        summary = atac.build(chosen, archive, args.out, atac_options(args, cache), log=log)
+        (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
+        return summary, 0
     tools = None
     if not args.no_measure:
         tools = Tools.find(args.star, args.featurecounts, args.gffread, args.threads)
@@ -117,9 +143,7 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
         tools=tools,
         probe_duplicates=not args.no_probe,
     )
-    archive = Archive(cache / "ena", offline=args.offline)
-    builder = BUILDERS[args.workflow]
-    summary = builder.build(chosen, archive, args.out, options, log=log)
+    summary = rna.build(chosen, archive, args.out, options, log=log)
     (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
     return summary, 0
 
@@ -156,6 +180,16 @@ def configure(parser: argparse.ArgumentParser) -> None:
     build.add_argument("--featurecounts", help="featureCounts executable (default: on PATH)")
     build.add_argument("--gffread", help="gffread executable (default: on PATH)")
     build.add_argument("--threads", type=int, default=16)
+    atac_group = build.add_argument_group("atac-seq")
+    atac_group.add_argument(
+        "--measure-from", type=Path, help="Reuse read metrics from a TSV such as a runs-qc table"
+    )
+    atac_group.add_argument(
+        "--extra-runs", type=Path, help="More candidate runs: a metadata-sheet tab export (TSV)"
+    )
+    atac_group.add_argument("--chromap", help="chromap executable (default: on PATH)")
+    atac_group.add_argument("--chromap-index", type=Path, help="Default: built into the cache")
+    atac_group.add_argument("--pairs", type=int, default=atac_checks.PAIRS, help="Pairs sampled")
     build.set_defaults(curation_handler=run_build)
 
     run = commands.add_parser("score", help="Score a candidate sheet against gold and traps")
