@@ -1,0 +1,149 @@
+# DAP-seq studies whose libraries and controls need more than the automatic pairer
+# (sheets/pairing.py), read from GEO and the papers' methods. Studies not listed here are
+# paired automatically. Every key is optional:
+#   species: species folder; listed studies are always searched for that species.
+#   name: GEO series or paper, for notes.
+#   exclude: leave every run of the study out with this reason.
+#   genotype: the gDNA's genotype (used in sample IDs; default from the run's attributes).
+#   label: the field that names libraries (title, sample_title, library_name, sample_description).
+#   replace: [regex, replacement] pairs applied to labels, in order.
+#   skip: {match, reason}: leave out libraries whose label matches (first match wins).
+#   controls: regex; labels that match are controls (default: automatic, see pairing.py).
+#   pairs: {match, control}: a treatment matching `match` takes the control named by the
+#     `control` template (\1 etc. are the match's groups); first match wins, then automatic.
+#   external_controls: {label: run}: a control from another study (same lab and protocol).
+#   keep_unused_controls: keep controls no treatment uses (repository sheets list them all).
+#   read1_only: use read 1 of every library (single-end).
+#   sample_id: template with {study}, {label}, {genotype}, {run}.
+#   note / notes: a note for every run, or {label regex: note}.
+
+# Baits that are not plant transcription factors; matched against run and study titles.
+bait_exclusions:
+  - match: '(?<![a-z])MBD\d'
+    reason: bait is a methyl-CpG reader (MBD5/MBD6), not a TF
+  - match: 'nematode|effector'
+    reason: bait is a nematode effector (MiMSP), not a plant TF
+
+studies:
+  # Studies that already have repository sheets in genesis-preprocessing (dap-seq-GSE60141,
+  # dap-seq-PRJNA1177481, dap-seq-PRJNA1177471). The rules reproduce those sheets.
+  PRJNA257556:
+    species: Arabidopsis_thaliana
+    name: GSE60141 (O'Malley 2016)
+    genotype: Col-0
+    read1_only: true
+    sample_id: '{label}'
+    controls: '^control_'
+    pairs:
+      - {match: '_colamp_', control: control_tnt-pixhalo_colamp_v3a}
+      - {match: '.', control: control_none.beads_col_v3a}
+  PRJNA1177481:
+    species: Arabidopsis_thaliana
+    name: multiDAP (JGI), A. thaliana Col-0 gDNA
+    genotype: Col-0
+    label: library_name
+    sample_id: '{label}'
+    keep_unused_controls: true
+    controls: '^Control_TF_DNA'
+    pairs:
+      - {match: '.', control: Control_TF_DNA_A_thaliana_Col-0_DAPi712H12-ORGi5005-96P155-repool}
+  PRJNA1177471:
+    species: Sorghum_bicolor
+    name: multiDAP (JGI), Sorghum RTx430 gDNA
+    genotype: RTx430
+    label: library_name
+    sample_id: '{label}'
+    keep_unused_controls: true
+    controls: '^Control_TF_DNA'
+    pairs:
+      - {match: '.', control: Control_TF_DNA_S_bicolor_RTx430_DAPi712A12-ORGi5019-96P247}
+
+  # Arabidopsis thaliana
+  PRJNA257558:
+    species: Arabidopsis_thaliana
+    exclude: ChIP-seq companion of O'Malley 2016, not DAP-seq
+  PRJNA649293:
+    species: Arabidopsis_thaliana
+    name: bHLH/MYC DAP (Solano lab)
+    genotype: Col-0 (not stated; same lab's GSE284748 states Col-0)
+    # Inputs by sequencing batch (GEO "Input DNA for samples ...").
+    pairs:
+      - {match: '(MYC2|MYC3)_rep(\d)', control: 'Input AthDNAa_rep\2'}
+      - {match: 'MYC4|bHLH17', control: Input AthDNAb}
+      - {match: '.', control: Input AthDNAc}
+  PRJNA791363:
+    species: Arabidopsis_thaliana
+    name: HSFA1b/A2/A3 homo- and heteromers
+    genotype: Col-0
+    replace: [['^(A\d)', 'HSF\1']]
+    skip:
+      - {match: '_37$', reason: 'treatment: gDNA from seedlings at 37 °C'}
+  PRJNA1222878:
+    species: Arabidopsis_thaliana
+    name: PLT3/5/7 DAP on SAM or IM gDNA
+    genotype: Col-0
+    replace: [['3xFLAG-', '']]
+    pairs:
+      - {match: '^PLT\d(.*)$', control: 'GFP\1'}
+  PRJNA1354843:
+    species: Arabidopsis_thaliana
+    name: HY5, optimized protocol
+    genotype: Col-0
+    label: library_name
+    # Controls from the same gDNA library (A/B) and the nearest PCR cycles.
+    pairs:
+      - {match: 'AT_HY5_lib([AB])_15cycles', control: 'AT_control_lib\1_15cycles'}
+      - {match: 'AT_HY5_libA_7cycles', control: AT_control_libA_9cycles}
+      - {match: 'AT_HY5_libB_7cycles', control: AT_control_libB_10cycles}
+  PRJNA551415:
+    species: Arabidopsis_thaliana
+    name: Ecker lab JA TFs
+    genotype: Col-0
+    replace: [['_DAPseq_sample', '']]
+    # No control in the study: O'Malley's beads control (same lab and protocol).
+    external_controls: {control_none.beads_col_v3a: SRR2926068}
+    pairs:
+      - {match: '.', control: control_none.beads_col_v3a}
+    note: control borrowed from GSE60141 (same lab and protocol)
+  PRJNA1090874:
+    species: Arabidopsis_thaliana
+    name: Myrothamnus MYB1/2 on Col-0 gDNA
+    genotype: Col-0
+    replace: [[' for DAP-seq', '']]
+    notes: {'MwMYB': TF from Myrothamnus flabellifolia}
+  PRJNA1200602:
+    species: Arabidopsis_thaliana
+    genotype: Col-0
+    skip:
+      - {match: '^Mp', reason: DNA of another species (Marchantia)}
+  PRJNA1483568:
+    species: Arabidopsis_thaliana
+    genotype: Col-0 (Col)
+    note: GEO series private until 2027-06-01; runs public
+  PRJNA817215:
+    species: Arabidopsis_thaliana
+    name: bZIP C/S1 homo- and heterodimers (Halo, seq-DAP)
+    genotype: Col-0 (Col CS70000)
+    controls: '^pIX'
+    skip:
+      - {match: '^pIX(?!HALO_Col-B_b$)', reason: 'unused control (fewer reads, or SBP tag)'}
+      - {match: 'vec', reason: seq-DAP single-partner control (empty vector)}
+    pairs:
+      - {match: '.', control: pIXHALO_Col-B_b}
+    notes: {'^ps-': heterodimer seq-DAP}
+  # Sorghum bicolor
+  PRJNA1301280:
+    species: Sorghum_bicolor
+    exclude: DAP-seq runs not public yet (only the study's RNA-seq is in ENA)
+  PRJNA1090807:
+    species: Sorghum_bicolor
+    genotype: BTx623
+  PRJNA550273:
+    species: Sorghum_bicolor
+    name: GST-MSD1 (75 and 100 bp runs)
+    genotype: BTx623
+    replace: [['^DAPseq \((\d+) bp PE\) of (\S+).* rep (\d+)$', '\2_\1bp_rep\3']]
+  PRJNA679988:
+    species: Sorghum_bicolor
+    genotype: unknown
+    note: genotype not stated

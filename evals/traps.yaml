@@ -35,6 +35,69 @@ traps:
     expect: excluded
     reason_class: assay
     why: '"DAP" in the title means days after pollination, not DNA affinity purification.'
+  - id: dap-paired-treatment-single-end-control
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR28418941]
+    expect: included
+    fields: {layout: single, control: SRR28418943}
+    why: >-
+      MACS3 BAMPE needs the control's layout to match; a paired treatment whose input is
+      single-end runs on read 1 only (PRJNA1090874).
+  - id: dap-single-end-treatment-paired-control
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR18347438]
+    expect: included
+    fields: {layout: single, control: SRR18347487}
+    why: >-
+      A single-end treatment whose control is paired uses a read-1-only copy of that control
+      (PRJNA817215, pIXHALO_Col-B_b).
+  - id: dap-inputs-by-sequencing-batch
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR12341146, SRR12341140]
+    expect: included
+    why: >-
+      PRJNA649293 has three inputs, one per sequencing batch (GEO "Input DNA for samples
+      ..."); MYC4 takes AthDNAb, MYC2 rep 1 takes AthDNAa rep 1.
+  - id: dap-numbered-replicates
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR23311122, SRR23311121]
+    expect: included
+    why: '"WRKY1 DAP-1" is DAP-seq replicate 1, not 1 day after pollination (PRJNA930480).'
+  - id: dap-other-species-dna
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR12341135, SRR12341138, SRR13483050]
+    expect: excluded
+    reason_class: species
+    why: >-
+      Arabidopsis studies with DAP-seq on tomato, Marchantia or lambda DNA; the reads belong
+      to the other genome (PRJNA649293, PRJNA693252).
+  - id: dap-gro-seq-in-dap-study
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR27821903, SRR27821905]
+    expect: excluded
+    reason_class: assay
+    why: GRO-seq runs filed under a DAP-seq study (PRJNA1065964), strategy OTHER like its DAP runs.
+  - id: dap-days-after-pollination-lowercase
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [ERR2809794]
+    expect: excluded
+    reason_class: assay
+    why: '"at_6_dap_1" is a seed 6 days after pollination (PRJEB25745).'
+  - id: dap-two-read-lengths
+    species: Sorghum_bicolor
+    workflow: dap-seq
+    runs: [SRR9586704, SRR9586709]
+    expect: included
+    why: >-
+      PRJNA550273 sequenced GST-MSD1 at 75 and 100 bp; each is its own library (uniform read
+      length within each file), not runs of one library.
   - id: scatac-interleaved-instruments
     species: Arabidopsis_thaliana
     workflow: scatac-reads

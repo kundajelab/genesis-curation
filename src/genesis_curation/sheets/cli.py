@@ -13,7 +13,7 @@ from typing import Any
 
 import yaml
 
-from . import rna, scatac, species, tss
+from . import dap, rna, scatac, species, tss
 from . import score as scoring
 from .archives import Archive
 from .measure.strand import Tools
@@ -99,7 +99,7 @@ def append_history(path: Path, label: str, result: dict[str, Any]) -> None:
         handle.write("| " + " | ".join(row) + " |\n")
 
 
-BUILDERS = {"rna-seq": rna, "scatac-reads": scatac, "tss-seq": tss}
+BUILDERS = {"rna-seq": rna, "scatac-reads": scatac, "tss-seq": tss, "dap-seq": dap}
 
 
 def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
@@ -120,6 +120,11 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
         )
         (args.out / "build.json").write_text(json.dumps(found, indent=2) + "\n")
         return found, 0
+    if args.workflow == "dap-seq":
+        options = dap.Options(cache, probe=not args.no_probe, skip_runs_in=args.skip_runs_in)
+        summary = dap.build(chosen, archive, args.out, options, log=log)
+        (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
+        return summary, 0
     tools = None
     if not args.no_measure:
         tools = Tools.find(args.star, args.featurecounts, args.gffread, args.threads)
@@ -169,9 +174,18 @@ def configure(parser: argparse.ArgumentParser) -> None:
     build.add_argument(
         "--no-probe",
         action="store_true",
-        help="Skip read probes (rna-seq duplicate reads; scatac-reads instruments)",
+        help="Skip read probes (rna-seq duplicate reads; scatac-reads instruments; "
+        "dap-seq read lengths)",
     )
     build.add_argument("--vdb-dump", help="vdb-dump executable (default: on PATH)")
+    build.add_argument(
+        "--skip-runs-in",
+        type=Path,
+        action="append",
+        default=[],
+        help="dap-seq: a sheet whose studies are left out (every run of a study with a run "
+        "in it: 'in repository sheet NAME'); repeatable",
+    )
     build.add_argument("--offline", action="store_true", help="Use only cached ENA responses")
     build.add_argument("--references", type=Path, help="Folder with the species' references")
     build.add_argument("--star-index", type=Path, help="Default: REFERENCES/<fasta>.<gff>.star")
