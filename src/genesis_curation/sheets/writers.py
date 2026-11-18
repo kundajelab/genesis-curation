@@ -33,12 +33,27 @@ def header(workflow: str) -> list[str]:
     return list(schema(workflow)["items"]["required"])
 
 
+def numeric(prop: dict[str, Any]) -> bool:
+    """Whether a schema property accepts an integer (alone or in anyOf)."""
+    options = prop.get("anyOf", [prop])
+    return any(option.get("type") == "integer" for option in options)
+
+
+def typed(value: dict[str, Any], rows: Sequence[dict[str, str]]) -> list[dict[str, Any]]:
+    """Rows as nf-schema reads a TSV: digit strings become integers where the schema allows."""
+    props = value["items"].get("properties", {})
+    integers = {name for name, prop in props.items() if numeric(prop)}
+    return [
+        {k: int(v) if k in integers and v.isdigit() else v for k, v in row.items()} for row in rows
+    ]
+
+
 def validate(workflow: str, rows: Sequence[dict[str, str]]) -> None:
     """Raise ValueError naming the first rows that break the schema or repeat an id."""
     value = schema(workflow)
     problems = [
         f"row {'/'.join(str(p) for p in error.absolute_path)}: {error.message}"
-        for error in jsonschema.Draft202012Validator(value).iter_errors(list(rows))
+        for error in jsonschema.Draft202012Validator(value).iter_errors(typed(value, rows))
     ]
     for key in value.get("uniqueEntries", []):
         seen: set[str] = set()
