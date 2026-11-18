@@ -77,7 +77,8 @@ ASSAYS: tuple[tuple[re.Pattern[str], str], ...] = tuple(
     for pattern, label in (
         (r"smar-?2?c2|rampage|tss-?seq|csrna|strt|oligo-?capping|cage|cap-?seq", "TSS"),
         (
-            r"scrna(-?seq)?|snrna-?seq|single[- ]cell|single[- ]nucle\w*|drop-?seq|10x",
+            r"scrna(-?seq)?|snrna-?seq|single[- ]cell|single[- ]nucle\w*|drop-?seq|"
+            r"10x[- ]?(genomics|chromium)|chromium",
             "single-cell",
         ),
         (r"pat-?seq", "PAT-seq, poly(A) tails"),
@@ -100,7 +101,8 @@ ASSAYS: tuple[tuple[re.Pattern[str], str], ...] = tuple(
         (r"iso-?seq|nanopore|direct rna", "long-read"),
         (r"circ-?rna|rnase r", "circular RNA"),
         (
-            r"nuclear rna|nuclei|nucleus|nucleoplasm\w*|chromatin|cytosol\w*",
+            r"nuclear rna|nuclei|nucleus|nucleoplasm\w*|cytosol\w*|"
+            r"chromatin[- ]*(bound|associated|attached|fraction\w*|rna)",
             "subcellular fraction",
         ),
     )
@@ -286,8 +288,13 @@ def assay_flag(run: Run) -> str:
     return ""
 
 
-def transgene_flag(run: Run) -> str:
-    match = TRANSGENE.search(titles(run))
+def transgene_flag(run: Run, reference: re.Pattern[str]) -> str:
+    """A transgene, mutant or treatment word in the run's titles. The experiment title often
+    describes the whole study ("RNA-seq of rog mutants"), so a word found only there does
+    not count when the sample title names the reference or wild type (`reference`)."""
+    sample = TRANSGENE.search(run.get("sample_title", ""))
+    study = TRANSGENE.search(run.get("experiment_title", ""))
+    match = sample or (study if not reference.search(run.get("sample_title", "")) else None)
     return f"title suggests a transgene, mutant or treatment ({match.group(1)})" if match else ""
 
 

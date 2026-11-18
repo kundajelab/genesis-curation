@@ -2,7 +2,7 @@
 
 File checksums always differ (ENA writes the run accession into read names), so candidates
 are runs sharing a read count that is not a round chunk size, confirmed by identical first
-read sequences (the first 64 KB of read 1). The lowest accession of a group is kept.
+read sequences (the first 64 KB of read 1). The earliest accession of a group (by number) is kept.
 """
 
 from __future__ import annotations
@@ -35,12 +35,18 @@ def first_sequences(raw: bytes) -> list[str]:
     return [lines[i] for i in range(1, min(len(lines) - 1, 4 * FIRST_READS), 4)]
 
 
+def accession_order(run: str) -> tuple[str, int]:
+    """Archive prefix, then number: the earliest submission of a prefix sorts first."""
+    digits = run.lstrip("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+    return run[: len(run) - len(digits)], int(digits or 0)
+
+
 def candidate_groups(read_counts: dict[str, str]) -> list[list[str]]:
     groups: dict[str, list[str]] = defaultdict(list)
     for run, count in read_counts.items():
         if count.isdigit() and int(count) > 100_000 and int(count) % 100_000:
             groups[count].append(run)
-    return [sorted(runs) for runs in groups.values() if len(runs) > 1]
+    return [sorted(runs, key=accession_order) for runs in groups.values() if len(runs) > 1]
 
 
 def find(
