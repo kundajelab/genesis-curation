@@ -74,16 +74,5 @@ Run `scripts/check.sh` before committing. It runs ruff (lint and format), ty typ
 every `tests/verify_*.py` program offline. These are software checks; they do not establish
 biological accuracy.
 
-## Prompt for a coding agent
-
-When handing development to a coding agent, start from this prompt:
-
-> Work on the main branch in this checkout. Fetch origin first and read AGENTS.md.
-> Keep a single main branch; do not create additional branches or worktrees.
-> Keep runtime files outside Git and inside my chosen workspace. Preserve original
-> evidence and human decisions. Implement the same behavior for GUI and CLI. Run
-> scripts/check.sh and relevant browser checks. Report exact failures and skipped
-> checks. Ask before pushing, merging, installing system tools or paid live tests.
-
 See also [the CLI guide](usage/cli.md), [deployment](usage/deployment.md) and
 [RNA curation](usage/rna-curation.md).

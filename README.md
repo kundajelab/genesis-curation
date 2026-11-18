@@ -88,7 +88,6 @@ ChIP-seq, WGBS, MPRA and genomes.
 | [Deployment](docs/usage/deployment.md) | Docker, model providers, budget, web search, local models |
 | [Development guide](docs/development-handoff.md) | Native setup, runtime layout, cleanup |
 | [Evaluation](evals/README.md) | Gold sheets, traps, [gold corrections](evals/gold-corrections.md) and score history |
-| [Sheet-curation skill](.claude/skills/sheet-curation/SKILL.md) | The build, score, triage and fix loop, for Claude Code or by hand |
 | [Lessons](LESSONS.md) | Past curation mistakes, their causes and the traps that catch them |
 | [Validation reports](docs/validation/) | Recorded acceptance and pilot results |
 
@@ -103,5 +102,5 @@ uncertain biological claims need expert review.
 ## Development
 
 Run `scripts/check.sh` before committing. It runs lint, formatting, type checks and every
-`tests/verify_*.py` program offline. There is no CI, so run it locally. See
-[AGENTS.md](AGENTS.md) for contribution rules.
+`tests/verify_*.py` program offline. There is no CI, so run it locally. Keep credentials,
+private data and machine-specific paths out of Git, and keep each commit to one change.

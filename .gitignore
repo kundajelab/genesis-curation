@@ -14,9 +14,10 @@ tests/.runs/
 .envrc
 .vscode/
 .zed/
-# Assistant settings are local to each contributor; shared skills are tracked.
-.claude/*
-!.claude/skills/
+# Assistant settings and agent instructions are local to each contributor.
+.claude/
+AGENTS.md
+CLAUDE.md
 .codex/
 .ruff_cache/
 .DS_Store

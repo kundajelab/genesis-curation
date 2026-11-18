@@ -3,7 +3,7 @@
 Mistakes that sample-sheet curation has made or nearly made, and how each is now caught. Add a
 row whenever a scoring round finds a new kind of miss, together with the trap in
 [`evals/traps.yaml`](evals/traps.yaml) that would have caught it. The loop that finds them is
-in the [sheet-curation skill](.claude/skills/sheet-curation/SKILL.md).
+in [evals/README.md](evals/README.md).
 
 | Symptom | Cause | Fix | Trap |
 | --- | --- | --- | --- |
