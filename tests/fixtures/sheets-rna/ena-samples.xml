@@ -1,0 +1,868 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<SAMPLE_SET>
+<SAMPLE accession="SAMD00028039" alias="SAMD00028039" center_name="Graduate School of Science, The University of Tokyo" broker_name="DDBJ">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMD00028039</PRIMARY_ID>
+          <SECONDARY_ID>DRS083261</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMD00028039</EXTERNAL_ID>
+     </IDENTIFIERS>
+     <TITLE>Arabidopsis_Vegetative shoot_2C-1</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=DRS083261&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=DRS083261&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>DRS083261</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Generic.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Col-0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue_type</TAG>
+               <VALUE>Shoot apical meristems and young leaves</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>sample_name</TAG>
+               <VALUE>1</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Generic</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2018-12-25</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2018-12-25</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMD00028045" alias="SAMD00028045" center_name="Graduate School of Science, The University of Tokyo" broker_name="DDBJ">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMD00028045</PRIMARY_ID>
+          <SECONDARY_ID>DRS083267</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMD00028045</EXTERNAL_ID>
+     </IDENTIFIERS>
+     <TITLE>Arabidopsis_Vegetative shoot_4C-1</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=DRS083267&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=DRS083267&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>DRS083267</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Generic.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Col-0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue_type</TAG>
+               <VALUE>Shoot apical meristems and young leaves</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>sample_name</TAG>
+               <VALUE>4</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Generic</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2018-12-25</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2018-12-25</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMN10537289" alias="Ath_SE_Lasy-Seq_35" center_name="Ryukoku university" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMN10537289</PRIMARY_ID>
+          <SECONDARY_ID>SRS4118520</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN10537289</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="Ryukoku university">Ath_SE_Lasy-Seq_35</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>RNA-Seq data on A.thaliana grown under fluctuating temperature_sample 35</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <DESCRIPTION>Plant was grown under 20 for 10 days.Then the plants started to be grown under daily-changing temperature of 24, 18, 14, 26, 16, 12 for 6days, respectively and sampled at 12:00 on the last day. Biological replicate2.</DESCRIPTION>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS4118520&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS4118520&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>collection_date</TAG>
+               <VALUE>2018</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>temp</TAG>
+               <VALUE>12</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>SRS4118520</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Plant.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>geo_loc_name</TAG>
+               <VALUE>Japan</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue</TAG>
+               <VALUE>whole plant 35</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>collected_by</TAG>
+               <VALUE>Mari Kamitani</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>dev_stage</TAG>
+               <VALUE>rosette 35</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Col-0 35</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Plant</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2019-05-14</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2019-05-14</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMN12144332" alias="Single cell and whole leaf data, validation data, LUX ChIP data" center_name="NAIST" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMN12144332</PRIMARY_ID>
+          <SECONDARY_ID>SRS5042175</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN12144332</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="NAIST">Single cell and whole leaf data, validation data, LUX ChIP data</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Mesophyll cells in Arabidopsis thaliana cotyledon in VISUAL system processing</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS5042175&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS5042175&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>SRS5042175</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Model.organism.animal.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>growth_protocol</TAG>
+               <VALUE>1/2 MS medium</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>sex</TAG>
+               <VALUE>hermaphrodite</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue</TAG>
+               <VALUE>cotyledon</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>cell_type</TAG>
+               <VALUE>Mespophyll</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>dev_stage</TAG>
+               <VALUE>seed leaf</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Col-0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Model organism or animal</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2019-06-26</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2019-07-02</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMN13639762" alias="Cell culture" center_name="University of Arizona" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMN13639762</PRIMARY_ID>
+          <SECONDARY_ID>SRS5864840</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN13639762</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="University of Arizona">Cell culture</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Plant sample from Arabidopsis thaliana</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS5864840&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS5864840&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>SRS5864840</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Plant.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>geo_loc_name</TAG>
+               <VALUE>USA</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue</TAG>
+               <VALUE>Cell Culture</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>dev_stage</TAG>
+               <VALUE>Cell Culture</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Col-0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>biomaterial_provider</TAG>
+               <VALUE>Mark Beilstein</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>genotype</TAG>
+               <VALUE>Wild Type</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Plant</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2019-12-19</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2019-12-19</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMN15585753" alias="WT_BRZ0_NA_5" center_name="Iowa State University" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMN15585753</PRIMARY_ID>
+          <SECONDARY_ID>SRS7048102</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN15585753</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="Iowa State University">WT_BRZ0_NA_5</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Plant sample from Arabidopsis thaliana</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS7048102&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS7048102&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>isolate</TAG>
+               <VALUE>5</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>treatment</TAG>
+               <VALUE>mock</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>SRS7048102</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Plant.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>geo_loc_name</TAG>
+               <VALUE>not applicable</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue</TAG>
+               <VALUE>whole seedling</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>dev_stage</TAG>
+               <VALUE>seedling</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Col-0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>age</TAG>
+               <VALUE>7-day</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>genotype</TAG>
+               <VALUE>WT</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Plant</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2022-08-01</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2022-08-01</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMN24407822" alias="GSM5753234" center_name="Mittelsten Scheid, Gregor Mendel Institute GmbH" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMN24407822</PRIMARY_ID>
+          <SECONDARY_ID>SRS11402088</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN24407822</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="Mittelsten Scheid, Gregor Mendel Institute GmbH">GSM5753234</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>sn_p1_smrt2_R46</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS11402088&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS11402088&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>collection_date</TAG>
+               <VALUE>missing</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>developmental age</TAG>
+               <VALUE>7 days after germination</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>SRS11402088</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Generic.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>geo_loc_name</TAG>
+               <VALUE>missing</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>cell type</TAG>
+               <VALUE>stem cells</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Col-0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>source_name</TAG>
+               <VALUE>seedling</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Generic</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2023-09-30</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2023-09-30</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMN29492283" alias="lcmt1 without EDTA" center_name="University of Stavanger" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMN29492283</PRIMARY_ID>
+          <SECONDARY_ID>SRS13779397</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN29492283</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="University of Stavanger">lcmt1 without EDTA</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Plant sample from Arabidopsis thaliana</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS13779397&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS13779397&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>isolate</TAG>
+               <VALUE>SALK_079466</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>SRS13779397</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Plant.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>geo_loc_name</TAG>
+               <VALUE>USA: Columbia</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue</TAG>
+               <VALUE>roots and shoot</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>dev_stage</TAG>
+               <VALUE>seedling</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Columbia</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>age</TAG>
+               <VALUE>5 days</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Plant</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2022-08-30</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2022-08-30</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMN37827629" alias="sample.197.CK.S.IP.R1" center_name="National University of Singapore" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMN37827629</PRIMARY_ID>
+          <SECONDARY_ID>SRS19183902</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN37827629</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="National University of Singapore">sample.197.CK.S.IP.R1</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>CK-S; IP sequencing data; replicate 1</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS19183902&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS19183902&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>collection_date</TAG>
+               <VALUE>2022-04-01/2022-05-30</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>isolate</TAG>
+               <VALUE>polyA RNA</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>treatment</TAG>
+               <VALUE>Mock treatment for 3 hours</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>SRS19183902</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Plant.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>geo_loc_name</TAG>
+               <VALUE>Singapore</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue</TAG>
+               <VALUE>Whole seedling</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Col-0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>sample_type</TAG>
+               <VALUE>sample.197.CK.S.IP.R1</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>age</TAG>
+               <VALUE>7-day-old stage</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Plant</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2024-06-10</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2024-06-10</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMN41130619" alias="Col0-C-Polysome" center_name="CNRS" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMN41130619</PRIMARY_ID>
+          <SECONDARY_ID>SRS21159879</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN41130619</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="CNRS">Col0-C-Polysome</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>Plant sample from Arabidopsis thaliana</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS21159879&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS21159879&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>collection_date</TAG>
+               <VALUE>2023-07-27</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>isolate</TAG>
+               <VALUE>R3</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>SRS21159879</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Plant.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>cultivar</TAG>
+               <VALUE>Col0_CP</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>geo_loc_name</TAG>
+               <VALUE>France</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue</TAG>
+               <VALUE>Aerial part</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>dev_stage</TAG>
+               <VALUE>Seedlings</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Columbia</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>age</TAG>
+               <VALUE>18-day-old</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Plant</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2025-05-01</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2025-05-01</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+<SAMPLE accession="SAMN41501305" alias="NG-27099_C3H_1_lib469908_7748_3" center_name="Wroclaw University of Environmental and Life Sciences" broker_name="NCBI">
+     <IDENTIFIERS>
+          <PRIMARY_ID>SAMN41501305</PRIMARY_ID>
+          <SECONDARY_ID>SRS21396609</SECONDARY_ID>
+          <EXTERNAL_ID namespace="BioSample">SAMN41501305</EXTERNAL_ID>
+          <SUBMITTER_ID namespace="Wroclaw University of Environmental and Life Sciences">NG-27099_C3H_1_lib469908_7748_3</SUBMITTER_ID>
+     </IDENTIFIERS>
+     <TITLE>hypocotyl control C3H</TITLE>
+     <SAMPLE_NAME>
+          <TAXON_ID>3702</TAXON_ID>
+          <SCIENTIFIC_NAME>Arabidopsis thaliana</SCIENTIFIC_NAME>
+          <COMMON_NAME>thale cress</COMMON_NAME>
+     </SAMPLE_NAME>
+     <SAMPLE_LINKS>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-FASTQ-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS21396609&result=read_run&fields=run_accession,fastq_ftp,fastq_md5,fastq_bytes]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+    <SAMPLE_LINK>
+        <XREF_LINK>
+            <DB>ENA-SUBMITTED-FILES</DB>
+            <ID><![CDATA[https://www.ebi.ac.uk/ena/portal/api/filereport?accession=SRS21396609&result=read_run&fields=run_accession,submitted_ftp,submitted_md5,submitted_bytes,submitted_format]]></ID>
+        </XREF_LINK>
+    </SAMPLE_LINK>
+</SAMPLE_LINKS>
+<SAMPLE_ATTRIBUTES>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>collection_date</TAG>
+               <VALUE>not collected</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>INSDC secondary accession</TAG>
+               <VALUE>SRS21396609</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>NCBI submission package</TAG>
+               <VALUE>Plant.1.0</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>library</TAG>
+               <VALUE>lib469908_7748</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>organism</TAG>
+               <VALUE>Arabidopsis thaliana</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>growth_protocol</TAG>
+               <VALUE>Constant white light (45 µmol m-2s-1), 85% humidity, 21°C.</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>geo_loc_name</TAG>
+               <VALUE>not applicable</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>tissue</TAG>
+               <VALUE>hypocotyl</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ecotype</TAG>
+               <VALUE>Columbia (Col-0)</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>age</TAG>
+               <VALUE>4 days</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>BioSampleModel</TAG>
+               <VALUE>Plant</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-FIRST-PUBLIC</TAG>
+               <VALUE>2025-12-30</VALUE>
+          </SAMPLE_ATTRIBUTE>
+          <SAMPLE_ATTRIBUTE>
+               <TAG>ENA-LAST-UPDATE</TAG>
+               <VALUE>2025-12-30</VALUE>
+          </SAMPLE_ATTRIBUTE>
+     </SAMPLE_ATTRIBUTES>
+</SAMPLE>
+</SAMPLE_SET>
