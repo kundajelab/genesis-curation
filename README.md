@@ -33,7 +33,8 @@ uv run genesis sheets score --workflow rna-seq --species Sorghum_bicolor --gold-
 ```
 
 This builds the Sorghum RNA-seq sheet from archive metadata alone and reuses the curated
-strandedness calls, so no reads are downloaded. `sb-rna/rna-seq.runs-qc.tsv` gives the reason
+strandedness calls, so no reads are downloaded. It takes about three minutes, most of it
+ENA queries. `sb-rna/rna-seq.runs-qc.tsv` gives the reason
 each run was left out. [Sample sheets](docs/usage/sample-sheets.md) covers every workflow,
 read measurement, outputs and scoring.
 
