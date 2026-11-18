@@ -291,8 +291,9 @@ def measure(
     sampler: Sampler = default_sampler,
     log: Callable[[str], None] = print,
 ) -> dict[str, Metrics]:
-    """Metrics for each run (run -> read-1 and read-2 URLs), at most `downloads` (8) runs at
-    once. Runs already in `work/metrics.tsv` are not measured again."""
+    """Metrics for each run (run -> read-1 and read-2 URLs), with at most `downloads` (8)
+    files streaming at once: both mates of downloads // 2 runs. Runs already in
+    `work/metrics.tsv` are not measured again."""
     work.mkdir(parents=True, exist_ok=True)
     store = work / "metrics.tsv"
     done = load_metrics(store)
@@ -322,6 +323,6 @@ def measure(
                         log(f"atac checks: {count}/{len(todo)} runs")
                 return item
 
-            with ThreadPoolExecutor(min(downloads, 8)) as pool:
+            with ThreadPoolExecutor(max(1, min(downloads, 8) // 2)) as pool:
                 list(pool.map(one, todo))
     return {run: done[run] for run in runs if run in done}
