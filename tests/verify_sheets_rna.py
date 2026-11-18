@@ -99,6 +99,7 @@ def check_assays() -> None:
     for title in ("RNA-seq of Col-0 (control for 10X tpp-KO)", "chromatin interaction network"):
         assert classify.assay_flag(run(experiment_title=title)) == "", title
     assert classify.assay_flag(run(sample_title="chromatin-bound RNA")).endswith("fraction)")
+    assert classify.assay_flag(run(sample_title="chromatin rep2 RNA-seq")).endswith("fraction)")
     assert classify.usable(run(instrument_platform="OXFORD_NANOPORE")).startswith("not short")
     assert classify.usable(run(library_selection="size fractionation")).startswith("small RNA")
 

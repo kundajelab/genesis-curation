@@ -102,7 +102,7 @@ ASSAYS: tuple[tuple[re.Pattern[str], str], ...] = tuple(
         (r"circ-?rna|rnase r", "circular RNA"),
         (
             r"nuclear rna|nuclei|nucleus|nucleoplasm\w*|cytosol\w*|"
-            r"chromatin[- ]*(bound|associated|attached|fraction\w*|rna)",
+            r"chromatin[-_ ]*(bound|associated|attached|fraction\w*|rna|rep\w*)",
             "subcellular fraction",
         ),
     )
