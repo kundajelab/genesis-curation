@@ -16,7 +16,7 @@ def build(source: Path, output: Path) -> None:
     if hashlib.sha256(raw).hexdigest() != expected:
         raise ValueError("Use the pinned Plant Ontology snapshot; digest differs")
     baseline = (
-        Path(__file__).parents[1] / "src/genesis_curation/curation/vocabularies/plant-v3.json"
+        Path(__file__).parents[1] / "src/genesis_curation/curation/vocabularies/plant-v4.json"
     )
     value = json.loads(baseline.read_text())
     value.update(
