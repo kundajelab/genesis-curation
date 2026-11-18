@@ -149,6 +149,42 @@ traps:
     why: >-
       Col-0 lines expressing a rust effector or a cotton gene; the genotype field says Col-0
       and only the title names the transgene (PRJNA1072118, PRJNA765119).
+  - id: rna-control-and-treated-runs-share-a-sample
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR25112175, SRR25112184, SRR25112185]
+    expect: included
+    why: >-
+      Control and cold-treated runs share one BioSample; only the experiment titles ("under
+      normal conditions" vs "under cold conditions") tell them apart, so each run is
+      classified on its own titles (PRJNA990533).
+  - id: rna-isolate-names-the-mutant
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR16077900, SRR20354691]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      Genotype says Col-0 (the background) and only the BioSample isolate says "CRISPR
+      mutant" or "grp20-1 mutant" (PRJNA766434, PRJNA851744).
+  - id: rna-wild-type-field-beats-study-title
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR28624452, SRR32147272, SRR7889748]
+    expect: included
+    why: >-
+      Experiment titles name the study's mutants, but the sample's genotype or isolate says
+      WT while other samples of the study name the mutant (PRJNA1099156, PRJNA1216402,
+      PRJNA430092).
+  - id: rna-wild-type-field-is-the-background
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR13243757]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      Every sample says genotype WT and every title says "LBD3 inducible over expression
+      line": the field gives the background, so the title decides (PRJNA684618).
   - id: rna-smar2c2-labelled-rna-seq
     species: Sorghum_bicolor
     workflow: rna-seq

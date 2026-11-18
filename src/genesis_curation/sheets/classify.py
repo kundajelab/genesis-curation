@@ -27,6 +27,14 @@ MUTANT = re.compile(
     r"complement|reporter|gfp|gus\b|::|\bline\s*\d",
     re.I,
 )
+# BioSample `isolate` is free text ("WT biorep 3", "iso1", "Col-rep2"), so it counts only when
+# it names a mutant or transgene outright and does not also say wild type ("CRISPR wide type").
+ISOLATE_MUTANT = re.compile(
+    r"mutant|knock[- ]?(out|down)|\bko\b|overexpress|\boe\b|crispr|cas9|\brnai\b|amirna|"
+    r"t-dna|transgen",
+    re.I,
+)
+ISOLATE_WILD_TYPE = re.compile(r"wil?de?[- ]?type|\bwt\b", re.I)
 GENE_ALLELE = re.compile(r"\b(at)?[a-z]{3,6}\d{1,3}[a-z]?\b", re.I)
 WILD_TYPE = re.compile(r"wild[- ]?type|\bwt\b|wildtype", re.I)
 ONLY_WILD_TYPE = re.compile(r"(\s*\|?\s*(wild[- ]?type( genotype)?|wt|wildtype)\s*)+", re.I)
@@ -221,8 +229,11 @@ def classify_sample(
         and GENE_ALLELE.search(genotype_text)
         and not re.search(r"\bcol\d|wild[- ]?type|\bwt\b", genotype_text, re.I)
     )
-    mutant = MUTANT.search(genotype_text) or any(
-        term.search(genotype_text) for term in species.mutant_terms
+    isolate = a.get("isolate") or ""
+    mutant = (
+        MUTANT.search(genotype_text)
+        or any(term.search(genotype_text) for term in species.mutant_terms)
+        or (ISOLATE_MUTANT.search(isolate) and not ISOLATE_WILD_TYPE.search(isolate))
     )
     if mutant or gene_allele or (not genotype_text and MUTANT.search(descriptive)):
         genotype = "mutant / transgenic"
@@ -291,7 +302,7 @@ def classify_sample(
         genotype=genotype,
         treatment=treatment,
         tissue=tissue,
-        genotype_text=genotype_text[:200],
+        genotype_text=joined(genotype_text, isolate and f"isolate: {isolate}")[:200],
         treatment_text=treatment_text[:200],
         tissue_text=next((s for s in sources if s), "")[:200],
     )
@@ -341,13 +352,34 @@ def atac_assay_flag(run: Run, *titles: str) -> str:
     return ""
 
 
-def transgene_flag(run: Run, reference: re.Pattern[str]) -> str:
-    """A transgene, mutant or treatment word in the run's titles. The experiment title often
-    describes the whole study ("RNA-seq of rog mutants"), so a word found only there does
-    not count when the sample title names the reference or wild type (`reference`)."""
-    sample = TRANSGENE.search(run.get("sample_title", ""))
-    study = TRANSGENE.search(run.get("experiment_title", ""))
-    match = sample or (study if not reference.search(run.get("sample_title", "")) else None)
+def stated_genotype(sample: Sample) -> str:
+    """The sample's own genotype or isolate field ("WT biorep 3", "pgdh3-1"), or ''."""
+    a = sample.attributes
+    return joined(a.get("genotype"), a.get("isolate"))
+
+
+def states_wild_type(genotype: str) -> bool:
+    """A genotype field that says wild type and names no transgene."""
+    return bool(re.search(TITLE_WILD_TYPE, genotype, re.I)) and not TRANSGENE.search(genotype)
+
+
+def transgene_flag(run: Run, reference: re.Pattern[str], genotype: str = "") -> str:
+    """A transgene, mutant or treatment word in the run's titles. Titles often describe the
+    whole study ("RNA-seq of rog mutants"), so a title word does not count when:
+    - the sample's own genotype field (`genotype`) says wild type and names no transgene;
+    - it is found only in the experiment title and the sample title names the reference or
+      wild type (`reference`);
+    - it is found only in the sample title, which also names wild type ("WT, arp6 and klu
+      mutants"), and the experiment title names wild type without one."""
+    if states_wild_type(genotype):
+        return ""
+    sample_title = run.get("sample_title", "")
+    experiment_title = run.get("experiment_title", "")
+    sample = TRANSGENE.search(sample_title)
+    study = TRANSGENE.search(experiment_title)
+    if sample and not study and reference.search(sample_title):
+        sample = None if reference.search(experiment_title) else sample
+    match = sample or (study if not reference.search(sample_title) else None)
     return f"title suggests a transgene, mutant or treatment ({match.group(1)})" if match else ""
 
 

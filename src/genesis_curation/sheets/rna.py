@@ -102,12 +102,27 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
         by_study[run["study_accession"]].append(run)
     titles = {study: classify.StudyTitles(species, rows) for study, rows in by_study.items()}
     curated = exceptions(species)
+    # A sample's own genotype field outweighs title words only where it tells the study's
+    # samples apart (WT next to pgdh3-1); a study whose every sample says "WT" may be
+    # stating the background of a transgenic line (PRJNA684618).
+    stated = {
+        accession: classify.stated_genotype(samples.get(accession) or Sample(accession))
+        for accession in by_sample
+    }
+    mixed_studies = {
+        item.run["study_accession"]
+        for accession, items in by_sample.items()
+        for item in items
+        if stated[accession] and not classify.states_wild_type(stated[accession])
+    }
     for accession, items in by_sample.items():
         depth = max(int(c.run["read_count"] or 0) for c in items)
         sample = samples.get(accession) or Sample(accession, missing=True)
-        value = classify.classify_sample(species, sample, items[0].run)
         for item in items:
             run = item.run
+            # Classify each run: one BioSample can hold both control and treated runs,
+            # told apart only by their experiment titles (PRJNA990533).
+            value = classify.classify_sample(species, sample, run)
             study = run["study_accession"] or accession
             item.sample = value
             item.sample_id = (
@@ -125,7 +140,11 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
                         curated.get(run["run_accession"], ""),
                         item.reads.reason,
                         titles[run["study_accession"]].flag(run),
-                        classify.transgene_flag(run, titles[run["study_accession"]].wild_type),
+                        classify.transgene_flag(
+                            run,
+                            titles[run["study_accession"]].wild_type,
+                            stated[accession] if run["study_accession"] in mixed_studies else "",
+                        ),
                     )
                     if reason
                 ),

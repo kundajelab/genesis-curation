@@ -337,9 +337,9 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
     titles = {study: StudyTitles(species, texts) for study, texts in by_study.items()}
     for accession, items in by_sample.items():
         sample = samples.get(accession) or Sample(accession, missing=True)
-        value = classify.classify_sample(species, sample, items[0].run)
         for item in items:
             run = item.run
+            value = classify.classify_sample(species, sample, run)
             entry = table.get(item.study) or {}
             text = run_text(run, species)
             item.sample = value
