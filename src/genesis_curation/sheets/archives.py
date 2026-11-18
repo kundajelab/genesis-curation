@@ -206,6 +206,17 @@ class Archive:
         }
         return parse_tsv(self.request(PORTAL + "search", form))
 
+    def search(self, query: str, fields: Iterable[str] = RUN_FIELDS) -> list[Run]:
+        """Every public run matching an ENA portal query (text fields take `*` wildcards)."""
+        form = {
+            "result": "read_run",
+            "query": query,
+            "fields": ",".join(fields),
+            "format": "tsv",
+            "limit": "0",
+        }
+        return parse_tsv(self.request(PORTAL + "search", form))
+
     def samples(self, accessions: Iterable[str]) -> dict[str, Sample]:
         """Sample titles and attributes, from `samples.jsonl` or ENA in batches of 80.
         Accessions ENA does not return are recorded as missing and not asked again."""

@@ -201,3 +201,61 @@ traps:
     expect: excluded
     reason_class: treatment
     why: 12 h of light (de-etiolation) is a treatment; only titles say so (SRP474955).
+  - id: tss-unsupported-5p-methods
+    species: Arabidopsis_thaliana
+    workflow: tss-seq
+    runs: [SRR6967084, SRR8618705, SRR10742174]
+    expect: excluded
+    reason_class: assay
+    why: >-
+      nanoPARE reads 5' ends of capped and uncapped RNA, and NAD captureSeq maps NAD-capped
+      RNA; neither is 5' cap TSS mapping (SRP139061, SRP186779, SRP238264).
+  - id: tss-cap-less-controls
+    species: Arabidopsis_thaliana
+    workflow: tss-seq
+    runs: [DRR098888, DRR098889, DRR098890, DRR098891]
+    expect: excluded
+    reason_class: control
+    why: The "Cap_less" libraries of the cap-trapping study have no cap selection (DRP003990).
+  - id: tss-other-libraries-in-tss-studies
+    species: Arabidopsis_thaliana
+    workflow: tss-seq
+    runs: [DRR221901, SRR27227832, SRR10030449]
+    expect: excluded
+    reason_class: assay
+    why: >-
+      RNA-seq and small RNA runs inside TSS studies, and a run the archive marks as CAGE
+      selection in an RNA-seq study, are not TSS libraries (DRP008419, SRP478307, SRP219510).
+  - id: tss-resubmitted-library
+    species: Arabidopsis_thaliana
+    workflow: tss-seq
+    runs: [SRR7772723]
+    expect: excluded
+    reason_class: duplicate
+    why: Col0_RT in SRP159234 has the same reads as Col0 rep1 (SRR7064004) in SRP142625.
+  - id: tss-trim-and-adapter
+    species: Arabidopsis_thaliana
+    workflow: tss-seq
+    runs: [SRR10045003]
+    expect: included
+    fields: {method: CAGE, trim_5p: '9', adapter_3p: TCGTATGCCGTCTTCTGCTTG}
+    why: >-
+      The CAGE libraries carry a 9 nt 5' linker and the small RNA index adapter; the trim
+      that puts the offset mode at -1 is 9 (SRP219883).
+  - id: tss-seq-trims
+    species: Arabidopsis_thaliana
+    workflow: tss-seq
+    runs: [DRR072208, SRR7064004]
+    expect: included
+    fields: {method: TSS-seq}
+    why: >-
+      Oligo-capping TSS-seq libraries whose 5' linkers (2 and 8 nt) must be trimmed so read
+      starts fall on annotated TSSs (DRP004481, SRP142625).
+  - id: tss-reference-cell-line-and-light-time
+    species: Arabidopsis_thaliana
+    workflow: tss-seq
+    runs: [DRR098884, SRR27227855]
+    expect: included
+    why: >-
+      T87 cells are a Col-0 derived line, and "26h light" is a germination time point, not a
+      light treatment (DRP003990, SRP478307).

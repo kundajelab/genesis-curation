@@ -7,6 +7,8 @@
 #   gene_names_mean_mutant: a bare gene-allele name (phl1, atmorc4) in a genotype field
 #     means a mutant. False where cultivars share that shape (Sorghum Tx430).
 #   mutant_terms: extra species-specific mutant patterns (allele series such as bmr).
+#   reference_lines: optional; cell lines derived from the reference genotype, which count as
+#     the reference where a sample names only the line (T87 cells come from Columbia).
 #   references: file names written to sheets (as in the curated sheets); they must exist in the shared references
 #     folder genesis-preprocessing runs with.
 Arabidopsis_thaliana:
@@ -17,6 +19,7 @@ Arabidopsis_thaliana:
   title_marker: '(?<![a-z])col(umbia)?([-_ ]?0)?(?![a-z])'
   gene_names_mean_mutant: true
   mutant_terms: []
+  reference_lines: '(?<![a-z0-9])t87(?![a-z0-9])'
   references:
     fasta: Athaliana_447_TAIR10.fa.gz
     annotation: Athaliana_447_Araport11.gene_exons.gff3.gz

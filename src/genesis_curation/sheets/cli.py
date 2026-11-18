@@ -13,7 +13,7 @@ from typing import Any
 
 import yaml
 
-from . import rna, scatac, species
+from . import rna, scatac, species, tss
 from . import score as scoring
 from .archives import Archive
 from .measure.strand import Tools
@@ -99,14 +99,18 @@ def append_history(path: Path, label: str, result: dict[str, Any]) -> None:
         handle.write("| " + " | ".join(row) + " |\n")
 
 
-BUILDERS = {"rna-seq": rna, "scatac-reads": scatac}
+BUILDERS = {"rna-seq": rna, "scatac-reads": scatac, "tss-seq": tss}
 
 
 def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     chosen = species.load(args.species)
     cache = args.cache or args.out / "cache"
+    archive = Archive(cache / "ena", offline=args.offline)
+    if args.workflow == "tss-seq":
+        summary = tss.build(chosen, archive, args.out, tss.options(args, cache), log=log)
+        (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
+        return summary, 0
     if args.workflow == "scatac-reads":
-        archive = Archive(cache / "ena", offline=args.offline)
         found = scatac.build(
             chosen,
             archive,
@@ -128,7 +132,6 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
         tools=tools,
         probe_duplicates=not args.no_probe,
     )
-    archive = Archive(cache / "ena", offline=args.offline)
     summary = rna.build(chosen, archive, args.out, options, log=log)
     (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
     return summary, 0
@@ -154,6 +157,11 @@ def configure(parser: argparse.ArgumentParser) -> None:
     build.add_argument("--cache", type=Path, help="ENA and measurement cache (default OUT/cache)")
     build.add_argument(
         "--strandedness-from", type=Path, help="Reuse calls from a TSV with run, strandedness"
+    )
+    build.add_argument(
+        "--measure-from",
+        type=Path,
+        help="tss-seq: reuse TSS signals, trims and adapters from a runs-qc TSV",
     )
     build.add_argument(
         "--no-measure", action="store_true", help="Leave runs without a call out, unmeasured"

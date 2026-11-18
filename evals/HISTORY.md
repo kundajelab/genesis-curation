@@ -12,3 +12,5 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-18 | Arabidopsis_thaliana | rna-seq | at reuse+measured-rest v1 | 0.9896 | 0.9789 | 1.0 | 7/7 |
 | 2026-11-18 | Sorghum_bicolor | scatac-reads | sb sra+probe v1 | 1.0 | 1.0 | 1.0 | 2/2 |
 | 2026-11-18 | Arabidopsis_thaliana | scatac-reads | at sra+probe v1 | 1.0 | 1.0 | 1.0 | 9/9 |
+| 2026-11-18 | Arabidopsis_thaliana | tss-seq | at tss reused-signal v1 | 1.0 | 1.0 | 1.0 | 7/7 |
+| 2026-11-18 | Arabidopsis_thaliana | tss-seq | at tss measured v2 | 0.9839 | 1.0 | 1.0 | 7/7 |
