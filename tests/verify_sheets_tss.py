@@ -109,6 +109,9 @@ def check_read_structure() -> None:
     assert value.reads == 4 and value.first_g == 0.5
     assert value.adapter == "TCGTATGCCGTCTTCTGCTTG", value.adapter_rates
     assert signal.Profile("SRR1", 100, {"TruSeq": 0.005}).adapter == signal.TRUSEQ
+    # A TruSeq dimer read through to the index adapter tail counts for TruSeq (DRR029684).
+    dimer = b"TCGGAAGAGCGGTTCAGCAGGAATGCCGAGACCGATCTCGTATGCCG"
+    assert signal.first_adapter(dimer) == ("TruSeq", 0) and signal.clip(dimer) == 0
     primer = signal.SMART_PRIMER.replace("T", "A", 1)  # one mismatch is allowed
     read = b"NN" + primer.encode() + b"ACGTACGTACGT" + b"AT" + b"GGGACTG"
     assert [s for _, s, _ in signal.smart_reads([(b"r", read, b"I" * len(read))])] == [b"GGGACTG"]
@@ -141,9 +144,15 @@ def check_offsets() -> None:
     def stats(trim: int, close: int, mode: int | None) -> signal.TrimStats:
         return signal.TrimStats(trim, 1000, 900, close, 600, mode)
 
-    sweep = {0: stats(0, 300, 9), 8: stats(8, 400, 1), 9: stats(9, 380, 0), 10: stats(10, 50, -1)}
-    assert signal.choose_trim(sweep, 0) == 9
-    assert signal.choose_trim(sweep, -1) == 8  # a mode reached only where few ends are near
+    # An 8 nt UMI (SRP142625): trim 4 reaches mode 0 with more ends near, then jumps.
+    modes = {4: 0, 5: -3, 6: -2, 7: -1, 8: 0, 9: 1, 10: 2}
+    sweep = {t: stats(t, 400 - 10 * t, mode) for t, mode in modes.items()}
+    assert signal.choose_trim(sweep, 0) == 8
+    assert signal.choose_trim(sweep, -1) == 7
+    sweep = {0: stats(0, 300, 9), 8: stats(8, 400, 1), 9: stats(9, 100, 2)}
+    assert signal.choose_trim(sweep, 0) == 8  # no steady mode 0: the most ends near
+    sweep[7] = stats(7, 50, 0)
+    assert signal.choose_trim(sweep, 0) == 8  # a mode reached only where few ends are near
     assert signal.choose_trim({}, 0) == 0
     print("PASS transcript starts, 5' ends, offsets, offset mode ties and trim choice")
 

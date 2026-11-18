@@ -2,7 +2,7 @@
 
 The first 20,000 reads of the TSS read file are streamed from ENA (validated record by record,
 as for strandedness). From them:
-- adapter rates: the share of reads holding each known 3' adapter (first 10 bases);
+- adapter rates: the share of reads in which each known 3' adapter is the first one found;
 - the share of reads starting with G (a cap-trapping library adds a non-templated G);
 - the Smart-seq2 primer rate (Smar2C2 TSS reads carry it, in either mate);
 - a trim sweep: the reads are cut by 0-15 bases at the 5' end, clipped at any known adapter and
@@ -46,7 +46,14 @@ ADAPTERS = {
     "small RNA": "TGGAATTCTCGGGTGCCAAGG",
     "Nextera": "CTGTCTCTTATACACATCT",
 }
-ADAPTER_PROBE = 10  # leading bases searched for
+# An adapter is found by any 10-base window starting in its first 4 bases, so that adapter
+# dimers whose read starts a few bases into the adapter count for it.
+ADAPTER_PROBE, ADAPTER_SHIFTS = 10, 4
+PROBES = tuple(
+    (name, adapter[i : i + ADAPTER_PROBE].encode())
+    for name, adapter in ADAPTERS.items()
+    for i in range(ADAPTER_SHIFTS)
+)
 MIN_ADAPTER_RATE = 0.01
 SMART_PRIMER = "AAGCAGTGGTATCAACGCAGAGTAC"
 UMI = 12
@@ -112,12 +119,20 @@ class Measurement:
 
 
 def choose_trim(sweep: dict[int, TrimStats], target: int) -> int:
-    """The trim whose offset mode is `target` (0, or -1 for a cap G the workflow removes) with
-    the most 5' ends within 10 bases of a start; without one, the trim with the most such ends.
+    """The trim whose offset mode is `target` (0, or -1 for a cap G the workflow removes) and
+    then moves one base per further trimmed base, as genomic bases do (a random UMI before the
+    insert can reach the target mode at a smaller trim, then jump); among those, the one with
+    the most 5' ends within 10 bases of a start. Without one, the trim with the most such ends.
     Ties go to the smaller trim."""
     if not sweep:
         return 0
-    hits = [s for s in sweep.values() if s.offset_mode == target]
+
+    def steady(s: TrimStats) -> bool:
+        return s.offset_mode == target and all(
+            sweep[s.trim + k].offset_mode == target + k for k in (1, 2) if s.trim + k in sweep
+        )
+
+    hits = [s for s in sweep.values() if steady(s)]
     best = max(sweep.values(), key=lambda s: (s.near_close, -s.trim))
     if hits:
         chosen = max(hits, key=lambda s: (s.near_close, -s.trim))
@@ -212,14 +227,20 @@ def sam_stats(
     return stats
 
 
+def first_adapter(sequence: bytes) -> tuple[str, int]:
+    """The known adapter that starts first in the read and where, or ('', read length). The
+    small-RNA index sequence also ends TruSeq read-through, so only the first one counts."""
+    found = ("", len(sequence))
+    for name, probe in PROBES:
+        at = sequence.find(probe)
+        if 0 <= at < found[1]:
+            found = (name, at)
+    return found
+
+
 def clip(sequence: bytes) -> int:
     """Length of the read before the first known adapter."""
-    cut = len(sequence)
-    for adapter in ADAPTERS.values():
-        at = sequence.find(adapter[:ADAPTER_PROBE].encode())
-        if 0 <= at < cut:
-            cut = at
-    return cut
+    return first_adapter(sequence)[1]
 
 
 def read_fastq(path: Path) -> list[tuple[bytes, bytes, bytes]]:
@@ -241,10 +262,8 @@ def profile(run: str, records: list[tuple[bytes, bytes, bytes]]) -> Profile:
     n = len(records)
     if not n:
         return Profile(run, 0)
-    rates = {
-        name: round(sum(adapter[:ADAPTER_PROBE].encode() in s for _, s, _ in records) / n, 4)
-        for name, adapter in ADAPTERS.items()
-    }
+    first = Counter(first_adapter(s)[0] for _, s, _ in records)
+    rates = {name: round(first[name] / n, 4) for name in ADAPTERS}
     return Profile(
         run=run,
         reads=n,
