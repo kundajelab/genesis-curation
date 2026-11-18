@@ -1,0 +1,12 @@
+# Per-study decisions for tss-seq sheets that neither the archive metadata nor the reads can
+# make, each with its evidence. Keyed by species folder, then study (SRP/DRP/ERP or PRJ).
+#   method: the library method when the archive record names none or a wrong one. CAGE and
+#     nAnT-iCAGE are processed the same way, so this records the protocol, not a run setting.
+#   reason: leave every run of the study out with this reason.
+#   runs: limit the entry to these runs.
+Arabidopsis_thaliana:
+  SRP495197:
+    method: nAnT-iCAGE
+    why: >-
+      The FLIC study's CAGE libraries are nAnT-iCAGE (paper methods); the archive records
+      only "CAGE" (curation of 2026-11-17).

@@ -13,7 +13,7 @@ from typing import Any
 
 import yaml
 
-from . import dap, rna, species
+from . import dap, rna, scatac, species, tss
 from . import score as scoring
 from .archives import Archive
 from .measure.strand import Tools
@@ -99,14 +99,28 @@ def append_history(path: Path, label: str, result: dict[str, Any]) -> None:
         handle.write("| " + " | ".join(row) + " |\n")
 
 
-BUILDERS = {"rna-seq": rna, "dap-seq": dap}
+BUILDERS = {"rna-seq": rna, "scatac-reads": scatac, "tss-seq": tss, "dap-seq": dap}
 
 
 def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     chosen = species.load(args.species)
     cache = args.cache or args.out / "cache"
+    archive = Archive(cache / "ena", offline=args.offline)
+    if args.workflow == "tss-seq":
+        summary = tss.build(chosen, archive, args.out, tss.options(args, cache), log=log)
+        (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
+        return summary, 0
+    if args.workflow == "scatac-reads":
+        found = scatac.build(
+            chosen,
+            archive,
+            args.out,
+            scatac.Options(cache=cache, probe=not args.no_probe, vdb_dump=args.vdb_dump),
+            log=log,
+        )
+        (args.out / "build.json").write_text(json.dumps(found, indent=2) + "\n")
+        return found, 0
     if args.workflow == "dap-seq":
-        archive = Archive(cache / "ena", offline=args.offline)
         options = dap.Options(cache, probe=not args.no_probe, skip_runs_in=args.skip_runs_in)
         summary = dap.build(chosen, archive, args.out, options, log=log)
         (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
@@ -123,7 +137,6 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
         tools=tools,
         probe_duplicates=not args.no_probe,
     )
-    archive = Archive(cache / "ena", offline=args.offline)
     summary = rna.build(chosen, archive, args.out, options, log=log)
     (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
     return summary, 0
@@ -141,7 +154,7 @@ def configure(parser: argparse.ArgumentParser) -> None:
     gold.set_defaults(curation_handler=fetch)
 
     build = commands.add_parser(
-        "build", help="Build a sample sheet and runs-qc table for one species from ENA"
+        "build", help="Build a sample sheet and runs-qc table for one species from ENA/SRA"
     )
     build.add_argument("--workflow", required=True, choices=sorted(BUILDERS))
     build.add_argument("--species", required=True, help="Folder name, e.g. Sorghum_bicolor")
@@ -151,11 +164,20 @@ def configure(parser: argparse.ArgumentParser) -> None:
         "--strandedness-from", type=Path, help="Reuse calls from a TSV with run, strandedness"
     )
     build.add_argument(
+        "--measure-from",
+        type=Path,
+        help="tss-seq: reuse TSS signals, trims and adapters from a runs-qc TSV",
+    )
+    build.add_argument(
         "--no-measure", action="store_true", help="Leave runs without a call out, unmeasured"
     )
     build.add_argument(
-        "--no-probe", action="store_true", help="Skip the read probes (duplicates, read lengths)"
+        "--no-probe",
+        action="store_true",
+        help="Skip read probes (rna-seq duplicate reads; scatac-reads instruments; "
+        "dap-seq read lengths)",
     )
+    build.add_argument("--vdb-dump", help="vdb-dump executable (default: on PATH)")
     build.add_argument(
         "--skip-runs-in",
         type=Path,
