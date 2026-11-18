@@ -121,6 +121,86 @@ traps:
     why: >-
       "control for 10X tpp-KO" (a fold change, not 10x Genomics) and "chromatin interaction
       network" (the study topic, not chromatin-bound RNA) are bulk RNA-seq.
+  - id: scatac-library-split-over-experiments
+    species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    runs: [SRR31441069, SRR31441070, SRR31441071, SRR31441072]
+    expect: included
+    fields: {library: 'SRR31441069,SRR31441070,SRR31441071,SRR31441072'}
+    why: >-
+      One 10x library's four sample-index lanes submitted as four experiments (atsht_S1..S4)
+      of one BioSample; they share most cell barcodes, so they are one row (SRP546921).
+  - id: scatac-shared-biosample-separate-libraries
+    species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    runs: [SRR24921616, SRR24921615]
+    expect: included
+    fields: {chemistry: 10x-multiome-atac, barcode_whitelist: '-'}
+    why: >-
+      Four libraries (control and case, two replicates) share one BioSample; their titles
+      differ by more than a lane, so they stay separate rows (SRP443792).
+  - id: scatac-case-without-control-marker
+    species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    runs: [SRR24921614, SRR24921613]
+    expect: excluded
+    reason_class: treatment
+    why: '"case" libraries lack the control marker of the study''s other titles (SRP443792).'
+  - id: scatac-bam-resubmission
+    species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    runs: [SRR14420340]
+    expect: excluded
+    reason_class: files
+    why: >-
+      The same library as SRX16219133 (same BioSample and spot count), first submitted as
+      a BAM without the barcode read (SRP318614).
+  - id: scatac-fastq-of-bam-resubmission
+    species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    runs: [SRR20184262]
+    expect: included
+    fields: {chemistry: 10x-atac-v1, barcode_whitelist: 737K-cratac-v1.txt}
+    why: The FASTQ resubmission of SRP318614's root library has the 16-base barcode read.
+  - id: scatac-mixed-species-pool
+    species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    runs: [SRR38507152, SRR38507145]
+    expect: excluded
+    reason_class: species
+    why: >-
+      Brassicaceae nuclei pooled from four species (taxon "Brassicaceae sp."); found only
+      through the study of the A. thaliana libraries (SRP699388).
+  - id: scatac-cut-and-tag-with-10x-reads
+    species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    runs: [SRR37841656, SRR37841654]
+    expect: excluded
+    reason_class: assay
+    why: snCUT&Tag libraries submitted as ATAC-seq with 10x read structures (SRP686456).
+  - id: scatac-sci-atac-no-barcode-read
+    species: Arabidopsis_thaliana
+    workflow: scatac-reads
+    runs: [SRR15662872]
+    expect: excluded
+    reason_class: files
+    why: sci-ATAC-seq reads (150,150) carry no 10x barcode read (SRP334576).
+  - id: scatac-genotype-from-paper
+    species: Sorghum_bicolor
+    workflow: scatac-reads
+    runs: [SRR26989943, SRR26989999]
+    expect: included
+    fields: {chemistry: 10x-multiome-atac}
+    why: >-
+      SRA gives no genotype for SRP474955; the paper's Methods give BTx623
+      (data/scatac.yaml). Time point 0 h of de-etiolation is the untreated sample.
+  - id: scatac-light-time-course
+    species: Sorghum_bicolor
+    workflow: scatac-reads
+    runs: [SRR26989939, SRR26990003]
+    expect: excluded
+    reason_class: treatment
+    why: 12 h of light (de-etiolation) is a treatment; only titles say so (SRP474955).
   - id: tss-unsupported-5p-methods
     species: Arabidopsis_thaliana
     workflow: tss-seq
