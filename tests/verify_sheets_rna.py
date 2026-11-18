@@ -171,11 +171,19 @@ def check_strand() -> None:
             body = fastq(10) if len(calls) > 1 else fastq(3) + b"@r\nAA\0A\n+\nIIII\n"
             return chunks_of(gzip.compress(body))
 
-        assert strand.sample_reads("SRR1", "u", target, reads=8, chunks=flaky) == 8
+        assert strand.sample_reads("SRR1", "u", target, reads=8, chunks=flaky, pause=0) == 8
         assert len(calls) == 2, calls  # the NUL-corrupted first download was retried
         lines = target.read_text().splitlines()
         assert lines[0] == "@SRR1:r0" and len(lines) == 32
         assert strand.sample_reads("SRR1", "u", target, chunks=flaky) == 8  # resumed
+
+        def broken(url: str) -> Iterator[bytes]:
+            return chunks_of(gzip.compress(fastq(3) + b"@r\nAA\0A\n+\nIIII\n"))
+
+        short = Path(tmp) / "SRR2.fq"
+        # Three valid reads before a fault on every attempt: too few to keep, so it failed.
+        assert strand.sample_reads("SRR2", "u", short, reads=8, chunks=broken, pause=0) == 0
+        assert not short.exists()
 
         core = Path(tmp) / "core"
         core.write_text("SRR1:r0\tAssigned\t1\tg\nSRR1:r1\tUnassigned_NoFeatures\t0\tNA\n")

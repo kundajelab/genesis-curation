@@ -15,6 +15,7 @@ import csv
 import os
 import shutil
 import subprocess
+import time
 import zlib
 from collections import Counter
 from collections.abc import Callable, Iterator
@@ -143,17 +144,20 @@ def sample_reads(
     reads: int = READS,
     chunks: Callable[[str], Iterator[bytes]] = http_chunks,
     attempts: int = 3,
+    pause: float = 5.0,
 ) -> int:
     """Write the first `reads` valid reads of `url` to `target`, names prefixed `<run>:`.
     Returns the number written (0 when nothing could be read). Reads over 600 bases are
     skipped. An invalid record, NUL bytes or a broken connection retries the download; after
-    the last attempt the valid reads before the fault are kept."""
+    the last attempt the valid reads before the fault are kept if they are at least half the
+    target, otherwise the download counts as failed (and is retried on the next build)."""
     if target.exists():
         return sum(1 for _ in target.open("rb")) // 4
     part = target.with_suffix(".part")
     written = 0
+    fault = False
     for attempt in range(attempts):
-        written = 0
+        written, fault = 0, False
         try:
             with part.open("wb") as out:
                 for name, sequence, quality in fastq_records(chunks(url)):
@@ -164,14 +168,16 @@ def sample_reads(
                     if written >= reads:
                         break
         except OSError, ValueError, zlib.error:
+            fault = True
             if attempt < attempts - 1:
+                time.sleep(pause * (attempt + 1))
                 continue
         break
-    if written:
+    if written and (not fault or written >= reads // 2):
         part.replace(target)
-    else:
-        part.unlink(missing_ok=True)
-    return written
+        return written
+    part.unlink(missing_ok=True)
+    return 0
 
 
 def assigned(core: Path) -> Counter[str]:
@@ -297,7 +303,8 @@ def measure(
     log: Callable[[str], None] = print,
 ) -> dict[str, StrandCall]:
     """Strandedness for each run (run -> read-1 URL). Runs already in `work/calls.tsv` are
-    not measured again; read samples are deleted once their batch is counted."""
+    not measured again, except failed downloads, which are retried on the next build; read
+    samples are deleted once their batch is counted."""
     work.mkdir(parents=True, exist_ok=True)
     store = work / "calls.tsv"
     done = load_calls(store)
@@ -321,7 +328,8 @@ def measure(
                 )
                 numbers = dict(zip(batch, counts, strict=True))
                 for item in count_batch(numbers, sampled, index, gtf, tools, work):
-                    writer.writerow(asdict(item))
+                    if item.strandedness != "download failed":
+                        writer.writerow(asdict(item))
                     done[item.run] = item
                 handle.flush()
                 for run in batch:
