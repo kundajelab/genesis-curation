@@ -16,7 +16,8 @@ atac-seq:
       reason: low FRiP in a full pipeline run (0.066)
       why: >-
         The full atac-seq run (genesis-preprocessing test sheets, 2026-11-17) gave FRiP 0.066
-        with TSS enrichment 2.69; the 200k-pair check passes it (TSS enrichment 2.30). Its
-        share of cut sites near TSSs (promoter_fraction 0.091, input control 0.063) is as low
-        as that of the study's other three runs, which have no full run, so no read rule
-        separates it; they stay in the sheet.
+        with TSS enrichment 2.69; the 200k-pair check passes it (TSS enrichment 2.30). The
+        peak-free proxy does not separate it either: its share of cut sites near TSSs is 1.44
+        times the input control's, while A. thaliana CRR804239 (FRiP 0.17 in a full run) has
+        1.27 times the gDNA control's. The study's other three runs look the same on 200k
+        pairs and have no full run, so they stay in the sheet.
