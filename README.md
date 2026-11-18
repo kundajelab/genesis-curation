@@ -87,7 +87,9 @@ ChIP-seq, WGBS, MPRA and genomes.
 | [RNA curation and measured QC](docs/usage/rna-curation.md) | RNA evidence rules and importing QC measurements |
 | [Deployment](docs/usage/deployment.md) | Docker, model providers, budget, web search, local models |
 | [Development guide](docs/development-handoff.md) | Native setup, runtime layout, cleanup |
-| [Evaluation](evals/README.md) | Gold sheets, traps and score history |
+| [Evaluation](evals/README.md) | Gold sheets, traps, [gold corrections](evals/gold-corrections.md) and score history |
+| [Sheet-curation skill](.claude/skills/sheet-curation/SKILL.md) | The build, score, triage and fix loop, for Claude Code or by hand |
+| [Lessons](LESSONS.md) | Past curation mistakes, their causes and the traps that catch them |
 | [Validation reports](docs/validation/) | Recorded acceptance and pilot results |
 
 ## Scope
