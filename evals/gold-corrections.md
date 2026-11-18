@@ -21,12 +21,24 @@ Left as they were after review:
 
 - **Two duplicates whose original failed to download** (SRR5304431, SRR29221330). The copy
   stands in for the original.
-- **Ambiguous genotype or library**, where the gold's call is kept until checked by hand:
-  - studies titled "mutants" where wild-type controls may share the title (PRJNA1099156,
-    PRJNA430092, PRJNA1216402);
-  - pollen complementation lines (PRJNA989636);
-  - sorted stem-cell nuclei (PRJNA929034).
-- **Builder misses, where the gold is right:**
-  - PRJNA990533, "Col-0 under normal conditions", is read as treated;
-  - SRR6262794, "RNA-seq … in WT", is flagged by its sample title, which lists the mutants.
+- **Ambiguous genotype or library** (mutant-titled studies, pollen complementation lines,
+  sorted nuclei): checked against BioSample and GEO and settled in the second batch below.
+- **Builder misses, where the gold is right** (PRJNA990533 controls read as treated;
+  SRR6262794 flagged by a sample title that lists the mutants): fixed in the builder, with
+  traps `rna-control-and-treated-runs-share-a-sample` and `rna-wild-type-field-beats-study-title`.
 - **A. thaliana DAP-seq PRJNA1177481:** the gold and the builder agree, so no change.
+
+## 2026-11-18, second batch
+
+Found after the builder began reading BioSample `isolate` fields and classifying each run on
+its own titles. Per-run evidence is in the runs-qc table's `reason_left_out`.
+
+| Gold | Change | Runs | Evidence | Trap |
+| --- | --- | ---: | --- | --- |
+| A. thaliana RNA-seq | dropped: mutant or transgenic line | 64 | BioSample `isolate` names it ("T-DNA mutant", "CRISPR mutant", "transgenic plants", "OE line"), while the genotype field gives only the background | `rna-isolate-names-the-mutant` |
+| A. thaliana RNA-seq | dropped: mutants | 12 | BioSample `isolate`: pgdh3-1, pgdh3-2 (PRJNA1099156), serk1-1, serk1-L326F (PRJNA430092). The studies' wild-type runs stay | `rna-wild-type-field-beats-study-title` |
+| A. thaliana RNA-seq | dropped: sorted nuclei | 8 | BioSample cell type: stem cell nuclei, sorted by FANS (GSE223914) | — |
+
+Kept after checking: the wild-type runs of PRJNA1216402 (genotype: Wt) and the Col-0 pollen
+of PRJNA989636 (genotype: WT). SRR27606461 duplicates SRR27557211, but the two
+submissions disagree on its genotype, so it stays as it was.

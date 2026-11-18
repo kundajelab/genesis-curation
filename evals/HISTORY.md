@@ -31,3 +31,12 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-18 | Sorghum_bicolor | atac-seq | sb-reuse vs corrected gold | 1.0 | 1.0 | 1.0 | 3/3 |
 | 2026-11-18 | Sorghum_bicolor | dap-seq | sb-v2 vs corrected gold | 1.0 | 1.0 | 1.0 | 1/1 |
 | 2026-11-18 | Sorghum_bicolor | scatac-reads | sb-v2 vs corrected gold | 1.0 | 1.0 | 1.0 | 2/2 |
+| 2026-11-18 | Arabidopsis_thaliana | atac-seq | metadata-only campaign, isolate and per-run fixes | 1.0 | 1.0 | 1.0 | 2/2 |
+| 2026-11-18 | Arabidopsis_thaliana | dap-seq | metadata-only campaign, isolate and per-run fixes | 1.0 | 1.0 | 1.0 | 11/11 |
+| 2026-11-18 | Arabidopsis_thaliana | rna-seq | metadata-only campaign, isolate and per-run fixes | 0.9999 | 0.9999 | 1.0 | 13/13 |
+| 2026-11-18 | Arabidopsis_thaliana | scatac-reads | metadata-only campaign, isolate and per-run fixes | 1.0 | 1.0 | 1.0 | 9/9 |
+| 2026-11-18 | Arabidopsis_thaliana | tss-seq | metadata-only campaign, isolate and per-run fixes | 1.0 | 1.0 | 1.0 | 8/8 |
+| 2026-11-18 | Sorghum_bicolor | atac-seq | metadata-only campaign, isolate and per-run fixes | 1.0 | 1.0 | 1.0 | 3/3 |
+| 2026-11-18 | Sorghum_bicolor | dap-seq | metadata-only campaign, isolate and per-run fixes | 1.0 | 1.0 | 1.0 | 1/1 |
+| 2026-11-18 | Sorghum_bicolor | rna-seq | metadata-only campaign, isolate and per-run fixes | 1.0 | 0.9986 | 1.0 | 2/2 |
+| 2026-11-18 | Sorghum_bicolor | scatac-reads | metadata-only campaign, isolate and per-run fixes | 1.0 | 1.0 | 1.0 | 2/2 |
