@@ -72,7 +72,7 @@ training. Quantitative QC is currently RNA-focused. Search coverage depends on s
 access, and uncertain biological claims need expert review. Skills and successful
 inference do not establish biological accuracy.
 
-Run `scripts/check.sh` in the native development environment. The suite covers
+Run `scripts/check.sh` in the native development environment; GitHub Actions runs it on every pull request. The suite covers
 software contracts, evidence isolation, review, providers, exports and synthetic
 scale; live API costs and biological accuracy are evaluated separately. The supported
 container deployment is Linux; other operating systems and GPU configurations are
