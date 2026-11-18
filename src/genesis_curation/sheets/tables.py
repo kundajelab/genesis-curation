@@ -7,7 +7,8 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
 
-RUN = re.compile(r"(?<![A-Za-z0-9])((?:[SDE]RR|CRR)\d+)(?![0-9])")
+# Not followed by "/": ENA folder names such as /SRR173/ are not runs (file names are).
+RUN = re.compile(r"(?<![A-Za-z0-9])((?:[SDE]RR|CRR)\d+)(?![0-9/])")
 
 # Columns compared between a candidate and a gold sheet, per workflow. "layout" and
 # "control" are derived (see Sheet.fields); file names are compared by basename.

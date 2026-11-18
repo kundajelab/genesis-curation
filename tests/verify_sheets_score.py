@@ -9,7 +9,7 @@ import tempfile
 from pathlib import Path
 
 from genesis_curation.sheets import score as scoring
-from genesis_curation.sheets.tables import load_runs_qc, load_sheet
+from genesis_curation.sheets.tables import load_runs_qc, load_sheet, runs_in
 
 ENA = "https://ftp.sra.ebi.ac.uk/vol1/fastq"
 DAP_HEADER = "sample_id\tspecies\tread1_url\tread2_url\tcontrol_sample\treference_fasta"
@@ -71,6 +71,8 @@ def main() -> None:
             [QC_HEADER, "SRR103\tP1\tno\tread lengths differ in the first 100 reads"],
         )
 
+        folder = f"{ENA}/SRR173/036/SRR17344436/SRR17344436_1.fastq.gz"
+        assert runs_in(folder, "SRR1,ERR22") == ["SRR17344436", "SRR1", "ERR22"], runs_in(folder)
         sheet = load_sheet(gold, "dap-seq")
         assert sorted(sheet.by_run) == ["SRR100", "SRR101", "SRR102"], sheet.by_run
         assert sheet.fields("SRR102") == {
