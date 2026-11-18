@@ -24,4 +24,4 @@ measured RNA expression.
 ## Required guidance
 
 - [Evidence](../_shared/evidence.md) — loaded with this skill.
-- [Rna Library](../_shared/rna-library.md) — loaded with this skill.
+- [RNA library](../_shared/rna-library.md) — loaded with this skill.
