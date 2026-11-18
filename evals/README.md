@@ -25,7 +25,8 @@ Each miss is fixed in one of three ways:
 2. **The evidence is outside the archive record** (a paper's methods, a GEO page, a read
    check). Add an entry with that evidence to the matching file in
    `src/genesis_curation/sheets/data/`.
-3. **Gold is wrong.** Record the correction and its evidence. Gold on Hugging Face is changed
+3. **Gold is wrong.** Record the correction and its evidence in
+   [`gold-corrections.md`](gold-corrections.md). Gold on Hugging Face is changed
    only with the maintainers' agreement.
 
 Then rescore and append the result to `HISTORY.md`. A history row notes whether reads were

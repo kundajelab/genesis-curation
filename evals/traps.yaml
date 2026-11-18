@@ -130,6 +130,25 @@ traps:
     why: >-
       QuantSeq and m6A IP runs whose titles put the assay after an underscore; a `\b`
       regex misses them (underscore is a word character).
+  - id: rna-pat-seq-labelled-rna-seq
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR9963123, SRR21002258, SRR9644762]
+    expect: excluded
+    reason_class: assay
+    why: >-
+      PAT-seq (poly(A) tail sequencing) submitted with library strategy RNA-Seq; only the
+      experiment title says PAT-seq (PRJNA559744, PRJNA866703, PRJNA552176). Gold before
+      2026-11-18 kept them.
+  - id: rna-line-expressing-foreign-gene
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR27860459, SRR16018171]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      Col-0 lines expressing a rust effector or a cotton gene; the genotype field says Col-0
+      and only the title names the transgene (PRJNA1072118, PRJNA765119).
   - id: rna-smar2c2-labelled-rna-seq
     species: Sorghum_bicolor
     workflow: rna-seq
@@ -151,8 +170,8 @@ traps:
     expect: excluded
     reason_class: qc
     why: >-
-      FRiP 0.07 in a full Perlmutter run (TSS enrichment 2.3 on 200k pairs passed the
-      metadata-stage cutoff). Gold 2026-11-17 still includes it; the test sheet dropped it.
+      FRiP 0.07 in a full pipeline run (TSS enrichment 2.3 on 200k pairs passed the
+      metadata-stage cutoff). Dropped from the gold on 2026-11-18.
   - id: rna-duplicate-keeps-earliest
     species: Arabidopsis_thaliana
     workflow: rna-seq
@@ -296,6 +315,16 @@ traps:
     expect: excluded
     reason_class: duplicate
     why: Col0_RT in SRP159234 has the same reads as Col0 rep1 (SRR7064004) in SRP142625.
+  - id: tss-same-title-not-duplicate
+    species: Arabidopsis_thaliana
+    workflow: tss-seq
+    runs: [DRR095710]
+    expect: included
+    fields: {method: TSS-seq}
+    why: >-
+      Same title as DRR072208 ("TSS_seq in WT_Dark_0h") but a different sample, instrument and
+      depth (231M vs 125M reads); a matching title is not a duplicate. Gold before 2026-11-18
+      left it out.
   - id: tss-trim-and-adapter
     species: Arabidopsis_thaliana
     workflow: tss-seq
