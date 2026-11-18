@@ -421,9 +421,13 @@ def measured_signal(method: str, value: signal.Measurement) -> Signal | None:
         return None
     trim = signal.choose_trim(value.sweep, target_offset(method))
     at = value.sweep[trim]
+    # Smar2C2 maps only the reads holding the primer, UMI and AT (of both mates).
+    mapped = value.profile.reads
+    if method == "Smar2C2":
+        mapped = round(value.profile.reads * value.profile.smart_rate)
     return Signal(
         reads_sampled=value.profile.reads,
-        unique_fraction=round(at.unique_fraction(value.profile.reads), 3),
+        unique_fraction=round(at.unique_fraction(mapped), 3),
         near_close=round(at.near_close / at.unique, 3) if at.unique else None,
         near=round(at.near_fraction, 3),
         offset_mode="NA" if at.offset_mode is None else str(at.offset_mode),
@@ -508,8 +512,11 @@ def build(
         item.reason = item.reason or signal_reason(item)
 
     rows, qc = sheet_rows(species, candidates)
-    writers.write_sheet(out / f"{WORKFLOW}.tsv", WORKFLOW, rows)
     writers.write_runs_qc(out / f"{WORKFLOW}.runs-qc.tsv", qc)
+    if rows:
+        writers.write_sheet(out / f"{WORKFLOW}.tsv", WORKFLOW, rows)
+    else:  # the schema wants at least one sample; an empty sheet is only a header
+        writers.write_tsv(out / f"{WORKFLOW}.tsv", writers.header(WORKFLOW), [])
     reasons = Counter(re.sub(r" \(.*| of \S+", "", row["reason_left_out"]) for row in qc)
     return {
         "species": species.folder,

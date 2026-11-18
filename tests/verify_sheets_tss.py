@@ -214,6 +214,12 @@ def check_measure() -> None:
             jobs, root / "work", root, root / "genes.gff3", tools, sample=sample, log=lambda _: None
         )
         assert calls == ["SRR2"], calls
+    # Smar2C2 maps only the reads with the primer, so they are the unique fraction's base.
+    smart = signal.Measurement(
+        signal.Profile("SRR3", 1000, smart_rate=0.1), {0: signal.TrimStats(0, 90, 50, 20, 40, 0)}
+    )
+    found_smart = tss.measured_signal("Smar2C2", smart)
+    assert found_smart and found_smart.unique_fraction == 0.5, found_smart
     rejects(lambda: signal.Tools.find("/missing/STAR"), "STAR")
     print("PASS trim sweep with a stand-in STAR, resumed from the work folder")
 
