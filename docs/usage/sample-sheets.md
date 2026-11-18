@@ -155,8 +155,15 @@ genesis sheets campaign --species Sorghum_bicolor --out sb-all --gold-dir gold \
 
 It writes `OUT/<workflow>/` (the build's three files and `score.json`) and `OUT/campaign.json`,
 and exits non-zero if any workflow fails. `--workflows` picks a subset, and `--atac-extra-runs`
-and `--dap-skip-runs-in` pass through to those builds. For a species without gold, such as
+and `--dap-skip-runs-in` pass through to those builds. With `--gold-dir`, DAP-seq skips the
+studies of the former repository sheets that `gold-fetch` downloads (listed in `gold.yaml`). For a species without gold, such as
 rice, it only builds.
+
+The app's **Sample sheets** page runs the same campaign as a background job: choose a species
+and workflows, then download each sheet, runs-qc table and score. The app keeps the archive
+cache and results in the runtime's `sheets/` folder. For bulk ATAC, copy the
+metadata sheet's Bulk ATAC tab (TSV) to `sheets/inputs/bulk-atac-tab.tsv` in the runtime; the
+page says when it is missing. Read measurement is CLI only.
 
 The targets are precision and recall of at least 0.95, at least 0.98 on every field and all
 traps passing. Fix each miss in one of three ways: change a rule (and add a trap for it),

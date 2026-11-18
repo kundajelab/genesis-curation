@@ -36,7 +36,8 @@ as `deploy/web/manage.sh cli ...`.
 
 **Sample sheets** (`genesis sheets`): rule-based and reproducible. It goes from archive search
 to a sheet that genesis-preprocessing can run, with a recorded reason for every run left out.
-It uses no LLM. See [sample sheets](sample-sheets.md).
+It uses no LLM. The app's **Sample sheets** page runs the same `campaign` code as a background
+job. See [sample sheets](sample-sheets.md).
 
 **Metadata curation** (`genesis curation`, or the GUI): LLM-assisted. It discovers datasets,
 proposes metadata fields with source evidence, and keeps every uncertain field for human

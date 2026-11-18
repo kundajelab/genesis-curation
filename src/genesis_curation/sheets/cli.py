@@ -6,8 +6,10 @@ import argparse
 import datetime
 import hashlib
 import json
+import os
 import sys
 import urllib.request
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -20,20 +22,25 @@ from .measure import atac as atac_checks
 from .measure.strand import Tools
 from .tables import FIELDS, load_runs_qc, load_sheet
 
-EVALS = Path(__file__).resolve().parents[3] / "evals"
+# The repository's evals folder; installed copies (the web image) set GENESIS_SHEETS_EVALS.
+EVALS = Path(
+    os.environ.get("GENESIS_SHEETS_EVALS") or Path(__file__).resolve().parents[3] / "evals"
+)
 
 
-def gold_entries(manifest: Path) -> list[dict[str, Any]]:
+def gold_entries(manifest: Path, section: str = "gold") -> list[dict[str, Any]]:
     value = yaml.safe_load(manifest.read_text())
-    return value["gold"]
+    return value.get(section, [])
 
 
 def fetch(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     manifest = yaml.safe_load(args.manifest.read_text())
     base = manifest["base_url"].rstrip("/")
     fetched, kept = [], []
-    for entry in manifest["gold"]:
+    for entry in manifest["gold"] + manifest.get("repository_sheets", []):
         for kind in ("sheet", "runs_qc"):
+            if kind not in entry:
+                continue
             name, digest = entry[kind], entry[f"{kind}_sha256"]
             target = args.to / name
             if target.exists() and hashlib.sha256(target.read_bytes()).hexdigest() == digest:
@@ -198,19 +205,33 @@ def build_namespace(**values: object) -> argparse.Namespace:
     return argparse.Namespace(**(defaults | values))
 
 
-def run_campaign(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
+def run_campaign(
+    args: argparse.Namespace, step: Callable[[int, str], None] | None = None
+) -> tuple[dict[str, Any], int]:
     """Metadata-only builds of several workflows for one species, each scored against gold
     when the manifest has a gold set for it. Gold runs-qc tables, when given with
     --gold-dir, supply the read measurements a metadata-only build cannot make."""
-    gold = {
-        entry["workflow"]: entry
-        for entry in gold_entries(args.manifest)
-        if entry["species"] == args.species
-    }
+    gold = (
+        {
+            entry["workflow"]: entry
+            for entry in gold_entries(args.manifest)
+            if entry["species"] == args.species
+        }
+        if args.gold_dir
+        else {}
+    )
+    # Without --dap-skip-runs-in, skip the repository DAP sheets fetched with the gold.
+    skip_runs_in = args.dap_skip_runs_in or [
+        args.gold_dir / entry["sheet"]
+        for entry in (gold_entries(args.manifest, "repository_sheets") if args.gold_dir else [])
+        if entry["species"] == args.species and entry["workflow"] == "dap-seq"
+    ]
     cache = args.cache or args.out / "cache"
     results: dict[str, Any] = {}
     failed = 0
-    for workflow in args.workflows:
+    for number, workflow in enumerate(args.workflows):
+        if step:
+            step(number, workflow)
         out = args.out / workflow
         entry = gold.get(workflow) if args.gold_dir else None
         reuse = args.gold_dir / entry["runs_qc"] if entry else None
@@ -224,7 +245,7 @@ def run_campaign(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             strandedness_from=reuse if workflow == "rna-seq" else None,
             measure_from=reuse if workflow in ("tss-seq", "atac-seq") else None,
             extra_runs=args.atac_extra_runs if workflow == "atac-seq" else None,
-            skip_runs_in=args.dap_skip_runs_in if workflow == "dap-seq" else [],
+            skip_runs_in=skip_runs_in if workflow == "dap-seq" else [],
         )
         log(f"campaign: {args.species} {workflow}")
         try:
@@ -369,7 +390,8 @@ def configure(parser: argparse.ArgumentParser) -> None:
         type=Path,
         action="append",
         default=[],
-        help="dap-seq: leave out studies in this sheet; repeatable",
+        help="dap-seq: leave out studies in this sheet; repeatable. Default with --gold-dir: "
+        "the repository sheets listed in the manifest",
     )
     campaign.add_argument(
         "--manifest", type=Path, default=EVALS / "gold.yaml", help="Default: evals/gold.yaml"

@@ -10,7 +10,9 @@ COPY --from=ghcr.io/astral-sh/uv:0.13.5 /uv /usr/local/bin/uv
 WORKDIR /app
 COPY pyproject.toml uv.lock ./
 COPY src/ ./src/
+COPY evals/gold.yaml evals/traps.yaml ./evals/
 COPY --from=frontend /build/src/genesis_curation/web/assets/ ./src/genesis_curation/web/assets/
 RUN uv sync --frozen --extra web --no-dev --no-editable
-ENV PATH="/app/.venv/bin:$PATH" PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+ENV PATH="/app/.venv/bin:$PATH" PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 \
+    GENESIS_SHEETS_EVALS=/app/evals
 ENTRYPOINT ["genesis"]

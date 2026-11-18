@@ -395,6 +395,9 @@ def create_app(
     from . import qc_api
 
     qc_api.mount(app, root)
+    from . import sheets_api
+
+    sheets_api.mount(app, root)
 
     @app.get("/{path:path}")
     def frontend(path: str) -> FileResponse:

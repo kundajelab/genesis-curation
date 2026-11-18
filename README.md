@@ -6,7 +6,7 @@ turn them into sample sheets that
 
 The package provides two tools:
 
-- **Sample sheets** (`genesis sheets`, CLI only). These build a run-ready sheet for one species
+- **Sample sheets** (`genesis sheets`, and the app's Sample sheets page). These build a run-ready sheet for one species
   and one genesis-preprocessing workflow (RNA-seq, bulk ATAC, DAP-seq, TSS or scATAC) from
   ENA/SRA. Every candidate run is kept or left out with a recorded reason, and the result is
   scored against curated gold sheets. The rules are deterministic, and no LLM or account is

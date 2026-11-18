@@ -36,6 +36,10 @@ def execute(
         bundle = qc.export(root, data["analysis"])
         dump(root / "exports" / (task["id"] + ".json"), bundle)
         return {"url": "/api/qc/exports/" + task["id"]}
+    if kind == "sheets-campaign":
+        from . import sheets_api
+
+        return sheets_api.run(root, task, cancellation)
     if kind == "workspace":
         from . import campaigns
 
