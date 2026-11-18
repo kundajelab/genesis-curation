@@ -65,6 +65,12 @@ Fresh workspaces are empty. Credentials, databases, evidence and model weights s
 in your private runtime. Use your own provider account and a model available to it.
 No shared API keys, reference spreadsheet or local-model downloads are included.
 
+## Sample sheets for genesis-preprocessing
+
+`genesis sheets` scores sample sheets for the
+[genesis-preprocessing](https://github.com/kundajelab/genesis-preprocessing) workflows
+against gold sheets and known traps; see [evals/README.md](evals/README.md).
+
 ## Scope and validation
 
 This repository handles metadata curation, not sequencing preprocessing or model
