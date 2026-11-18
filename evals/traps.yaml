@@ -121,3 +121,38 @@ traps:
     why: >-
       "control for 10X tpp-KO" (a fold change, not 10x Genomics) and "chromatin interaction
       network" (the study topic, not chromatin-bound RNA) are bulk RNA-seq.
+  - id: atac-photoperiod-is-not-treatment
+    species: Arabidopsis_thaliana
+    workflow: atac-seq
+    runs: [ERR6351833, ERR6351834, ERR6351835]
+    expect: included
+    why: >-
+      The sample protocol states the growth photoperiod ("16 hr light") and a kit name with
+      "Index"; neither is a treatment (bare light/dark and "dex" inside a word misfire).
+  - id: atac-treatment-only-in-sample-alias
+    species: Arabidopsis_thaliana
+    workflow: atac-seq
+    runs: [SRR13131332, SRR13131333]
+    expect: excluded
+    reason_class: treatment
+    why: >-
+      Cold-treatment runs (PRJNA680653) whose titles say only "4C"; the sample alias
+      (ATACseq_Cold_4C_Rep2) names the treatment.
+  - id: atac-controls-and-single-cell
+    species: Sorghum_bicolor
+    workflow: atac-seq
+    runs: [SRR8742452, SRR27500249, SRR27704580]
+    expect: excluded
+    reason_class: assay
+    why: >-
+      An input control (TSS enrichment 0.98), sci-ATAC plates and a single-cell library
+      source inside the ENA ATAC-seq search.
+  - id: atac-gsa-runs-from-tab
+    species: Sorghum_bicolor
+    workflow: atac-seq
+    runs: [CRR145291, SRR5748780]
+    expect: included
+    fields: {layout: paired}
+    why: >-
+      Runs only the metadata-sheet tab lists: a GSA run (files on a GSA download server,
+      mates named _f1/_r2) and an INSDC run submitted as Tn-Seq.
