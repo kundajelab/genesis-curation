@@ -13,6 +13,7 @@ import csv
 import hashlib
 import io
 import json
+import re
 import threading
 import time
 import xml.etree.ElementTree as ET
@@ -28,6 +29,12 @@ from ..web.mining_sources import ENA as PORTAL
 
 BROWSER_XML = "https://www.ebi.ac.uk/ena/browser/api/xml/"
 SAMPLE_BATCH = 80
+RUN_BATCH = 300
+# GSA (China National Center for Bioinformation) keeps each run on one of several download
+# servers; a run folder lists its FASTQ files with their sizes.
+GSA_DOWNLOAD = "https://download.cncb.ac.cn/"
+GSA_SERVERS = ("gsa3", "gsa2", "gsa", "gsa6", "gsa4", "gsa5")
+GSA_LISTING = re.compile(r'<a href="([^"/]+\.(?:fq|fastq)\.gz)">[^<]*</a>\s+\S+ \S+\s+(\d+)')
 RUN_FIELDS = (
     "run_accession",
     "study_accession",
@@ -202,6 +209,55 @@ class Archive:
             "limit": "0",
         }
         return parse_tsv(self.request(PORTAL + "search", form))
+
+    def runs(self, accessions: Iterable[str], fields: Iterable[str] = RUN_FIELDS) -> list[Run]:
+        """ENA records of the given run accessions (in batches of 300); unknown ones are
+        absent from the result."""
+        wanted = sorted(set(accessions))
+        found: list[Run] = []
+        for start in range(0, len(wanted), RUN_BATCH):
+            form = {
+                "result": "read_run",
+                "includeAccessions": ",".join(wanted[start : start + RUN_BATCH]),
+                "fields": ",".join(fields),
+                "format": "tsv",
+                "limit": "0",
+            }
+            found += parse_tsv(self.request(PORTAL + "search", form))
+        return found
+
+    def gsa_files(self, study: str, run: str) -> list[tuple[str, int]]:
+        """(URL without scheme, size) of each FASTQ file of a GSA run, from the first download
+        server that lists the run folder; [] when none does. Kept in `gsa.json`, so servers
+        are probed once per run."""
+        store = self.cache / "gsa.json"
+        with self.lock:
+            known = json.loads(store.read_text()) if store.exists() else {}
+        if run in known:
+            return [(url, int(size)) for url, size in known[run]]
+        if self.offline:
+            raise ValueError(f"GSA files of {run} not cached and offline")
+        files: list[tuple[str, int]] = []
+        for server in GSA_SERVERS:
+            folder = f"{GSA_DOWNLOAD}{server}/{study}/{run}/"
+            try:
+                page = self.request(folder, keep=False)
+            except ValueError:  # 404 on servers without the run, or one that keeps failing
+                continue
+            files = [
+                (f"{folder.removeprefix('https://')}{name}", int(size))
+                for name, size in GSA_LISTING.findall(page)
+            ]
+            if files:
+                break
+        with self.lock:
+            known = json.loads(store.read_text()) if store.exists() else {}
+            known[run] = files
+            store.parent.mkdir(parents=True, exist_ok=True)
+            part = store.with_suffix(".part")
+            part.write_text(json.dumps(known, indent=1, sort_keys=True))
+            part.replace(store)
+        return files
 
     def samples(self, accessions: Iterable[str]) -> dict[str, Sample]:
         """Sample titles and attributes, from `samples.jsonl` or ENA in batches of 80.
