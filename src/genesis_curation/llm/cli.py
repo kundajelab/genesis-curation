@@ -34,7 +34,7 @@ def configure(parser: argparse.ArgumentParser) -> None:
             child.add_argument("directory", type=Path)
             child.add_argument("--provider", required=True)
     serve = local.add_parser("serve")
-    serve.add_argument("--root", type=Path, required=True)
+    serve.add_argument("--root", type=Path, required=True, help="Runtime directory")
     serve.set_defaults(curation_handler=execute)
 
 

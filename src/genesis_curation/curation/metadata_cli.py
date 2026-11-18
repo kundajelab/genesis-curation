@@ -15,7 +15,7 @@ def configure(parser: argparse.ArgumentParser) -> None:
     for name, summary in summaries.items():
         child = commands.add_parser(name, help=summary)
         child.set_defaults(curation_handler=execute)
-        child.add_argument("--root", type=Path, required=True)
+        child.add_argument("--root", type=Path, required=True, help="The runtime's state directory")
         if name != "export":
             child.add_argument("--file", type=Path, required=True)
         if name == "import":

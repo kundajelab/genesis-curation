@@ -21,7 +21,7 @@ def configure(parser: argparse.ArgumentParser) -> None:
     }
     for name, summary in summaries.items():
         child = commands.add_parser(name, help=summary)
-        child.add_argument("--root", type=Path, required=True)
+        child.add_argument("--root", type=Path, required=True, help="The runtime's state directory")
         child.set_defaults(curation_handler=execute)
         if name in {"init", "reset-password"}:
             child.add_argument("--username", default="curator")
