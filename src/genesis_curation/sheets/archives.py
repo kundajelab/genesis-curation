@@ -163,6 +163,10 @@ class Archive:
         self.requests = 0
         self.lock = threading.Lock()
 
+    def cache_path(self, url: str, form: dict[str, str] | None = None) -> Path:
+        key = hashlib.sha256(json.dumps([url, form], sort_keys=True).encode()).hexdigest()
+        return self.cache / "requests" / f"{key[:2]}" / f"{key}.json"
+
     def request(
         self,
         url: str,
@@ -174,8 +178,7 @@ class Archive:
         sample XML, which `samples` keeps per accession instead). `attempts` overrides the
         archive's number of tries."""
         attempts = attempts or self.attempts
-        key = hashlib.sha256(json.dumps([url, form], sort_keys=True).encode()).hexdigest()
-        path = self.cache / "requests" / f"{key[:2]}" / f"{key}.json"
+        path = self.cache_path(url, form)
         if path.exists():
             return json.loads(path.read_text())["text"]
         if self.offline and keep:
@@ -212,6 +215,17 @@ class Archive:
         form = {
             "result": "read_run",
             "query": f'tax_eq({taxon}) AND library_strategy="{strategy}"',
+            "fields": ",".join(fields),
+            "format": "tsv",
+            "limit": "0",
+        }
+        return parse_tsv(self.request(PORTAL + "search", form))
+
+    def search(self, query: str, fields: Iterable[str] = RUN_FIELDS) -> list[Run]:
+        """Every public run matching an ENA portal query (text fields take `*` wildcards)."""
+        form = {
+            "result": "read_run",
+            "query": query,
             "fields": ",".join(fields),
             "format": "tsv",
             "limit": "0",
@@ -299,3 +313,194 @@ class Archive:
     def sample_batch(self, batch: list[str]) -> dict[str, Sample]:
         xml = self.request(BROWSER_XML + ",".join(batch), keep=False)
         return {sample.accession: sample for sample in parse_samples(xml)}
+
+
+# NCBI SRA through Entrez E-utilities: the read structure (length of every read of a spot,
+# technical reads included), spot counts and submitted files, which ENA does not serve.
+EUTILS = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/"
+SRA_BATCH = 200
+SRA_PAGE = 10_000
+NCBI_INTERVAL = 0.4  # E-utilities allow 3 requests a second without an API key
+
+
+@dataclass(frozen=True)
+class SraRun:
+    accession: str
+    spots: int
+    reads: tuple[float, ...] = ()  # average length of each read of a spot, in SRA order
+    public: bool = True
+    files: tuple[str, ...] = ()  # submitted (original) file names
+    bam: bool = False  # submitted as a BAM file
+
+    @property
+    def lengths(self) -> tuple[int, ...]:
+        return tuple(round(value) for value in self.reads)
+
+
+@dataclass(frozen=True)
+class SraExperiment:
+    """One SRA experiment (a library as submitted) with its sample, study and runs."""
+
+    accession: str
+    study: str
+    study_title: str
+    title: str
+    library_name: str
+    strategy: str
+    source: str
+    selection: str
+    instrument: str
+    taxon: int
+    organism: str
+    sample: Sample  # accession: the BioSample when there is one, else the SRA sample
+    runs: tuple[SraRun, ...]
+    pool: tuple[str, ...] = ()  # organisms of the run's pooled samples, when given
+
+    def run_fields(self) -> Run:
+        """ENA-style fields for the shared classifier (classify.classify_sample)."""
+        return {
+            "run_accession": self.runs[0].accession if self.runs else "",
+            "study_accession": self.study,
+            "experiment_accession": self.accession,
+            "sample_accession": self.sample.accession,
+            "experiment_title": self.title,
+            "sample_title": self.sample.title,
+            "library_strategy": self.strategy,
+            "library_source": self.source,
+            "library_selection": self.selection,
+        }
+
+
+def text(node: ET.Element | None, path: str) -> str:
+    return ((node.findtext(path) if node is not None else "") or "").strip()
+
+
+def parse_sra_run(node: ET.Element) -> SraRun:
+    statistics = node.find("Statistics")
+    reads = statistics.findall("Read") if statistics is not None else []
+    spots = node.get("total_spots") or (statistics.get("nspots") if statistics is not None else "")
+    original = [f for f in node.iter("SRAFile") if f.get("supertype") == "Original"]
+    return SraRun(
+        accession=node.get("accession") or "",
+        spots=int(spots) if spots and spots.isdigit() else 0,
+        reads=tuple(float(read.get("average") or 0) for read in reads),
+        public=node.get("is_public", "true") == "true",
+        files=tuple(f.get("filename") or "" for f in original),
+        bam=any(
+            (f.get("filename") or "").lower().endswith(".bam")
+            or "bam" in (f.get("semantic_name") or "").lower()
+            for f in original
+        ),
+    )
+
+
+def parse_sra(xml: str) -> list[SraExperiment]:
+    """EXPERIMENT_PACKAGE records of an SRA efetch document. Sample attribute tags are
+    lower-cased and the first value of a repeated tag wins, as in `parse_samples`."""
+    root = ET.fromstring(xml)
+    if root.tag != "EXPERIMENT_PACKAGE_SET":
+        raise ValueError(f"Not an SRA experiment package set: <{root.tag}>")
+    experiments = []
+    for package in root.iter("EXPERIMENT_PACKAGE"):
+        experiment, sample, study = (
+            package.find("EXPERIMENT"),
+            package.find("SAMPLE"),
+            package.find("STUDY"),
+        )
+        if experiment is None:
+            continue
+        attributes: dict[str, str] = {}
+        biosample = ""
+        if sample is not None:
+            for item in sample.iter("SAMPLE_ATTRIBUTE"):
+                tag = (item.findtext("TAG") or "").strip().lower()
+                attributes.setdefault(tag, (item.findtext("VALUE") or "").strip())
+            biosample = next(
+                (
+                    (node.text or "").strip()
+                    for node in sample.iter("EXTERNAL_ID")
+                    if node.get("namespace") == "BioSample"
+                ),
+                "",
+            )
+        study_ref = experiment.find("STUDY_REF")
+        design = experiment.find("DESIGN/LIBRARY_DESCRIPTOR")
+        platform = experiment.find("PLATFORM")
+        runs = [parse_sra_run(node) for node in package.iter("RUN")]
+        pool = {
+            member.get("organism") or ""
+            for node in package.iter("RUN")
+            for member in node.iter("Member")
+            if member.get("organism")
+        }
+        taxon = text(sample, "SAMPLE_NAME/TAXON_ID")
+        experiments.append(
+            SraExperiment(
+                accession=experiment.get("accession") or "",
+                study=(study.get("accession") if study is not None else None)
+                or (study_ref.get("accession") if study_ref is not None else None)
+                or "",
+                study_title=text(study, "DESCRIPTOR/STUDY_TITLE"),
+                title=text(experiment, "TITLE"),
+                library_name=text(design, "LIBRARY_NAME"),
+                strategy=text(design, "LIBRARY_STRATEGY"),
+                source=text(design, "LIBRARY_SOURCE"),
+                selection=text(design, "LIBRARY_SELECTION"),
+                instrument=text(platform, "*/INSTRUMENT_MODEL"),
+                taxon=int(taxon) if taxon.isdigit() else 0,
+                organism=text(sample, "SAMPLE_NAME/SCIENTIFIC_NAME"),
+                sample=Sample(
+                    accession=biosample
+                    or ((sample.get("accession") or "") if sample is not None else ""),
+                    title=text(sample, "TITLE"),
+                    description=text(sample, "DESCRIPTION"),
+                    attributes=attributes,
+                ),
+                runs=tuple(sorted(runs, key=lambda run: run.accession)),
+                pool=tuple(sorted(pool)),
+            )
+        )
+    return experiments
+
+
+def ncbi(archive: Archive, name: str, form: dict[str, str]) -> str:
+    """An E-utilities response, spaced NCBI_INTERVAL apart when not cached."""
+    url = EUTILS + name
+    if not archive.offline and not archive.cache_path(url, form).exists():
+        archive.sleep(NCBI_INTERVAL)
+    return archive.request(url, form)
+
+
+def sra_search(archive: Archive, term: str) -> list[str]:
+    """Entrez UIDs of the SRA experiments matching an Entrez query, in pages of 10,000."""
+    uids: list[str] = []
+    while True:
+        form = {"db": "sra", "term": term, "retmax": str(SRA_PAGE), "retstart": str(len(uids))}
+        root = ET.fromstring(ncbi(archive, "esearch.fcgi", form))
+        error = root.findtext("ERROR")
+        if error:
+            raise ValueError(f"SRA search failed: {error}")
+        page = [node.text or "" for node in root.iter("Id")]
+        uids.extend(page)
+        if not page or len(uids) >= int(root.findtext("Count") or 0):
+            return uids
+
+
+def sra_experiments(archive: Archive, uids: Iterable[str]) -> list[SraExperiment]:
+    """SRA experiment packages for Entrez UIDs, fetched in batches of 200. A response that
+    is not a package set (an error page) is dropped from the cache and asked once more."""
+    wanted = sorted(set(uids), key=lambda uid: (len(uid), uid))
+    found: dict[str, SraExperiment] = {}
+    for start in range(0, len(wanted), SRA_BATCH):
+        form = {"db": "sra", "id": ",".join(wanted[start : start + SRA_BATCH])}
+        for attempt in (0, 1):
+            try:
+                batch = parse_sra(ncbi(archive, "efetch.fcgi", form))
+                break
+            except ET.ParseError, ValueError:
+                archive.cache_path(EUTILS + "efetch.fcgi", form).unlink(missing_ok=True)
+                if attempt or archive.offline:
+                    raise
+        for experiment in batch:
+            found[experiment.accession] = experiment
+    return list(found.values())

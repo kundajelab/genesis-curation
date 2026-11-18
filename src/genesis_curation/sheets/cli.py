@@ -13,7 +13,7 @@ from typing import Any
 
 import yaml
 
-from . import atac, rna, species
+from . import atac, dap, rna, scatac, species, tss
 from . import score as scoring
 from .archives import Archive
 from .measure import atac as atac_checks
@@ -100,7 +100,13 @@ def append_history(path: Path, label: str, result: dict[str, Any]) -> None:
         handle.write("| " + " | ".join(row) + " |\n")
 
 
-BUILDERS = {"rna-seq": rna, "atac-seq": atac}
+BUILDERS = {
+    "rna-seq": rna,
+    "scatac-reads": scatac,
+    "tss-seq": tss,
+    "dap-seq": dap,
+    "atac-seq": atac,
+}
 
 
 def atac_options(args: argparse.Namespace, cache: Path) -> atac.Options:
@@ -127,6 +133,25 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     chosen = species.load(args.species)
     cache = args.cache or args.out / "cache"
     archive = Archive(cache / "ena", offline=args.offline)
+    if args.workflow == "tss-seq":
+        summary = tss.build(chosen, archive, args.out, tss.options(args, cache), log=log)
+        (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
+        return summary, 0
+    if args.workflow == "scatac-reads":
+        found = scatac.build(
+            chosen,
+            archive,
+            args.out,
+            scatac.Options(cache=cache, probe=not args.no_probe, vdb_dump=args.vdb_dump),
+            log=log,
+        )
+        (args.out / "build.json").write_text(json.dumps(found, indent=2) + "\n")
+        return found, 0
+    if args.workflow == "dap-seq":
+        options = dap.Options(cache, probe=not args.no_probe, skip_runs_in=args.skip_runs_in)
+        summary = dap.build(chosen, archive, args.out, options, log=log)
+        (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
+        return summary, 0
     if args.workflow == "atac-seq":
         summary = atac.build(chosen, archive, args.out, atac_options(args, cache), log=log)
         (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
@@ -160,7 +185,7 @@ def configure(parser: argparse.ArgumentParser) -> None:
     gold.set_defaults(curation_handler=fetch)
 
     build = commands.add_parser(
-        "build", help="Build a sample sheet and runs-qc table for one species from ENA"
+        "build", help="Build a sample sheet and runs-qc table for one species from ENA/SRA"
     )
     build.add_argument("--workflow", required=True, choices=sorted(BUILDERS))
     build.add_argument("--species", required=True, help="Folder name, e.g. Sorghum_bicolor")
@@ -170,9 +195,28 @@ def configure(parser: argparse.ArgumentParser) -> None:
         "--strandedness-from", type=Path, help="Reuse calls from a TSV with run, strandedness"
     )
     build.add_argument(
+        "--measure-from",
+        type=Path,
+        help="tss-seq, atac-seq: reuse read measurements from a runs-qc TSV",
+    )
+    build.add_argument(
         "--no-measure", action="store_true", help="Leave runs without a call out, unmeasured"
     )
-    build.add_argument("--no-probe", action="store_true", help="Skip the duplicate-reads probe")
+    build.add_argument(
+        "--no-probe",
+        action="store_true",
+        help="Skip read probes (rna-seq duplicate reads; scatac-reads instruments; "
+        "dap-seq read lengths)",
+    )
+    build.add_argument("--vdb-dump", help="vdb-dump executable (default: on PATH)")
+    build.add_argument(
+        "--skip-runs-in",
+        type=Path,
+        action="append",
+        default=[],
+        help="dap-seq: a sheet whose studies are left out (every run of a study with a run "
+        "in it: 'in repository sheet NAME'); repeatable",
+    )
     build.add_argument("--offline", action="store_true", help="Use only cached ENA responses")
     build.add_argument("--references", type=Path, help="Folder with the species' references")
     build.add_argument("--star-index", type=Path, help="Default: REFERENCES/<fasta>.<gff>.star")
@@ -181,9 +225,6 @@ def configure(parser: argparse.ArgumentParser) -> None:
     build.add_argument("--gffread", help="gffread executable (default: on PATH)")
     build.add_argument("--threads", type=int, default=16)
     atac_group = build.add_argument_group("atac-seq")
-    atac_group.add_argument(
-        "--measure-from", type=Path, help="Reuse read metrics from a TSV such as a runs-qc table"
-    )
     atac_group.add_argument(
         "--extra-runs", type=Path, help="More candidate runs: a metadata-sheet tab export (TSV)"
     )

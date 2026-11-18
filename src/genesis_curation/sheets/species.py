@@ -38,6 +38,7 @@ class Species:
     gene_names_mean_mutant: bool
     mutant_terms: tuple[re.Pattern[str], ...]
     references: References
+    reference_lines: re.Pattern[str] | None = None
 
 
 def parse(folder: str, entry: dict[str, Any]) -> Species:
@@ -54,6 +55,9 @@ def parse(folder: str, entry: dict[str, Any]) -> Species:
         gene_names_mean_mutant=bool(entry.get("gene_names_mean_mutant", False)),
         mutant_terms=tuple(re.compile(term, re.I) for term in entry.get("mutant_terms") or []),
         references=References(**entry["references"]),
+        reference_lines=re.compile(entry["reference_lines"], re.I)
+        if entry.get("reference_lines")
+        else None,
     )
 
 
