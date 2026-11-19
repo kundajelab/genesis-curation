@@ -418,6 +418,8 @@ def invoke(
                         usage_samples.append(
                             reported_usage if isinstance(reported_usage, dict) else {}
                         )
+                        if code == 200 and isinstance(reported_usage, dict):
+                            spending.settle(directory, config, payload, reported_usage)
                     except ValueError, TypeError, KeyError, IndexError:
                         usage_samples.append({})
                     if code == 0 or code == 429 or 500 <= code <= 599:

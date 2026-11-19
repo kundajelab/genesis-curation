@@ -12,7 +12,7 @@ from unittest import mock
 
 from verify_ai import configuration
 
-from genesis_curation.llm import evaluation
+from genesis_curation.llm import evaluation, spending
 from genesis_curation.registry import store
 from genesis_curation.sheets import adjudicate
 from genesis_curation.sheets.archives import Sample
@@ -188,6 +188,29 @@ def check_report(gold: Path, root: Path) -> None:
     assert len((root / "out" / "cases.jsonl").read_text().splitlines()) == report["cases"]
 
 
+def check_settle(root: Path) -> None:
+    prices = {"input_per_million": 4, "output_per_million": 20}
+    assert spending.reported_cost({"input_tokens": 1000, "output_tokens": 100}, prices) == 0.006
+    assert spending.reported_cost({"prompt_tokens": 1000, "completion_tokens": 0}, prices) == 0.004
+    assert spending.reported_cost({}, prices) is None
+    directory = root / "ledger" / "catalog"
+    directory.mkdir(parents=True)
+    policy = directory.parent / "spending.json"
+    policy.write_text(json.dumps({"limit_usd": 5, "reserved_usd": 0, "reservations": []}))
+    config = {"id": "c", "model": "m", "external": True, "mode": "live", "pricing": prices}
+    payload = {"model": "m", "messages": [], "max_tokens": 10000}
+    spending.reserve(directory, config, payload)
+    reserved = json.loads(policy.read_text())["reserved_usd"]
+    assert reserved > 0.2
+    usage = {"input_tokens": 1000, "cache_read_input_tokens": 500, "output_tokens": 100}
+    spending.settle(directory, config, payload, usage)
+    value = json.loads(policy.read_text())
+    assert abs(value["reserved_usd"] - 0.008) < 1e-9, value
+    assert value["reservations"][0]["settled_usd"] == 0.008
+    spending.settle(directory, config, payload, usage)  # already settled: no change
+    assert json.loads(policy.read_text())["reserved_usd"] == value["reserved_usd"]
+
+
 def main() -> None:
     with tempfile.TemporaryDirectory() as tmp:
         root = Path(tmp)
@@ -197,6 +220,7 @@ def main() -> None:
         check_quotes()
         check_adjudicate_run(gold, root)
         check_report(gold, root)
+        check_settle(root)
     print("llm eval: ok")
 
 
