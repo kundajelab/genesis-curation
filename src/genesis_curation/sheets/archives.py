@@ -313,7 +313,18 @@ class Archive:
         return {a: known[a] for a in wanted}
 
     def sample_batch(self, batch: list[str]) -> dict[str, Sample]:
-        xml = self.request(BROWSER_XML + ",".join(batch), keep=False)
+        """ENA answers 404 for a whole batch when one of its samples is unknown (BioSamples
+        not yet mirrored from NCBI), so a failed batch is split until the unknown ones are
+        found; those come back absent and are recorded as missing."""
+        try:
+            xml = self.request(BROWSER_XML + ",".join(batch), keep=False)
+        except ValueError as error:
+            if "HTTP 404" not in str(error):
+                raise
+            if len(batch) == 1:
+                return {}
+            half = len(batch) // 2
+            return self.sample_batch(batch[:half]) | self.sample_batch(batch[half:])
         return {sample.accession: sample for sample in parse_samples(xml)}
 
 

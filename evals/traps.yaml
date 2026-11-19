@@ -195,10 +195,12 @@ traps:
   - id: rna-duplicate-submissions
     species: Sorghum_bicolor
     workflow: rna-seq
-    runs: [SRR26087269, SRR26087270]
+    runs: [SRR26087270]
     expect: excluded
     reason_class: duplicate
-    why: Same reads as SRR26087205 and SRR26087208, submitted twice.
+    why: >-
+      Same reads as SRR26087208 (day 0 of the aphid series), submitted twice. Its twin
+      SRR26087269 duplicates an infested sample and is left out for the treatment first.
   - id: atac-low-frip-gsa
     species: Sorghum_bicolor
     workflow: atac-seq
@@ -422,3 +424,35 @@ traps:
     why: >-
       Runs only the metadata-sheet tab lists: a GSA run (files on a GSA download server,
       mates named _f1/_r2) and an INSDC run submitted as Tn-Seq.
+  - id: rna-growth-protocol-names-a-deficit
+    species: Sorghum_bicolor
+    workflow: rna-seq
+    runs: [SRR15558345, SRR15558350]
+    expect: excluded
+    reason_class: treatment
+    why: >-
+      BioSample treatment says "No treatment" while growth_protocol says "Phosphorous
+      deficit" or "Nitrogen deficit" (PRJNA746310, aliases Sorghum_Pdep and Sorghum_Ndep).
+  - id: rna-stage-after-infestation
+    species: Sorghum_bicolor
+    workflow: rna-seq
+    runs: [SRR26087204, SRR26087207]
+    expect: excluded
+    reason_class: treatment
+    why: >-
+      The only treatment is in dev_stage: "4 days after aphid infestation" (PRJNA1009505).
+  - id: rna-bare-mt-genotype
+    species: Sorghum_bicolor
+    workflow: rna-seq
+    runs: [SRR37195612, SRR37195621]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      Genotype "MT" beside "WT" samples of the same study, cultivar BTx623 (PRJNA1419276).
+  - id: rna-cross-with-asterisk
+    species: Sorghum_bicolor
+    workflow: rna-seq
+    runs: [SRR3707897]
+    expect: excluded
+    reason_class: genotype
+    why: Cultivar "Tx623*SV", a near-isogenic line from a cross (PRJNA325381).

@@ -9,6 +9,20 @@ rna-seq:
       why: >-
         The sample note of COL4 ("control for 10X tpp-KO") reports contamination; found in a
         title scan of the kept runs (curation of 2026-11-17).
+  Sorghum_bicolor:
+    - study: PRJNA302593
+      runs: [SRR2924917, SRR2924918]
+      reason: "genotype: hybrid BTx623 x Y49"
+      why: >-
+        BioSample cultivar BTx623_Y49 and experiment titles "Sorghum hybrid BTx623*Y49
+        endosperm" (reciprocal crosses); the study's BTx623 runs stay. Found by the model
+        review of 2026-11-19.
+    - study: PRJNA1173527
+      runs: [SRR31020447]
+      reason: "treatment: plasma activated water"
+      why: >-
+        Sample PAW100, study "Plasma Activated Water (PAW)-treated Sorghum seedlings"; the
+        study's other run is its control. Found by the model review of 2026-11-19.
 atac-seq:
   Sorghum_bicolor:
     - study: CRA002789

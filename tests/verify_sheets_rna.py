@@ -71,6 +71,26 @@ def check_classes() -> None:
     sample = Sample("SAMN1", attributes={"treatment": "heat stress 2 h"})
     assert classify.classify_sample(AT, sample, run()).treatment == "treated"
     assert classify.tissue_label("whole plant") == "whole-plant"
+    # a growth protocol or stage can state the treatment the treatment field denies
+    deficit = {"treatment": "No treatment", "growth_protocol": "Phosphorous deficit"}
+    assert (
+        classify.classify_sample(SB, Sample("S", attributes=deficit), run()).treatment == "treated"
+    )
+    routine = {"treatment": "none", "growth_protocol": "16 h light / 8 h dark, 22 C"}
+    assert (
+        classify.classify_sample(AT, Sample("S", attributes=routine), run()).treatment != "treated"
+    )
+    mock = {"growth_protocol": "inoculated with 2ul PBSx1 close to the root tip"}
+    assert classify.classify_sample(AT, Sample("S", attributes=mock), run()).treatment != "treated"
+    for stage, expected in (
+        ("4 days after aphid infestation", True),
+        ("0 days after aphid infestation", False),
+    ):
+        value = classify.classify_sample(SB, Sample("S", attributes={"dev_stage": stage}), run())
+        assert (value.treatment == "treated") is expected, stage
+    assert genotype(SB, "Tx623*SV") == "other accession / cultivar"
+    bare = Sample("S", attributes={"cultivar": "BTx623", "genotype": "MT"})
+    assert classify.classify_sample(SB, bare, run()).genotype == "mutant / transgenic"
     print("PASS genotype, treatment and tissue classes")
 
 
@@ -281,6 +301,22 @@ def check_archive_retries() -> None:
         assert Archive(Path(tmp), offline=True).request("https://x/search", {"q": "1"})
         rejects(lambda: Archive(Path(tmp), offline=True).request("https://x/other"), "offline")
     print("PASS ENA requests back off on 429, are cached by request and work offline")
+
+    def unknown_sample(url: str, data: bytes | None) -> str:
+        names = url.rsplit("/", 1)[-1].split(",")
+        if "SAMN2" in names:
+            raise HTTPError(url, 404, "not found", Message(), None)
+        return (
+            "<SAMPLE_SET>"
+            + "".join(f'<SAMPLE accession="{n}"><TITLE>t</TITLE></SAMPLE>' for n in names)
+            + "</SAMPLE_SET>"
+        )
+
+    with tempfile.TemporaryDirectory() as tmp:
+        found = Archive(Path(tmp), fetcher=unknown_sample).samples(["SAMN1", "SAMN2", "SAMN3"])
+        assert not found["SAMN1"].missing and not found["SAMN3"].missing, found
+        assert found["SAMN2"].missing, found
+    print("PASS a sample ENA does not know is recorded missing without failing its batch")
 
 
 def check_build() -> None:

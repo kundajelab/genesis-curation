@@ -39,7 +39,7 @@ GENE_ALLELE = re.compile(r"\b(at)?[a-z]{3,6}\d{1,3}[a-z]?\b", re.I)
 WILD_TYPE = re.compile(r"wild[- ]?type|\bwt\b|wildtype", re.I)
 ONLY_WILD_TYPE = re.compile(r"(\s*\|?\s*(wild[- ]?type( genotype)?|wt|wildtype)\s*)+", re.I)
 OTHER_GENOTYPE = re.compile(r"natural|ecotype|accession|cultivar|landrace", re.I)
-CROSS = re.compile(r"\bx\b|×|crossed|\bf1\b|hybrid", re.I)
+CROSS = re.compile(r"\bx\b|×|\w\*\w|crossed|\bf1\b|hybrid", re.I)
 GERMPLASM = re.compile(r"(?<![a-z])pi ?\d{5,6}\b", re.I)
 CONTROL = re.compile(
     r"^\s*(none|no|n/?a|control|ctrl|mock|untreated|normal|non[- ]?treated|well[- ]?watered|ww|"
@@ -47,11 +47,25 @@ CONTROL = re.compile(
     r"|\b(control|mock|untreated)\b",
     re.I,
 )
+AFTER_TREATMENT = re.compile(
+    r"(?<![\w.])(?!0+\s)\d+(\.\d+)?\s*\w*\s+after\s+(\w+\s+){0,2}"
+    r"(infestation|infection|inoculation|treatment|exposure|spraying)",
+    re.I,
+)
+# Mock inoculations name the buffer they used ("inoculated with 2ul PBS").
+MOCK = re.compile(r"\bmock\b|\bpbs|buffer (only|alone)|water (only|alone)", re.I)
+# Growth protocols describe routine conditions too ("16 h light, 22 C, half MS"), so only
+# words that name a deprivation or stress count there.
+PROTOCOL_TREATED = re.compile(
+    r"deficit|deficien|starvation|deprivation|limitation|drought|salt stress|\bnacl\b|"
+    r"heat stress|cold stress|chilling|freezing|flood|submergence|hypoxia|infect|inocul",
+    re.I,
+)
 TREATED = re.compile(
     r"stress|drought|salt|nacl|cold|heat|hypoxia|flood|osmotic|mannitol|pathogen|infect|infest|"
     r"pseudomonas|botrytis|fungal|virus|aphid|insect|elicitor|flg22|chitin|aba\b|abscisic|"
     r"auxin|iaa|naa|cytokinin|gibberell|ga3|ethylene|acc\b|jasmon|meja|salicyl|brassino|"
-    r"treat|inhibitor|dex|estradiol|herbicide|cadmium|metal|nitrogen|phosphate|deficien|"
+    r"treat|inhibitor|dex|estradiol|herbicide|cadmium|metal|nitrogen|phosphate|deficien|deficit|"
     r"light|dark|uv|ozone|wound|deprivation|limitation|starvation|hours? after|h after",
     re.I,
 )
@@ -235,7 +249,9 @@ def classify_sample(
         or any(term.search(genotype_text) for term in species.mutant_terms)
         or (ISOLATE_MUTANT.search(isolate) and not ISOLATE_WILD_TYPE.search(isolate))
     )
-    if mutant or gene_allele or (not genotype_text and MUTANT.search(descriptive)):
+    # a bare "MT" or "mut" in the genotype field, beside "WT" samples of the same study
+    bare_mutant = re.fullmatch(r"\s*(mt|mut)\s*", a.get("genotype") or "", re.I)
+    if mutant or gene_allele or bare_mutant or (not genotype_text and MUTANT.search(descriptive)):
         genotype = "mutant / transgenic"
     elif CROSS.search(genotype_text):
         genotype = "other accession / cultivar"
@@ -263,7 +279,20 @@ def classify_sample(
         a.get("experimental_factor"),
         run.get("experimental_factor"),
     )
-    if treatment_text:
+    # A growth protocol or stage can state a treatment that the treatment field denies
+    # ("treatment: No treatment", "growth_protocol: Phosphorous deficit"; "dev_stage: 4 days
+    # after aphid infestation").
+    condition = joined(a.get("growth_protocol"), a.get("growth protocol"))
+    stage = joined(a.get("dev_stage"), a.get("development stage"), run.get("dev_stage"))
+    if (
+        condition
+        and PROTOCOL_TREATED.search(condition)
+        and not CONTROL.search(condition)
+        and not MOCK.search(condition)
+    ) or (AFTER_TREATMENT.search(stage)):
+        treatment = "treated"
+        treatment_text = joined(treatment_text, condition, stage)
+    elif treatment_text:
         treatment = (
             "control / untreated"
             if CONTROL.search(treatment_text)

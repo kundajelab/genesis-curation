@@ -42,3 +42,29 @@ its own titles. Per-run evidence is in the runs-qc table's `reason_left_out`.
 Kept after checking: the wild-type runs of PRJNA1216402 (genotype: Wt) and the Col-0 pollen
 of PRJNA989636 (genotype: WT). SRR27606461 duplicates SRR27557211, but the two
 submissions disagree on its genotype, so it stays as it was.
+
+## 2026-11-19
+
+Found by the model review (`genesis sheets build --adjudicate`) of the Sorghum RNA-seq
+build; every run was checked in its ENA BioSample record.
+
+| Gold | Change | Runs | Evidence | Trap |
+| --- | --- | ---: | --- | --- |
+| Sorghum RNA-seq | dropped: nutrient deficit | 6 | `growth_protocol` "Phosphorous deficit" / "Nitrogen deficit" while `treatment` says "No treatment" (PRJNA746310) | `rna-growth-protocol-names-a-deficit` |
+| Sorghum RNA-seq | dropped: aphid infestation | 4 | `dev_stage` "1-4 days after aphid infestation" (PRJNA1009505) | `rna-stage-after-infestation` |
+| Sorghum RNA-seq | dropped: mutant | 5 | `genotype` "MT" beside "WT" samples (PRJNA1419276) | `rna-bare-mt-genotype` |
+| Sorghum RNA-seq | dropped: hybrid | 2 | cultivar BTx623_Y49, titles "hybrid BTx623*Y49" (PRJNA302593) | exceptions.yaml |
+| Sorghum RNA-seq | dropped: near-isogenic line | 1 | cultivar Tx623*SV (PRJNA325381) | `rna-cross-with-asterisk` |
+| Sorghum RNA-seq | dropped: plasma-activated water | 1 | sample PAW100 (PRJNA1173527) | exceptions.yaml |
+
+Later the same day, rules that read the BioSample `growth_protocol` and `dev_stage` fields
+(added after the Sorghum findings) dropped 16 A. thaliana RNA-seq runs that gold kept. Each
+treatment is stated in the run's own BioSample record:
+
+| Gold | Change | Runs | Evidence |
+| --- | --- | ---: | --- |
+| A. thaliana RNA-seq | dropped: heat stress | 3 | "WT plants treated with second heat stress" (PRJNA849331) |
+| A. thaliana RNA-seq | dropped: infection | 4 | `dev_stage` "12 days after infection" (PRJNA407426) |
+| A. thaliana RNA-seq | dropped: bacterial inoculation | 3 | `growth_protocol` "inoculated with 2ul of 10e6 diluted bacterial" (PRJNA718879); the PBS mock stays |
+| A. thaliana RNA-seq | dropped: light treatment | 3 | "24 h after red light treatment" (PRJNA489162) |
+| A. thaliana RNA-seq | dropped: cell culture | 3 | "Col-0 cell culture grown in Gamborg's B5 medium" (PRJNA412215) |

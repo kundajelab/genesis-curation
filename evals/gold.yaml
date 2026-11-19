@@ -6,9 +6,9 @@ gold:
   - species: Arabidopsis_thaliana
     workflow: rna-seq
     sheet: Arabidopsis_thaliana/rna-seq-curated.tsv
-    sheet_sha256: 2e668079f447f60dcc15c584240b11cda00f12ed5fd298a024c25c70f726e7f2
+    sheet_sha256: 86b12b99fb5448ec16196549a1443c21fcd13fc47c0c93916ac003a6f8ebae01
     runs_qc: Arabidopsis_thaliana/rna-seq-curated.runs-qc.tsv
-    runs_qc_sha256: 7b88baec031db25a53dabd5a84184e370f92098834451f34a5537cd6dad14c51
+    runs_qc_sha256: 430037d0820db8f362b4cdddec3177c8b74a01018cccafcfe114e486704eb400
   - species: Arabidopsis_thaliana
     workflow: atac-seq
     sheet: Arabidopsis_thaliana/atac-seq-curated.tsv
@@ -36,9 +36,9 @@ gold:
   - species: Sorghum_bicolor
     workflow: rna-seq
     sheet: Sorghum_bicolor/rna-seq-curated.tsv
-    sheet_sha256: af6804d29dcf564add8223dd029d6ca86e88339d60fc0cf2810a00fc74f5aec6
+    sheet_sha256: fc6540badfaf19060dd2b3cd733cfa3a989fd616ff41dff94c661a3432cc4201
     runs_qc: Sorghum_bicolor/rna-seq-curated.runs-qc.tsv
-    runs_qc_sha256: ff5f98083a5ea05116c3854a703416c27c628175538721693005c73f4f16f1a5
+    runs_qc_sha256: 425fa067183bebd84d3959576f7b5485ab084626babfbd156f3692dc0422bec8
   - species: Sorghum_bicolor
     workflow: atac-seq
     sheet: Sorghum_bicolor/atac-seq-curated.tsv
