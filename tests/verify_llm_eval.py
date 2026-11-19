@@ -206,6 +206,105 @@ def check_report(gold: Path, root: Path) -> None:
     assert len((root / "out" / "cases.jsonl").read_text().splitlines()) == report["cases"]
 
 
+def check_build_step(root: Path) -> None:
+    from dataclasses import dataclass
+
+    @dataclass
+    class Item:
+        run: dict[str, str]
+        reason: str = ""
+        adjudication: tuple[str, str] | None = None
+
+    def run(accession: str, title: str) -> dict[str, str]:
+        return {
+            "run_accession": accession,
+            "sample_accession": "S" + accession,
+            "study_accession": "PRJNA9",
+            "study_title": "Study",
+            "sample_title": title,
+        }
+
+    items = [
+        Item(run("SRR1", "Col-0 control")),
+        Item(run("SRR2", "abc1 mutant")),
+        Item(run("SRR3", "Col-0 untreated"), "sample title suggests a mutant or treatment: x"),
+        Item(run("SRR4", "Ler-0"), "genotype: Ler-0"),
+        Item(run("SRR5", "Col-0 drought"), "sample title suggests a mutant or treatment: y"),
+    ]
+    answer = {
+        "decisions": [
+            {
+                "run": "SRR1",
+                "decision": "keep",
+                "reason_class": "",
+                "reason": "wt",
+                "quotes": ["Col-0 control"],
+            },
+            {
+                "run": "SRR2",
+                "decision": "leave",
+                "reason_class": "genotype",
+                "reason": "mutant",
+                "quotes": ["abc1 mutant"],
+            },
+            {
+                "run": "SRR3",
+                "decision": "keep",
+                "reason_class": "",
+                "reason": "control",
+                "quotes": ["Col-0 untreated"],
+            },
+            {
+                "run": "SRR5",
+                "decision": "uncertain",
+                "reason_class": "",
+                "reason": "unclear",
+                "quotes": [],
+            },
+        ]
+    }
+    runtime = root / "review"
+    (runtime / "config").mkdir(parents=True)
+    config = {**configuration(), "mock_response": answer}
+    (runtime / "config" / "providers.json").write_text(
+        json.dumps({"schema_version": 1, "providers": [config], "default_provider": "test"})
+    )
+    store.initialize(runtime / "state" / "catalog")
+
+    class Archive:
+        def samples(self, accessions: Iterable[str]) -> dict[str, Sample]:
+            return {a: Sample(a) for a in accessions}
+
+    with mock.patch("genesis_curation.web.mining_sources.inspect", side_effect=ValueError("off")):
+        stats = adjudicate.apply(
+            items,
+            load("Arabidopsis_thaliana"),
+            "rna-seq",
+            Archive(),
+            adjudicate.Settings(runtime),
+            log=lambda _: None,
+        )
+    reasons = {i.run["run_accession"]: i.reason for i in items}
+    assert reasons["SRR1"] == "" and reasons["SRR3"] == "", reasons  # kept; title rule undone
+    assert reasons["SRR2"] == "metadata review: genotype"
+    assert reasons["SRR4"] == "genotype: Ler-0" and items[3].adjudication is None  # not sent
+    assert reasons["SRR5"].startswith("sample title")  # uncertain keeps the rule's decision
+    assert stats["runs"] == 4 and stats["outcomes"]["leave->keep"] == 1, stats
+    try:
+        adjudicate.apply(
+            items,
+            load("Arabidopsis_thaliana"),
+            "rna-seq",
+            Archive(),
+            adjudicate.Settings(runtime, limit=2),
+            log=lambda _: None,
+        )
+    except ValueError as error:
+        assert "over --adjudicate-limit" in str(error)
+    else:
+        raise AssertionError("the run limit was not enforced")
+
+
 def check_fit() -> None:
     spec = {
         "type": "object",
@@ -255,6 +354,7 @@ def main() -> None:
         check_report(gold, root)
         check_settle(root)
         check_fit()
+        check_build_step(root)
     print("llm eval: ok")
 
 

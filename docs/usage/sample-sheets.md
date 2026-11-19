@@ -91,6 +91,34 @@ Useful options for every workflow:
 
 Run `genesis sheets build --help` for the full list.
 
+## Metadata review with a model (RNA-seq, optional)
+
+The rules decide most runs from archive fields. Two groups rest on free text: runs the rules
+kept, and runs left out only because the sample title suggests a mutant or treatment. With
+`--adjudicate RUNTIME`, a model configured in that runtime (`genesis workspace provider`)
+reads each study's text and these runs' sample metadata, and answers keep, leave or uncertain
+for each run, quoting the metadata it relied on.
+
+```sh
+genesis sheets build --workflow rna-seq --species Sorghum_bicolor --out sb-rna-reviewed \
+    --no-measure --strandedness-from gold/Sorghum_bicolor/rna-seq-curated.runs-qc.tsv \
+    --adjudicate RUNTIME
+```
+
+- **keep** clears a title-rule reason; **leave** leaves the run out with the reason
+  `metadata review: <class>` (genotype, treatment, tissue, assay, qc or other).
+- **uncertain**, a failed call, or an answer whose quotes are not in the metadata keeps the
+  rules' decision.
+- Runs left out by any other rule are never sent. `--adjudicate-limit` (default 2000) stops
+  the build before it sends more runs than that; `--adjudicate-provider` picks a provider
+  other than the runtime's default.
+- The runs-qc table gains `adjudication` and `adjudication_reason` columns, and `build.json`
+  gains an `adjudication` block with counts of changed decisions and tokens used.
+
+The criteria the model applies are in `src/genesis_curation/sheets/adjudicate.py`. How well it
+agrees with hand-checked answers is measured by `genesis eval llm` (see
+[evaluation](../../evals/README.md#llm-steps)).
+
 ## Outputs
 
 Each build writes three files to `--out`:

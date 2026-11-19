@@ -25,6 +25,7 @@ from typing import Any
 
 import yaml
 
+from . import adjudicate as adjudication
 from . import classify, files, writers
 from .archives import Archive, Run, Sample
 from .measure import duplicates, strand
@@ -47,6 +48,7 @@ class Options:
     star_index: Path | None = None
     tools: strand.Tools | None = None
     probe_duplicates: bool = True
+    adjudicate: adjudication.Settings | None = None
     timings: dict[str, float] = field(default_factory=dict)
 
 
@@ -58,6 +60,7 @@ class Candidate:
     reads: files.ReadFiles = field(default_factory=files.ReadFiles)
     reason: str = ""
     call: strand.StrandCall | None = None
+    adjudication: tuple[str, str] | None = None
 
 
 def exceptions(species: Species) -> dict[str, str]:
@@ -177,8 +180,15 @@ def build(
                 )
     options.timings["metadata_seconds"] = round(time.monotonic() - started, 1)
 
+    reviewed: dict[str, Any] = {}
+    if options.adjudicate:
+        started = time.monotonic()
+        pool = [c for c in candidates if c.sample]
+        reviewed = adjudication.apply(pool, species, WORKFLOW, archive, options.adjudicate, log)
+        options.timings["adjudication_seconds"] = round(time.monotonic() - started, 1)
+
     started = time.monotonic()
-    kept = [c for c in kept if not c.reason]
+    kept = [c for c in candidates if c.sample and not c.reason]
     calls = reused_calls(options.strandedness_from) if options.strandedness_from else {}
     unmeasured = {c.run["run_accession"]: c.reads.read1 for c in kept}
     unmeasured = {run: url for run, url in unmeasured.items() if run not in calls}
@@ -218,6 +228,7 @@ def build(
         "strandedness": dict(Counter(row["strandedness"] for row in rows)),
         "reasons": dict(reasons.most_common()),
         "reused_strandedness": len(calls) if options.strandedness_from else 0,
+        **({"adjudication": reviewed} if reviewed else {}),
         "ena_requests": archive.requests,
         "timings": options.timings,
     }
@@ -229,6 +240,7 @@ def sheet_rows(
 ) -> tuple[list[dict[str, str]], list[dict[str, str]]]:
     refs = species.references
     rows, qc = [], []
+    reviewed = any(c.adjudication for c in candidates)
     for item in candidates:
         run, value, call = item.run, item.sample, item.call
         if not item.reason:
@@ -266,6 +278,14 @@ def sheet_rows(
                 "genotype_text": value.genotype_text if value else "",
                 "treatment_text": value.treatment_text if value else "",
                 "tissue_text": value.tissue_text if value else "",
+                **(
+                    {
+                        "adjudication": item.adjudication[0] if item.adjudication else "",
+                        "adjudication_reason": item.adjudication[1] if item.adjudication else "",
+                    }
+                    if reviewed
+                    else {}
+                ),
             }
         )
     return rows, qc

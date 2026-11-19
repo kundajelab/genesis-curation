@@ -15,7 +15,7 @@ from typing import Any
 
 import yaml
 
-from . import atac, dap, rna, scatac, species, tss
+from . import adjudicate, atac, dap, rna, scatac, species, tss
 from . import score as scoring
 from .archives import Archive
 from .measure import atac as atac_checks
@@ -174,10 +174,24 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
         star_index=args.star_index,
         tools=tools,
         probe_duplicates=not args.no_probe,
+        adjudicate=adjudication_settings(args),
     )
     summary = rna.build(chosen, archive, args.out, options, log=log)
     (args.out / "build.json").write_text(json.dumps(summary, indent=2) + "\n")
     return summary, 0
+
+
+def adjudication_settings(args: argparse.Namespace) -> adjudicate.Settings | None:
+    runtime = getattr(args, "adjudicate", None)
+    if runtime is None:
+        return None
+    if args.workflow != rna.WORKFLOW:
+        # criteria exist for more workflows (for `genesis eval llm`), but only the RNA-seq
+        # builder applies the review so far
+        raise ValueError("--adjudicate supports rna-seq only")
+    return adjudicate.Settings(
+        runtime, getattr(args, "adjudicate_provider", None), args.adjudicate_limit
+    )
 
 
 def build_namespace(**values: object) -> argparse.Namespace:
@@ -188,6 +202,9 @@ def build_namespace(**values: object) -> argparse.Namespace:
         "measure_from": None,
         "no_measure": True,
         "no_probe": False,
+        "adjudicate": None,
+        "adjudicate_provider": None,
+        "adjudicate_limit": 2000,
         "vdb_dump": None,
         "skip_runs_in": [],
         "offline": False,
@@ -347,6 +364,20 @@ def configure(parser: argparse.ArgumentParser) -> None:
     build.add_argument("--featurecounts", help="featureCounts executable (default: on PATH)")
     build.add_argument("--gffread", help="gffread executable (default: on PATH)")
     build.add_argument("--threads", type=int, default=16, help="Threads for read measurements")
+    review = build.add_argument_group("metadata review (rna-seq)")
+    review.add_argument(
+        "--adjudicate",
+        type=Path,
+        metavar="RUNTIME",
+        help="Ask the runtime's model provider to decide runs that rest on free-text metadata",
+    )
+    review.add_argument("--adjudicate-provider", help="Provider ID (default: the runtime's)")
+    review.add_argument(
+        "--adjudicate-limit",
+        type=int,
+        default=2000,
+        help="Refuse to start if more runs than this would be sent (default 2000)",
+    )
     atac_group = build.add_argument_group("atac-seq")
     atac_group.add_argument(
         "--extra-runs", type=Path, help="More candidate runs: a metadata-sheet tab export (TSV)"
