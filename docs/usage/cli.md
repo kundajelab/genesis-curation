@@ -11,7 +11,8 @@ genesis
 ├── curation    discover, curate, review and export (the GUI's operations)
 ├── metadata    import or export metadata tables directly
 ├── ai          list and check model providers; manage local models
-└── sheets      build and score genesis-preprocessing sample sheets
+├── sheets      build and score genesis-preprocessing sample sheets
+└── eval        score the LLM steps against the curated gold sheets
 ```
 
 `genesis COMMAND --help` lists the subcommands and options of each group.
@@ -28,6 +29,7 @@ configuration and exports. It lives outside the Git checkout. Create one with
 | `workspace`, `ai local-model serve` | the runtime | No |
 | `curation` | the runtime (default `$GENESIS_RUNTIME`) | Only for discovery planning and curation |
 | `web`, `metadata` | the runtime's `state/` directory | `web` uses the runtime's provider configuration |
+| `eval llm` | the runtime | Yes; `--dry-run` counts cases without one |
 
 In a native checkout, run commands as `uv run genesis ...`. In the Docker deployment, run them
 as `deploy/web/manage.sh cli ...`.
@@ -42,6 +44,10 @@ job. See [sample sheets](sample-sheets.md).
 **Metadata curation** (`genesis curation`, or the GUI): LLM-assisted. It discovers datasets,
 proposes metadata fields with source evidence, and keeps every uncertain field for human
 review before export. See [the curation workflow](workflow.md).
+
+**LLM evaluation** (`genesis eval llm`): scores the app's model steps (study triage, and
+per-run keep or leave-out decisions) against the gold sheets and a hand-checked set, on the
+runtime's provider, within its budget. See [evaluation](../../evals/README.md#llm-steps).
 
 ## Set up a runtime
 

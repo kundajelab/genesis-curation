@@ -178,6 +178,33 @@ def post(config: dict[str, Any], payload: dict[str, Any], secret: str) -> tuple[
     return status, text
 
 
+def fit(value: object, specification: dict[str, Any]) -> object:
+    """The response with strings and arrays cut to the schema's maxLength and maxItems.
+
+    Provider grammars drop length and count limits (see wire.grammar), so a model can
+    exceed them; cutting an over-long reason keeps the rest of the answer instead of
+    rejecting it. Every other constraint is still checked strictly afterwards."""
+    definitions = specification.get("$defs", {})
+
+    def walk(node: object, rule: object) -> object:
+        if not isinstance(rule, dict):
+            return node
+        reference = rule.get("$ref")
+        if isinstance(reference, str) and reference.startswith("#/$defs/"):
+            rule = definitions.get(reference.removeprefix("#/$defs/"), {})
+        if isinstance(node, str) and isinstance(rule.get("maxLength"), int):
+            return node[: rule["maxLength"]]
+        if isinstance(node, list):
+            if isinstance(rule.get("maxItems"), int):
+                node = node[: rule["maxItems"]]
+            return [walk(item, rule.get("items")) for item in node]
+        if isinstance(node, dict) and isinstance(rule.get("properties"), dict):
+            return {k: walk(v, rule["properties"].get(k)) for k, v in node.items()}
+        return node
+
+    return walk(value, specification)
+
+
 def parse_response(
     raw: str, model: str, specification: dict[str, Any]
 ) -> tuple[Any, dict[str, Any]]:
@@ -199,7 +226,7 @@ def parse_response(
         raise ValueError("Provider refused the request")
     if not isinstance(message.get("content"), str):
         raise ValueError("Provider did not return text content")
-    response = loads(message["content"])
+    response = fit(loads(message["content"]), specification)
     check(response, specification)
     usage = {key: None for key in ("prompt_tokens", "completion_tokens", "total_tokens", "cost")}
     reported = wire.get("usage") or {}

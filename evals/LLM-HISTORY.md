@@ -14,3 +14,4 @@ One row per `genesis eval llm` run.
 | 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 106 | agreement 0.9808, keep_precision 1.0, keep_recall 0.9701, uncertain 0.0189, errors 0 | 0.51 | 146 | verified set, criteria v2 (3' kept, protoplasts left) |
 | 2026-11-19 | adjudicate | test | claude-opus-5-5 | 62 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0645, errors 0 | 0.29 | 97 | verified set, criteria v2 (3' kept, protoplasts left) |
 | 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 106 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0189, errors 0 | 0.51 | 10 | verified set, vernalization labels fixed (cached) |
+| 2026-11-19 | triage | dev | claude-opus-5-5 | 96 | match_accepted 0.9474, match_not_excluded 1.0, exclude_excluded 0.961, exclude_accepted 0.0, excluded_precision 1.0, errors 0 | 2.07 | 28 | fit over-long fields instead of rejecting |

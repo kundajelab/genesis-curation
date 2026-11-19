@@ -12,7 +12,7 @@ from unittest import mock
 
 from verify_ai import configuration
 
-from genesis_curation.llm import evaluation, spending
+from genesis_curation.llm import evaluation, providers, spending
 from genesis_curation.registry import store
 from genesis_curation.sheets import adjudicate
 from genesis_curation.sheets.archives import Sample
@@ -206,6 +206,20 @@ def check_report(gold: Path, root: Path) -> None:
     assert len((root / "out" / "cases.jsonl").read_text().splitlines()) == report["cases"]
 
 
+def check_fit() -> None:
+    spec = {
+        "type": "object",
+        "$defs": {"quote": {"type": "string", "maxLength": 3}},
+        "properties": {
+            "reason": {"type": "string", "maxLength": 5},
+            "quotes": {"type": "array", "maxItems": 2, "items": {"$ref": "#/$defs/quote"}},
+            "n": {"type": "integer"},
+        },
+    }
+    value = {"reason": "abcdefgh", "quotes": ["wxyz", "ab", "zz"], "n": 4}
+    assert providers.fit(value, spec) == {"reason": "abcde", "quotes": ["wxy", "ab"], "n": 4}
+
+
 def check_settle(root: Path) -> None:
     prices = {"input_per_million": 4, "output_per_million": 20}
     assert spending.reported_cost({"input_tokens": 1000, "output_tokens": 100}, prices) == 0.006
@@ -240,6 +254,7 @@ def main() -> None:
         check_adjudicate_run(gold, root)
         check_report(gold, root)
         check_settle(root)
+        check_fit()
     print("llm eval: ok")
 
 
