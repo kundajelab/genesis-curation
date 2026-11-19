@@ -15,3 +15,10 @@ One row per `genesis eval llm` run.
 | 2026-11-19 | adjudicate | test | claude-opus-5-5 | 62 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0645, errors 0 | 0.29 | 97 | verified set, criteria v2 (3' kept, protoplasts left) |
 | 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 106 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0189, errors 0 | 0.51 | 10 | verified set, vernalization labels fixed (cached) |
 | 2026-11-19 | triage | dev | claude-opus-5-5 | 96 | match_accepted 0.9474, match_not_excluded 1.0, exclude_excluded 0.961, exclude_accepted 0.0, excluded_precision 1.0, errors 0 | 2.07 | 28 | fit over-long fields instead of rejecting |
+| 2026-11-19 | adjudicate | test | claude-opus-5-5 | 9 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0, errors 0 | 0.05 | 15 | verified set v2, tss-seq criteria v1 |
+| 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 32 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0, errors 0 | 0.22 | 150 | verified set v2, dap-seq criteria v1 |
+| 2026-11-19 | adjudicate | test | claude-opus-5-5 | 4 | agreement 1.0, uncertain 0.0, errors 0 | 0.03 | 17 | verified set v2, dap-seq criteria v1 |
+| 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 32 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0, errors 0 | 0.19 | 80 | verified set v2, rice |
+| 2026-11-19 | adjudicate | test | claude-opus-5-5 | 3 | agreement 1.0, uncertain 0.0, errors 0 | 0.02 | 14 | verified set v2, rice |
+| 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 56 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0714, errors 0 | 0.31 | 123 | verified set v2, atac-seq criteria v1 |
+| 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 36 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0833, errors 0 | 0.21 | 105 | verified set v2, tss-seq criteria v1 |

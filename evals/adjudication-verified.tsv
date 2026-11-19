@@ -167,3 +167,192 @@ Sorghum_bicolor	rna-seq	PRJNA344653	SRR4301630	keep
 Sorghum_bicolor	rna-seq	PRJNA344653	SRR4301665	keep		
 Sorghum_bicolor	rna-seq	PRJNA344653	SRR4301669	keep		
 Sorghum_bicolor	rna-seq	PRJNA344653	SRR4301625	keep		
+Arabidopsis_thaliana	atac-seq	PRJNA1043456	SRR27317594	leave	genotype	pds5abce mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1043456	SRR27317595	leave	genotype	pds5abce mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1043456	SRR27317596	keep		Col-0 seedling ATAC
+Arabidopsis_thaliana	atac-seq	PRJNA1043456	SRR27317597	keep		Col-0 seedling ATAC
+Arabidopsis_thaliana	atac-seq	PRJNA1068029	SRR28617211	leave	genotype	efs mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1068029	SRR28617212	leave	genotype	efs mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1068029	SRR28617213	keep		Col-0 seedling ATAC
+Arabidopsis_thaliana	atac-seq	PRJNA1068029	SRR28617214	keep		Col-0 seedling ATAC
+Arabidopsis_thaliana	atac-seq	PRJNA1071213	SRR27793019	leave	genotype	sys123 mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1071213	SRR27793026	leave	genotype	brm mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1071213	SRR27793027	keep		WT inflorescence control of mutant study
+Arabidopsis_thaliana	atac-seq	PRJNA1071213	SRR32962265	leave	genotype	jag mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1071213	SRR32962271	keep		WT seedling control of mutant study
+Arabidopsis_thaliana	atac-seq	PRJNA1081447	SRR28124845	leave	genotype	nasp mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1081447	SRR28124847	leave	genotype	msi2 msi3 nasp mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1081447	SRR28124851	leave	genotype	hag2 msi2 msi3 mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1081447	SRR28124854	keep		Col-0 wild type seedling
+Arabidopsis_thaliana	atac-seq	PRJNA1081447	SRR28124855	keep		Col-0 wild type seedling
+Arabidopsis_thaliana	atac-seq	PRJNA1186950	SRR31367917	leave	genotype	sdg2-4 mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1186950	SRR31367926	leave	genotype	hda6 ros1-4 mutant
+Arabidopsis_thaliana	atac-seq	PRJNA1186950	SRR31367934	keep		Col-0 shoot
+Arabidopsis_thaliana	atac-seq	PRJNA1186950	SRR31367938	keep		Col-0 root
+Arabidopsis_thaliana	atac-seq	PRJNA1442361	SRR37841651	leave	assay	single-nucleus CUT&Tag of protoplasts
+Arabidopsis_thaliana	atac-seq	PRJNA1442361	SRR37841656	leave	assay	single-nucleus CUT&Tag of protoplasts
+Arabidopsis_thaliana	atac-seq	PRJNA648930	SRR12712405	leave	assay	10x scATAC-seq
+Arabidopsis_thaliana	atac-seq	PRJNA648930	SRR12712406	leave	assay	10x scATAC-seq
+Arabidopsis_thaliana	atac-seq	PRJNA649438	SRR12343561	leave	genotype	INTACT ProVCK:NTF line
+Arabidopsis_thaliana	atac-seq	PRJNA649438	SRR12343565	keep		Col-0 wild type FACS microspores
+Arabidopsis_thaliana	atac-seq	PRJNA649438	SRR12343566	keep		Col-0 wild type FACS microspores
+Arabidopsis_thaliana	atac-seq	PRJNA649438	SRR13486811	leave	genotype	INTACT ProDUO1:NTF line
+Arabidopsis_thaliana	atac-seq	PRJNA663790	SRR12650865	keep		Col-0 inflorescence
+Arabidopsis_thaliana	atac-seq	PRJNA663790	SRR12650866	leave	genotype	ZF-SssI transgenic line
+Arabidopsis_thaliana	atac-seq	PRJNA663790	SRR12650867	leave	genotype	ZF-SssI transgenic line
+Arabidopsis_thaliana	atac-seq	PRJNA753100	SRR15376079	leave	tissue	leaf protoplasts
+Arabidopsis_thaliana	atac-seq	PRJNA753100	SRR15376080	leave	tissue	leaf protoplasts
+Arabidopsis_thaliana	atac-seq	PRJNA889573	SRR21869495	leave	genotype	brm-3 mutant
+Arabidopsis_thaliana	atac-seq	PRJNA889573	SRR21869496	leave	genotype	brm-3 mutant
+Arabidopsis_thaliana	atac-seq	PRJNA889573	SRR21869499	keep		Col-0 wild type seedling
+Arabidopsis_thaliana	atac-seq	PRJNA889573	SRR21869500	keep		Col-0 wild type seedling
+Arabidopsis_thaliana	atac-seq	PRJNA956597	SRR24197782	leave	tissue	DEX-treated mesophyll protoplasts
+Arabidopsis_thaliana	atac-seq	PRJNA956597	SRR24197783	leave	genotype	p35S:bZIP11-HBD transgenic protoplasts
+Arabidopsis_thaliana	atac-seq	PRJNA956597	SRR24197785	leave	genotype	p35S:bZIP11-HBD transgenic protoplasts
+Arabidopsis_thaliana	atac-seq	PRJNA956597	SRR24197793	leave	tissue	DEX-treated mesophyll protoplasts
+Arabidopsis_thaliana	atac-seq	PRJNA982831	SRR24897998	keep		Col-0 diploid root, hydroponics
+Arabidopsis_thaliana	atac-seq	PRJNA982831	SRR24899832	uncertain		ploidy unstated; sample record shared with tetraploid run
+Arabidopsis_thaliana	atac-seq	PRJNA982831	SRR24902107	leave	genotype	tetraploid Col-0 roots
+Sorghum_bicolor	atac-seq	PRJNA1063172	SRR27500251	leave	assay	sci-ATAC-seq single-cell plate
+Sorghum_bicolor	atac-seq	PRJNA1063172	SRR27500252	leave	assay	sci-ATAC-seq single-cell plate
+Sorghum_bicolor	atac-seq	PRJNA1063172	SRR27704580	leave	assay	demultiplexed sci-ATAC-seq
+Sorghum_bicolor	atac-seq	PRJNA1063172	SRR27704581	leave	assay	demultiplexed sci-ATAC-seq
+Sorghum_bicolor	atac-seq	PRJNA1417782	SRR37075961	uncertain		12 DAP grain ATAC; cultivar unstated
+Sorghum_bicolor	atac-seq	PRJNA391551	SRR5748780	keep		BTx623 leaf mesophyll ATAC
+Sorghum_bicolor	atac-seq	PRJNA391551	SRR5748782	keep		BTx623 leaf mesophyll ATAC
+Sorghum_bicolor	atac-seq	PRJNA527732	SRR8742450	keep		BTx623 7-day leaf ATAC
+Sorghum_bicolor	atac-seq	PRJNA527732	SRR8742451	keep		BTx623 7-day leaf ATAC
+Sorghum_bicolor	atac-seq	PRJNA527732	SRR8742452	leave	assay	ATAC input DNA library
+Sorghum_bicolor	atac-seq	PRJNA705005	SRR13810450	leave	genotype	cultivar JDXBR
+Sorghum_bicolor	atac-seq	PRJNA705005	SRR13810455	leave	genotype	cultivar JDXBR
+Arabidopsis_thaliana	tss-seq	DRP003984	DRR093535	keep		Col-0 CAGE whole 2-day plants
+Arabidopsis_thaliana	tss-seq	DRP003984	DRR093536	keep		Col-0 CAGE young leaves
+Arabidopsis_thaliana	tss-seq	DRP004772	DRR029686	leave	tissue	T87 cell culture, heat stress
+Arabidopsis_thaliana	tss-seq	DRP004772	DRR029688	leave	tissue	T87 cell culture
+Arabidopsis_thaliana	tss-seq	DRP004772	DRR029689	leave	tissue	T87 cell culture polysomal RNA
+Arabidopsis_thaliana	tss-seq	DRP004772	DRR029690	leave	tissue	T87 cell culture, heat stress
+Arabidopsis_thaliana	tss-seq	DRP004772	DRR029691	leave	tissue	T87 cell culture polysomal RNA, heat
+Arabidopsis_thaliana	tss-seq	DRP013532	DRR703328	leave	treatment	Col-0 3h blue light
+Arabidopsis_thaliana	tss-seq	DRP013532	DRR703329	keep		Col-0 dark control CAGE
+Arabidopsis_thaliana	tss-seq	DRP013532	DRR703330	leave	genotype	cry1cry2 mutant
+Arabidopsis_thaliana	tss-seq	DRP013532	DRR703331	leave	genotype	cry1cry2 mutant
+Arabidopsis_thaliana	tss-seq	SRP043393	SRR1425301	keep		Col-0 wild type root PEAT
+Arabidopsis_thaliana	tss-seq	SRP051272	SRR2097904	keep		Col-0 root nanoCAGE
+Arabidopsis_thaliana	tss-seq	SRP051272	SRR2102806	keep		Col-0 root nanoCAGE
+Arabidopsis_thaliana	tss-seq	SRP051272	SRR2102895	keep		Col-0 root nanoCAGE
+Arabidopsis_thaliana	tss-seq	SRP076266	SRR3647033	uncertain		5'GRO-seq nascent capped RNA; genotype unstated
+Arabidopsis_thaliana	tss-seq	SRP142625	SRR7064004	keep		Col-0 seedling TSS-seq
+Arabidopsis_thaliana	tss-seq	SRP142625	SRR7064010	keep		Col-0 seedling TSS-seq
+Arabidopsis_thaliana	tss-seq	SRP142625	SRR7064012	leave	genotype	spt16-1 mutant
+Arabidopsis_thaliana	tss-seq	SRP142625	SRR7064023	leave	genotype	ssrp1-2 mutant
+Arabidopsis_thaliana	tss-seq	SRP142625	SRR7064027	leave	genotype	ssrp1-2 mutant
+Arabidopsis_thaliana	tss-seq	SRP159234	SRR7772740	leave	treatment	Col-0 cold treated
+Arabidopsis_thaliana	tss-seq	SRP159234	SRR7772741	leave	treatment	Col-0 cold treated
+Arabidopsis_thaliana	tss-seq	SRP186779	SRR8618698	leave	assay	NAD-RNA capture
+Arabidopsis_thaliana	tss-seq	SRP186779	SRR8618699	leave	assay	NAD-RNA capture
+Arabidopsis_thaliana	tss-seq	SRP191544	SRR8870029	leave	assay	TIF-seq
+Arabidopsis_thaliana	tss-seq	SRP191544	SRR8870035	leave	assay	TIF-seq, cold
+Arabidopsis_thaliana	tss-seq	SRP191544	SRR8870046	leave	genotype	hen2-2 mutant
+Arabidopsis_thaliana	tss-seq	SRP191544	SRR8870047	leave	genotype	hen2-2 mutant, cold
+Arabidopsis_thaliana	tss-seq	SRP191544	SRR8870049	leave	treatment	Col-0 4C cold 3h
+Arabidopsis_thaliana	tss-seq	SRP199385	SRR9117202	leave	genotype	hen2-2 mutant
+Arabidopsis_thaliana	tss-seq	SRP199385	SRR9117203	leave	genotype	hen2-2 mutant
+Arabidopsis_thaliana	tss-seq	SRP241819	SRR10881978	leave	genotype	rrp4-2 mutant
+Arabidopsis_thaliana	tss-seq	SRP241819	SRR10881979	leave	genotype	rrp4-2 mutant
+Arabidopsis_thaliana	tss-seq	SRP241819	SRR10881983	leave	treatment	wt 10 min PAMP time point
+Arabidopsis_thaliana	tss-seq	SRP241819	SRR10881984	leave	treatment	wt 30 min PAMP time point
+Arabidopsis_thaliana	tss-seq	SRP241819	SRR10881986	leave	treatment	wt 30 min PAMP time point
+Arabidopsis_thaliana	tss-seq	SRP293884	SRR13128982	leave	assay	SPAAC-NAD-seq NAD-RNA capture
+Arabidopsis_thaliana	tss-seq	SRP293884	SRR13128987	leave	assay	CuAAC-NAD-seq mock depletion
+Arabidopsis_thaliana	tss-seq	SRP478307	SRR27227836	leave	assay	csRNA-seq small RNA input
+Arabidopsis_thaliana	tss-seq	SRP478307	SRR27227838	leave	assay	csRNA-seq small RNA input
+Arabidopsis_thaliana	tss-seq	SRP478307	SRR27227848	leave	genotype	rrp4-2 mutant
+Arabidopsis_thaliana	tss-seq	SRP478307	SRR27227851	leave	genotype	hen2-4 mutant
+Arabidopsis_thaliana	tss-seq	SRP478307	SRR27227856	keep		Col-0 germinating seed csRNA-seq
+Arabidopsis_thaliana	tss-seq	SRP589886	SRR33827456	leave	genotype	accession Shigu-2, stress
+Arabidopsis_thaliana	tss-seq	SRP589886	SRR33827460	leave	genotype	accession Shigu-2
+Arabidopsis_thaliana	dap-seq	PRJNA1032637	SRR26547544	leave	assay	RNA-seq of mutant seeds; DAP means days after pollination
+Arabidopsis_thaliana	dap-seq	PRJNA1032637	SRR26547548	leave	assay	RNA-seq of WT seeds; DAP means days after pollination
+Arabidopsis_thaliana	dap-seq	PRJNA1200602	SRR31776114	leave	genotype	Input library on Marchantia Tak-1 genomic DNA, another species
+Arabidopsis_thaliana	dap-seq	PRJNA1200602	SRR31776116	leave	genotype	MpPIF DAP-seq on Marchantia Tak-1 genomic DNA, another species
+Arabidopsis_thaliana	dap-seq	PRJNA1200602	SRR31776117	keep		Input control DAP library on Col-0 genomic DNA
+Arabidopsis_thaliana	dap-seq	PRJNA1200602	SRR31776118	keep		AtHY5 DAP-seq on Col-0 genomic DNA
+Arabidopsis_thaliana	dap-seq	PRJNA1284412	SRR35596704	leave	assay	Sorghum RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA1284412	SRR35596712	leave	assay	Sorghum RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA1284429	SRR35628297	leave	assay	Sorghum RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA1284429	SRR35628314	leave	assay	Sorghum RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA1496375	SRR39695462	leave	assay	Seed RNA-seq; DAP means days after pollination
+Arabidopsis_thaliana	dap-seq	PRJNA1496375	SRR39695474	leave	assay	Seed RNA-seq; DAP means days after pollination
+Arabidopsis_thaliana	dap-seq	PRJNA257558	SRR1537401	leave	assay	ChIP-seq of ABI5-YPet, not DAP-seq
+Arabidopsis_thaliana	dap-seq	PRJNA257558	SRR1537403	leave	assay	ChIP-seq of ABI5-YPet, not DAP-seq
+Arabidopsis_thaliana	dap-seq	PRJNA315679	SRR3237820	leave	assay	Sorghum RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA315679	SRR3237832	leave	assay	Sorghum RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA671605	SRR12887482	uncertain		LFY DAP-seq on gDNA from 35S::LFY transgenic line; accession unstated
+Arabidopsis_thaliana	dap-seq	PRJNA671605	SRR12887483	uncertain		LFY ampDAP-seq; gDNA from seedlings, accession not stated
+Arabidopsis_thaliana	dap-seq	PRJNA708565	SRR21038621	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708636	SRR21038636	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708638	SRR21038646	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708643	SRR21038655	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708646	SRR21038674	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708650	SRR21038667	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708651	SRR21038668	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708660	SRR21038640	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708668	SRR21038682	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708673	SRR21038653	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708678	SRR21038648	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708685	SRR21038666	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708690	SRR21038665	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA708696	SRR21038661	leave	assay	Sorghum Wray RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA866867	SRR20912176	leave	assay	Sorghum leaf RNA-seq; DAP means days after pollination
+Arabidopsis_thaliana	dap-seq	PRJNA866867	SRR20912184	leave	assay	Sorghum seed RNA-seq; DAP means days after pollination
+Arabidopsis_thaliana	dap-seq	PRJNA877616	SRR21465038	leave	assay	Sorghum grain RNA-seq; DAP means days after pollination
+Arabidopsis_thaliana	dap-seq	PRJNA877616	SRR21465042	leave	assay	Sorghum grain RNA-seq; DAP means days after pollination
+Arabidopsis_thaliana	dap-seq	PRJNA904747	SRR22395071	leave	assay	Sorghum LCM cell-type RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA904747	SRR22395082	leave	assay	Sorghum LCM cell-type RNA-seq; DAP means days after planting
+Arabidopsis_thaliana	dap-seq	PRJNA942911	SRR23760661	uncertain		seq-DAP SEP3-AG tetramer-mutant heterodimer; gDNA accession not stated
+Arabidopsis_thaliana	dap-seq	PRJNA942911	SRR23760662	uncertain		seq-DAP SEP3-AG tetramer-mutant heterodimer; gDNA accession not stated
+Oryza_sativa	rna-seq	PRJEB8855	ERR791771	leave	genotype	Cultivar Sinnongheug_chal, not Nipponbare
+Oryza_sativa	rna-seq	PRJNA1051294	SRR27180856	keep		Nipponbare leaf sheath, 2-week plants, untreated
+Oryza_sativa	rna-seq	PRJNA1051294	SRR27180858	keep		Nipponbare leaf sheath, 2-week plants, untreated
+Oryza_sativa	rna-seq	PRJNA1051294	SRR27180862	keep		Nipponbare leaf primordium, 2-week plants, untreated
+Oryza_sativa	rna-seq	PRJNA1051294	SRR27180866	keep		Nipponbare leaf primordium, 2-week plants, untreated
+Oryza_sativa	rna-seq	PRJNA1062435	SRR27461248	uncertain		Nipponbare background in transgene-stacking study; HCBP transgenic or WT unclear
+Oryza_sativa	rna-seq	PRJNA1062435	SRR27461252	uncertain		Nipponbare background in transgene-stacking study; BCBP transgenic or WT unclear
+Oryza_sativa	rna-seq	PRJNA1073311	SRR27911686	leave	genotype	Cultivar Ishikari-shiroge; herbivory triggering
+Oryza_sativa	rna-seq	PRJNA1073311	SRR27911687	leave	genotype	Cultivar Ishikari-shiroge; herbivory triggering
+Oryza_sativa	rna-seq	PRJNA1112739	SRR29063661	uncertain		RNA-seq seedlings; only 'Japonica' given, cultivar not stated
+Oryza_sativa	rna-seq	PRJNA1112739	SRR29063664	leave	assay	Polysome-seq library
+Oryza_sativa	rna-seq	PRJNA1152520	SRR30428007	leave	genotype	Cultivar Lemont OE line, AG1-IA inoculation
+Oryza_sativa	rna-seq	PRJNA1152520	SRR30428010	leave	genotype	Cultivar Lemont WT, AG1-IA inoculation
+Oryza_sativa	rna-seq	PRJNA1365461	SRR36068227	leave	genotype	Cultivar Hitachi hatamochi; flooding
+Oryza_sativa	rna-seq	PRJNA1365461	SRR36068235	leave	genotype	Cultivar Akita komachi; AWD irrigation
+Oryza_sativa	rna-seq	PRJNA1400913	SRR36766577	leave	genotype	Cultivar ZH11 (Zhonghua 11)
+Oryza_sativa	rna-seq	PRJNA1400913	SRR36766578	leave	genotype	Cultivar ZH11 (Zhonghua 11)
+Oryza_sativa	rna-seq	PRJNA1471701	SRR38901979	uncertain		No cultivar, tissue or condition; opaque treatment label
+Oryza_sativa	rna-seq	PRJNA1471701	SRR38904644	uncertain		No cultivar, tissue or condition; opaque treatment label
+Oryza_sativa	rna-seq	PRJNA401663	SRR5990577	leave	genotype	Cultivar Ilmi
+Oryza_sativa	rna-seq	PRJNA401663	SRR5990579	leave	genotype	Cultivar Ilmi
+Oryza_sativa	rna-seq	PRJNA422813	SRR6475705	leave	genotype	Indica hybrid TU100; VdAL treatment
+Oryza_sativa	rna-seq	PRJNA422813	SRR6475709	leave	genotype	Indica hybrid TU100; VdAL plus azoxystrobin
+Oryza_sativa	rna-seq	PRJNA427581	SRR6420525	leave	genotype	Wild-type Dongjin, not Nipponbare
+Oryza_sativa	rna-seq	PRJNA427581	SRR6420530	leave	genotype	Wild-type Dongjin, not Nipponbare
+Oryza_sativa	rna-seq	PRJNA427581	SRR6420534	leave	genotype	osvil2 mutant in Dongjin
+Oryza_sativa	rna-seq	PRJNA427581	SRR6420536	leave	genotype	osvil2 mutant in Dongjin
+Oryza_sativa	rna-seq	PRJNA521881	SRR8565483	uncertain		Japonica Group aerial tissue; cultivar not stated (GEO checked)
+Oryza_sativa	rna-seq	PRJNA705740	SRR13822309	leave	genotype	Cultivar Taipei 311; constant dark treatment
+Oryza_sativa	rna-seq	PRJNA705740	SRR13822311	leave	genotype	Control, but cultivar Taipei 309
+Oryza_sativa	rna-seq	PRJNA753537	SRR15411170	leave	genotype	Oself3 double mutant
+Oryza_sativa	rna-seq	PRJNA753537	SRR15411197	leave	genotype	OsphyB mutant
+Oryza_sativa	rna-seq	PRJNA753537	SRR15411207	keep		WT Nipponbare control, long day ZT6
+Oryza_sativa	rna-seq	PRJNA753537	SRR15411209	keep		WT Nipponbare control, short day ZT6
+Oryza_sativa	rna-seq	PRJNA753537	SRR18358777	leave	genotype	OsLUX mutant
+Oryza_sativa	rna-seq	PRJNA759776	SRR15697684	leave	treatment	Drought-stressed seedlings (DJ, Dongjin)
+Oryza_sativa	rna-seq	PRJNA759776	SRR15697686	leave	treatment	Drought-stressed seedlings (DJ, Dongjin)
+Oryza_sativa	rna-seq	PRJNA759776	SRR19600048	leave	genotype	Cultivar ZH11, normal conditions
+Oryza_sativa	rna-seq	PRJNA759776	SRR19600053	leave	genotype	DJ (Dongjin) seedlings under drought
+Oryza_sativa	rna-seq	PRJNA782997	SRR17019568	leave	treatment	Nipponbare, carbon dot nano-hydroponic treatment
+Oryza_sativa	rna-seq	PRJNA782997	SRR17019569	leave	treatment	Nipponbare, carbon dot nano-hydroponic treatment
+Oryza_sativa	rna-seq	PRJNA859542	SRR20278527	uncertain		Nipponbare root in diploid vs tetraploid study; ploidy of MSDNIP unstated
+Oryza_sativa	rna-seq	PRJNA859542	SRR20278528	uncertain		Nipponbare root in diploid vs tetraploid study; ploidy of MSDNIP unstated
+Oryza_sativa	rna-seq	PRJNA947839	SRR23952876	uncertain		Root RNA-seq; cultivar not collected; project titled for a fish
+Oryza_sativa	rna-seq	PRJNA947839	SRR24011022	uncertain		Root RNA-seq; cultivar not collected; project titled for a fish

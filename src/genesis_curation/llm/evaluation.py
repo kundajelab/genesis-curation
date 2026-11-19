@@ -127,7 +127,8 @@ def adjudicate_cases(gold: Path, species: str, workflow: str) -> list[dict[str, 
 
 def verified_cases(path: Path, species: str, workflow: str) -> list[dict[str, Any]]:
     """Cases from a hand-verified table (species, workflow, study, run, decision,
-    reason_class, note), such as evals/adjudication-verified.tsv."""
+    reason_class, note), such as evals/adjudication-verified.tsv. Runs verified as
+    uncertain record a question the metadata cannot answer and are not scored."""
     with path.open(newline="") as handle:
         rows = list(csv.DictReader(handle, delimiter="\t"))
     return [
@@ -142,7 +143,9 @@ def verified_cases(path: Path, species: str, workflow: str) -> list[dict[str, An
             "split": split_of(row["study"]),
         }
         for row in rows
-        if row["species"] == species and row["workflow"] == workflow
+        if row["species"] == species
+        and row["workflow"] == workflow
+        and row["decision"] in {"keep", "leave"}
     ]
 
 

@@ -8,6 +8,7 @@ How to build and score a sheet is in [sample sheets](../docs/usage/sample-sheets
 | `gold.yaml` | The gold sheets and runs-qc tables on the project's Hugging Face bucket, one entry per species and workflow, with SHA-256 checksums. `genesis sheets gold-fetch` downloads them. |
 | `traps.yaml` | Runs that earlier curation rounds got wrong or nearly wrong (trimmed uploads, mislabelled layouts, "DAP" meaning days after pollination, duplicate submissions and so on). Each trap says whether its runs must be kept or left out, and why. Every trap must pass. |
 | `HISTORY.md` | One row per scored build, appended by `genesis sheets score --history`. |
+| `GOALS.md` | Measurable targets for the builders and the model steps, their current values, and the loop that improves them. |
 
 ## Targets
 
@@ -51,12 +52,21 @@ genesis eval llm --task adjudicate --root "$GENESIS_RUNTIME" --gold gold \
 
 The gold runs-qc tables decided free-text cases with title rules, and those labels are often
 wrong (a third of the disputed runs in the first pilot). `evals/adjudication-verified.tsv` is a
-hand-checked set of 168 RNA-seq runs from 31 studies (Arabidopsis and Sorghum), labelled from
-the archive metadata and study descriptions under the same criteria as the prompt: 3' tag
-expression libraries and the untreated or wild-type controls of an experiment are kept;
-protoplasts (including vector controls), mutants, transgenics, near-isogenic lines and
-treatments are left out. Score adjudication against it with `--verified
-evals/adjudication-verified.tsv --studies 100 --per-study 20`.
+hand-checked set of runs labelled blind from the archive metadata (and, where that was not
+enough, the ENA or GEO record) under the criteria in `sheets/adjudicate.py`:
+
+| Species | Workflows | Runs |
+| --- | --- | --- |
+| Arabidopsis thaliana | RNA-seq, ATAC-seq, TSS-seq, DAP-seq | 149, 46, 46, 40 |
+| Sorghum bicolor | RNA-seq, ATAC-seq | 19, 12 |
+| Oryza sativa | RNA-seq | 45 |
+
+For RNA-seq, 3' tag expression libraries and the untreated or wild-type controls of an
+experiment are kept; protoplasts (including vector controls), mutants, transgenics,
+near-isogenic lines and treatments are left out. Runs labelled `uncertain` are questions the
+metadata does not answer (for example DAP-seq whose genomic DNA accession is never stated);
+they are kept in the file as a record and not scored. Score adjudication against the set with
+`--verified evals/adjudication-verified.tsv --studies 100 --per-study 20`.
 
 Studies are split by a hash of the accession: about 80% go to `dev`, the rest to `test`.
 Tune prompts on dev and score test only at milestones. `--dry-run` counts the cases without
