@@ -7,7 +7,8 @@ applies:
  1. in a sheet given with --skip-runs-in (e.g. a repository sheet);
  2. not in a DAP-seq study ("DAP" there means days after pollination, or is part of a word);
  3. the study is excluded (dap_studies.yaml), or its bait is not a plant TF;
- 4. DNA of another species (the run's taxon);
+ 4. DNA of another species (the run's taxon), or of another accession or cultivar than the
+    reference genome's (peaks are called against the reference, so its sequence must match);
  5. another assay of the study (ChIP-seq, RNA-seq, ...);
  6. a study rule leaves the library out; read 2 uploaded as its own run;
  7. another run of the same library (the sheet uses the largest run);
@@ -226,6 +227,8 @@ def build(
             text = own_text(run) + " | " + run.get("study_title", "")
             bait = next((b.reason for b in catalog.bait_exclusions if b.match.search(text)), "")
             other_taxon = bool(run.get("tax_id")) and not species.has_taxon(run["tax_id"])
+            dna = short(genotype(species, rule, run))
+            other_genotype = dna not in (species.reference_genotype, "unknown")
             item.reason = next(
                 (
                     reason
@@ -236,6 +239,7 @@ def build(
                         f"DNA of another species ({run.get('scientific_name') or 'taxon '})"
                         if other_taxon
                         else "",
+                        f"genomic DNA of another genotype ({dna})" if other_genotype else "",
                         assay_reason(run, strategies),
                         bait,
                     )

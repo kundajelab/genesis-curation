@@ -24,7 +24,8 @@ MUTANT = re.compile(
     r"mutant|knock[- ]?(out|down)|\bko\b|overexpress|\boe\b|\b\w+[- ]ox\b|crispr|cas9|\brnai\b|"
     r"amirna|t-dna|transgen|\bsalk[_ ]|\bsail[_ ]|\bgk[-_]\d|\bwisc|\bflag[_ ]\d|"
     r"\b[a-z]{2,6}\d{1,3}-\d{1,3}\b|\b[a-z]{2,6}\d{1,3}\s*x\s*[a-z]|"  # alleles: abi3-1, pif4-101
-    r"complement|reporter|gfp|gus\b|::|\bline\s*\d",
+    r"complement|reporter|gfp|gus\b|::|\bline\s*\d|"
+    r"\bp[a-z0-9]{2,8}:[a-z]|\bntf\d?\b|\bintact\b",  # promoter fusions: p35S:NTF2, pCMZ:NTF
     re.I,
 )
 # BioSample `isolate` is free text ("WT biorep 3", "iso1", "Col-rep2"), so it counts only when
@@ -43,7 +44,8 @@ CROSS = re.compile(r"\bx\b|×|\w\*\w|crossed|\bf1\b|hybrid", re.I)
 GERMPLASM = re.compile(r"(?<![a-z])pi ?\d{5,6}\b", re.I)
 CONTROL = re.compile(
     r"^\s*(none|no|n/?a|control|ctrl|mock|untreated|normal|non[- ]?treated|well[- ]?watered|ww|"
-    r"standard|optimal|ambient|day ?0|0 ?h|time ?0|baseline|water|unstressed|no treatment)\b"
+    r"standard|optimal|ambient|day ?0|0 ?h|time ?0|baseline|unstressed|no treatment|"
+    r"water(?!\s+(deficit|stress|limit\w*|withh\w*|deprivation|logg\w*)))\b"
     r"|\b(control|mock|untreated)\b",
     re.I,
 )
@@ -77,7 +79,8 @@ ATAC_TREATED = re.compile(
     r"pseudomonas|botrytis|fungal|virus|aphid|insect|elicitor|flg22|chitin|aba\b|abscisic|"
     r"auxin|iaa|naa|\b2,?4-?d\b|cytokinin|gibberell|ga3|ethylene|acc\b|jasmon|meja|salicyl|"
     r"brassino|treat|inhibitor|\bdex\b|dexamethasone|estradiol|herbicide|cadmium|metal|nitrogen|"
-    r"phosphate|deficien|uv|ozone|wound|deprivation|limitation|starvation|hours? after|h after|"
+    r"phosphate|deficien|deficit|submerg|waterlog|uv|ozone|wound|deprivation|limitation|"
+    r"starvation|hours? after|h after|"
     r"\bcim\b|\bsim\b|regenerat|callus induc|hypocotyl explant|infiltrat|inoculat|\bhpi\b|\bdpi\b",
     re.I,
 )

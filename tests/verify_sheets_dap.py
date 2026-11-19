@@ -18,6 +18,7 @@ from genesis_curation.sheets.tables import load_runs_qc, load_sheet
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "sheets-dap"
 AT = species.load("Arabidopsis_thaliana")
+OS = species.load("Oryza_sativa")
 
 
 def check_wording() -> None:
@@ -37,6 +38,11 @@ def check_wording() -> None:
     assert dap.assay_reason(run, strategies) == ""  # an instrument name is not an assay
     run = {"experiment_title": "NAC103-GFP, input, rep1", "library_strategy": "ChIP-Seq"}
     assert dap.assay_reason(run, strategies) == "not DAP-seq (ChIP-Seq)"
+    # genomic DNA from another cultivar is not the reference genotype (rice ZH11, Kitaake)
+    rule = StudyRule("PRJNA1")
+    assert dap.genotype(OS, rule, {"cultivar": "Zhonghua 11"}) == "Zhonghua 11"
+    assert dap.genotype(OS, rule, {"cultivar": "Nipponbare"}) == "Nipponbare"
+    assert dap.genotype(OS, rule, {"cultivar": "missing"}) == "unknown"
     print("PASS DAP wording and other assays")
 
 

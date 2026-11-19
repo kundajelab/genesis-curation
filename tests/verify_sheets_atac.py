@@ -76,7 +76,13 @@ def check_assays() -> None:
         value = classify.classify_sample(AT, sample, run(), treated=classify.ATAC_TREATED)
         return value.treatment
 
-    for text in ("CIM 4 days", "shoot regeneration", "Pst DC3000 24 hpi", "2,4-D"):
+    for text in (
+        "CIM 4 days",
+        "shoot regeneration",
+        "Pst DC3000 24 hpi",
+        "2,4-D",
+        "Water deficit in greenhouse",
+    ):
         assert treatment(text) == "treated", text
         assert classify.classify_sample(
             AT, Sample("S", attributes={"treatment": text}), run()
@@ -86,6 +92,10 @@ def check_assays() -> None:
     value = classify.classify_sample(AT, background, run(), more_genotype=atac.GENOTYPE_FIELDS)
     assert value.genotype == "other accession / cultivar", value
     assert classify.classify_sample(AT, background, run()).genotype == "not stated"
+    # INTACT lines: a promoter fusion to the nuclear tag (rice p35S:NTF2, pCMZ:NTF)
+    for text in ("Nipponbarre | p35S:NTF2 (Reynoso et al., 2018)", "pCMZ:NTF", "INTACT line"):
+        intact = Sample("S", attributes={"genotype": text})
+        assert classify.classify_sample(AT, intact, run()).genotype == "mutant / transgenic", text
     print("PASS ATAC assay flags, treatments (CIM/SIM, regeneration, hpi) and genotype fields")
 
 
