@@ -40,17 +40,22 @@ def request(
     if protocol == "anthropic-messages":
         headers.pop("Authorization", None)
         headers.update({"x-api-key": secret, "anthropic-version": "2023-06-01"})
+        # The system prompt is the same for every call of a task, so mark it for prompt
+        # caching; a prefix shorter than the model's minimum is simply not cached.
         body = {
             "model": payload["model"],
-            "system": system,
+            "system": [{"type": "text", "text": system, "cache_control": {"type": "ephemeral"}}],
             "messages": content,
             "max_tokens": payload["max_tokens"],
         }
+        output: dict[str, Any] = {}
         if format_spec:
             # Provider grammar supports a subset; original constraints are checked locally.
-            body["output_config"] = {
-                "format": {"type": "json_schema", "schema": grammar(format_spec["schema"])}
-            }
+            output["format"] = {"type": "json_schema", "schema": grammar(format_spec["schema"])}
+        if config.get("effort"):
+            output["effort"] = config["effort"]
+        if output:
+            body["output_config"] = output
         return "/messages", headers, body
     raise ValueError("Unknown provider protocol")
 

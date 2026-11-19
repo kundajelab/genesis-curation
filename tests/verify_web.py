@@ -64,6 +64,12 @@ def native_protocols() -> None:
             assert suffix == "/messages" and "Authorization" not in headers
             assert headers["x-api-key"] == "test-secret"
             assert body["output_config"]["format"]["type"] == "json_schema"
+            assert "effort" not in body["output_config"]
+            assert body["system"][0]["cache_control"] == {"type": "ephemeral"}
+            _, _, tuned = wire.request(
+                {"protocol": protocol, "effort": "high"}, payload, "test-secret"
+            )
+            assert tuned["output_config"]["effort"] == "high"
             raw = {
                 "model": "test",
                 "stop_reason": "end_turn",

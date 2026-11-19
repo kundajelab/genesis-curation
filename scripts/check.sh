@@ -9,6 +9,6 @@ run=(uv run --frozen --extra web --project "$root")
 "${run[@]}" ty check --project "$root" --extra-search-path "$root/tests" "$root/tests"
 for test in verify_v1 verify_local_models verify_model_manager verify_release_results verify_workspace \
     verify_demo_reliability verify_web verify_study_review verify_study_web verify_table_web verify_trustworthy_web verify_mining \
-    verify_ai verify_skills verify_cli verify_qc verify_rna_workflow verify_rna_scale verify_sheets_score verify_sheets_rna verify_sheets_scatac verify_sheets_tss verify_sheets_dap verify_sheets_atac evaluate_metadata; do
+    verify_ai verify_skills verify_cli verify_qc verify_rna_workflow verify_rna_scale verify_sheets_score verify_sheets_rna verify_sheets_scatac verify_sheets_tss verify_sheets_dap verify_sheets_atac verify_sheets_campaign verify_sheets_web verify_llm_eval evaluate_metadata; do
     "${run[@]}" python "$root/tests/$test.py"
 done

@@ -195,6 +195,15 @@
               "conservative"
             ]
           },
+          "effort": {
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "xhigh",
+              "max"
+            ]
+          },
           "pricing": {
             "type": "object",
             "properties": {

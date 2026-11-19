@@ -32,3 +32,27 @@ Each miss is fixed in one of three ways:
 Then rescore and append the result to `HISTORY.md`. A history row notes whether reads were
 measured or reused from gold (`--no-measure` with `--strandedness-from` or `--measure-from`),
 because builds that reuse measurements test only the metadata rules.
+
+## LLM steps
+
+`genesis eval llm` scores the app's model calls against the same gold sheets, on a provider
+configured in a runtime (`genesis workspace provider`). Two tasks:
+
+| Task | What it runs | Gold |
+| --- | --- | --- |
+| `triage` | The mining step that accepts, holds or excludes a study for an assay (`web/mining.py`) | A study with a kept run in a workflow's sheet matches that assay. A study kept for another assay and absent from this workflow's runs-qc, or whose runs were all left out as another assay, is excluded. |
+| `adjudicate` | Per-run keep or leave-out from free-text metadata (`sheets/adjudicate.py`) | Kept runs are keep. Runs left out for genotype, treatment, assay or tissue are leave. Read, file and duplicate reasons are skipped. |
+
+```sh
+genesis eval llm --task adjudicate --root "$GENESIS_RUNTIME" --gold gold \
+    --species Arabidopsis_thaliana --split dev --studies 10 --per-study 20 \
+    --out eval-adjudicate --history evals/LLM-HISTORY.md --label "what changed"
+```
+
+Studies are split by a hash of the accession: about 80% go to `dev`, the rest to `test`.
+Tune prompts on dev and score test only at milestones. `--dry-run` counts the cases without
+calling anything. Responses are cached in the runtime by request hash, so rerunning the same
+cases costs nothing. Every run writes `report.json` and `cases.jsonl` (one line per case,
+with the model's decision, reason and quotes); `--history` appends a row to
+`LLM-HISTORY.md`. A decision whose quotes are not in the metadata it was given counts as
+uncertain.

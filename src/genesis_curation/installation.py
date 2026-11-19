@@ -46,6 +46,11 @@ def configure(parser: argparse.ArgumentParser) -> None:
     provider.add_argument("--default", action="store_true")
     provider.add_argument("--context", type=int, default=32768)
     provider.add_argument("--max-output", type=int, default=4096)
+    provider.add_argument(
+        "--effort",
+        choices=("low", "medium", "high", "xhigh", "max"),
+        help="Reasoning effort, for providers that take one (anthropic-messages)",
+    )
     provider.add_argument("--input-price", type=float)
     provider.add_argument("--output-price", type=float)
     budget = commands.add_parser("budget", help="Set the model spending limit")
@@ -218,6 +223,8 @@ def execute(args: argparse.Namespace) -> tuple[Any, int]:
         if args.protocol in {"anthropic-messages", "openai-responses"}
         else "conservative",
     }
+    if args.effort:
+        item["effort"] = args.effort
     if args.input_price is not None and args.output_price is not None:
         item["pricing"] = {
             "input_per_million": args.input_price,

@@ -12,6 +12,7 @@ from .contracts.records import canonical
 from .curation import cli as curation_cli
 from .curation import metadata_cli
 from .llm import cli as ai_cli
+from .llm import evaluation
 from .sheets import cli as sheets_cli
 from .web import cli as web_cli
 
@@ -29,6 +30,7 @@ def main() -> None:
         ("curation", curation_cli, "Discover, curate, review and export (the GUI's operations)"),
         ("workspace", installation, "Create and maintain a runtime: account, providers, budget"),
         ("sheets", sheets_cli, "Build and score genesis-preprocessing sample sheets"),
+        ("eval", evaluation, "Score the LLM steps against the curated gold sheets"),
     )
     for name, module, summary in groups:
         module.configure(commands.add_parser(name, help=summary, description=summary))
