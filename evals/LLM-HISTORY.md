@@ -11,3 +11,6 @@ One row per `genesis eval llm` run.
 | 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 58 | agreement 0.4419, keep_precision 0.6667, keep_recall 0.4, uncertain 0.2586, errors 0 | 0.27 | 77 | run enum, no length caps |
 | 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 58 | agreement 0.5769, keep_precision 1.0, keep_recall 0.5111, uncertain 0.1034, errors 0 | 0.26 | 68 | verbatim quote instruction |
 | 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 58 | agreement 0.5263, keep_precision 0.8214, keep_recall 0.5111, uncertain 0.0172, errors 0 | 0.28 | 8 | retry skipped runs |
+| 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 106 | agreement 0.9808, keep_precision 1.0, keep_recall 0.9701, uncertain 0.0189, errors 0 | 0.51 | 146 | verified set, criteria v2 (3' kept, protoplasts left) |
+| 2026-11-19 | adjudicate | test | claude-opus-5-5 | 62 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0645, errors 0 | 0.29 | 97 | verified set, criteria v2 (3' kept, protoplasts left) |
+| 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 106 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0189, errors 0 | 0.51 | 10 | verified set, vernalization labels fixed (cached) |

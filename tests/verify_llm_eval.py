@@ -63,6 +63,23 @@ def check_cases(gold: Path) -> None:
     assert sorted(c["run"] for c in both) == ["SRR1", "SRR2", "SRR4"]
 
 
+def check_verified(root: Path) -> None:
+    table = root / "verified.tsv"
+    table.write_text(
+        "species\tworkflow\tstudy\trun\tdecision\treason_class\tnote\n"
+        "Arabidopsis_thaliana\trna-seq\tPRJNA1\tSRR1\tkeep\t\t\n"
+        "Arabidopsis_thaliana\trna-seq\tPRJNA1\tSRR2\tleave\ttissue\tprotoplasts\n"
+        "Sorghum_bicolor\trna-seq\tPRJNA2\tSRR3\tkeep\t\t\n"
+    )
+    cases = evaluation.verified_cases(table, "Arabidopsis_thaliana", "rna-seq")
+    assert [(c["run"], c["expected"], c["reason_class"]) for c in cases] == [
+        ("SRR1", "keep", ""),
+        ("SRR2", "leave", "tissue"),
+    ]
+    assert cases[1]["gold_reason"] == "protoplasts"
+    assert cases[0]["split"] == evaluation.split_of("PRJNA1")
+
+
 def check_quotes() -> None:
     keep = {"run": "R", "decision": "keep", "reason_class": "", "reason": "WT", "quotes": ["Col-0"]}
     assert adjudicate.verified(keep, ["ecotype Col-0 leaf"])["decision"] == "keep"
@@ -158,6 +175,7 @@ def check_report(gold: Path, root: Path) -> None:
         root=root / "runtime",
         provider=None,
         gold=gold,
+        verified=None,
         species=["Arabidopsis_thaliana"],
         workflow="rna-seq",
         split=evaluation.split_of("PRJNA100"),
@@ -218,6 +236,7 @@ def main() -> None:
         write_gold(gold)
         check_cases(gold)
         check_quotes()
+        check_verified(root)
         check_adjudicate_run(gold, root)
         check_report(gold, root)
         check_settle(root)

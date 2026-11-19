@@ -60,19 +60,21 @@ BATCH = 25
 
 CRITERIA = {
     "rna-seq": (
-        "Keep a run only if it is standard bulk short-read RNA-seq (poly(A)-selected or "
-        "rRNA-depleted RNA; any tissue, organ, developmental stage or time point) of the "
-        "reference genotype {genotype} under control or untreated conditions. Leave it out "
-        "if any of these apply: (genotype) a mutant, knockout, knockdown, transgenic, "
-        "overexpression, reporter or edited line, or another accession, ecotype, cultivar or "
-        "hybrid; (treatment) a treatment, stress, infection, inoculation, hormone, chemical, "
-        "or an altered growth condition, unless the run is that experiment's mock, control "
-        "or untreated sample; (assay) not standard RNA-seq: single-cell or single-nucleus, "
-        "small RNA, degradome, IP or pull-down, polysome or translatome, 3' end or 5' end "
-        "methods, nascent RNA, structure probing, sorted nuclei or subcellular fractions; "
-        "(tissue) cell culture or callus. A wild-type {genotype} sample in a study that also "
-        "has mutants is kept. When the metadata does not say enough to decide, answer "
-        "uncertain rather than guess."
+        "Keep a run only if it is bulk short-read RNA-seq for gene expression of the "
+        "reference genotype {genotype} under control or untreated conditions, from any "
+        "tissue, organ, developmental stage or time point. Poly(A)-selected, rRNA-depleted "
+        "and 3' tag expression libraries (QuantSeq, 3' RNA-seq, BRB-seq) all count. "
+        "Leave it out if any of these apply: (genotype) a mutant, knockout, knockdown, "
+        "transgenic, overexpression, reporter or edited line, or another accession, "
+        "ecotype, cultivar or hybrid; (treatment) a treatment, stress, infection, "
+        "inoculation, hormone, chemical, or an altered growth condition; (assay) not "
+        "expression RNA-seq: single-cell or single-nucleus, small RNA, degradome, IP or "
+        "pull-down, polysome or translatome, poly(A) tail or poly(A) site methods (PAT-seq, "
+        "PAS-seq, 3'READS), 5' end methods, nascent RNA, structure probing, sorted nuclei "
+        "or subcellular fractions; (tissue) protoplasts (including vector or mock-"
+        "transfected protoplast controls), cell culture or callus. The untreated, mock or "
+        "wild-type {genotype} control of a treatment or mutant experiment is kept. When the "
+        "metadata does not say enough to decide, answer uncertain rather than guess."
     ),
 }
 

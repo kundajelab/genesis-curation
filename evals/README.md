@@ -49,6 +49,15 @@ genesis eval llm --task adjudicate --root "$GENESIS_RUNTIME" --gold gold \
     --out eval-adjudicate --history evals/LLM-HISTORY.md --label "what changed"
 ```
 
+The gold runs-qc tables decided free-text cases with title rules, and those labels are often
+wrong (a third of the disputed runs in the first pilot). `evals/adjudication-verified.tsv` is a
+hand-checked set of 168 RNA-seq runs from 31 studies (Arabidopsis and Sorghum), labelled from
+the archive metadata and study descriptions under the same criteria as the prompt: 3' tag
+expression libraries and the untreated or wild-type controls of an experiment are kept;
+protoplasts (including vector controls), mutants, transgenics, near-isogenic lines and
+treatments are left out. Score adjudication against it with `--verified
+evals/adjudication-verified.tsv --studies 100 --per-study 20`.
+
 Studies are split by a hash of the accession: about 80% go to `dev`, the rest to `test`.
 Tune prompts on dev and score test only at milestones. `--dry-run` counts the cases without
 calling anything. Responses are cached in the runtime by request hash, so rerunning the same

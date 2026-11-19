@@ -1,0 +1,169 @@
+species	workflow	study	run	decision	reason_class	note
+Arabidopsis_thaliana	rna-seq	PRJNA1154811	SRR30500769	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1177886	SRR31123129	leave	tissue	TARGET cell-based assay: transfected leaf protoplasts (leave, including empty-vector controls)
+Arabidopsis_thaliana	rna-seq	PRJNA1154811	SRR30500773	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1154811	SRR30500772	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1154811	SRR30500774	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1154811	SRR30500775	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1154811	SRR30500777	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1154811	SRR30500776	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1177886	SRR31123128	leave	tissue	TARGET cell-based assay: transfected leaf protoplasts (leave, including empty-vector controls)
+Arabidopsis_thaliana	rna-seq	PRJNA1177886	SRR31123130	leave	tissue	TARGET cell-based assay: transfected leaf protoplasts (leave, including empty-vector controls)
+Arabidopsis_thaliana	rna-seq	PRJNA1177886	SRR31123135	leave	tissue	TARGET cell-based assay: transfected leaf protoplasts (leave, including empty-vector controls)
+Arabidopsis_thaliana	rna-seq	PRJNA622833	SRR11473382	keep		isolate field says transgenic plants (TaHsfA6f OX)
+Arabidopsis_thaliana	rna-seq	PRJNA622833	SRR11473385	leave	genotype	isolate field says transgenic plants (TaHsfA6f OX)
+Arabidopsis_thaliana	rna-seq	PRJNA1073023	SRR27862250	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA752148	SRR15347019	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA622833	SRR11473386	leave	genotype	isolate field says transgenic plants (TaHsfA6f OX)
+Arabidopsis_thaliana	rna-seq	PRJNA622833	SRR11473387	leave	genotype	isolate field says transgenic plants (TaHsfA6f OX)
+Arabidopsis_thaliana	rna-seq	PRJNA622833	SRR11473383	keep		isolate field says transgenic plants (TaHsfA6f OX)
+Arabidopsis_thaliana	rna-seq	PRJNA322265	SRR3547932	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA322265	SRR3547933	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA322265	SRR3547934	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA322265	SRR3547935	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA622833	SRR11473384	keep		isolate field says transgenic plants (TaHsfA6f OX)
+Arabidopsis_thaliana	rna-seq	PRJNA432124	SRR6655937	leave	genotype	sample alias skl1-8: skl1 mutant
+Arabidopsis_thaliana	rna-seq	PRJNA752148	SRR15347018	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1073023	SRR27862251	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA1073023	SRR27862252	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA1102445	SRR28812169	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1102445	SRR28812170	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1102445	SRR28812171	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1177886	SRR31123132	leave	tissue	TARGET cell-based assay: transfected leaf protoplasts (leave, including empty-vector controls)
+Arabidopsis_thaliana	rna-seq	PRJNA322265	SRR3547922	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1102445	SRR28812166	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1102445	SRR28812167	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1102445	SRR28812168	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1177886	SRR31123131	leave	tissue	TARGET cell-based assay: transfected leaf protoplasts (leave, including empty-vector controls)
+Arabidopsis_thaliana	rna-seq	PRJNA1177886	SRR31123133	leave	tissue	TARGET cell-based assay: transfected leaf protoplasts (leave, including empty-vector controls)
+Arabidopsis_thaliana	rna-seq	PRJNA752148	SRR15347017	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1177886	SRR31123134	leave	tissue	TARGET cell-based assay: transfected leaf protoplasts (leave, including empty-vector controls)
+Arabidopsis_thaliana	rna-seq	PRJNA322265	SRR3547923	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1073023	SRR27862249	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA1073023	SRR27862253	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1073023	SRR27862254	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1073023	SRR27862255	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA1073023	SRR27862256	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA1234132	SRR32633167	keep		3' RNA-seq of Col-0 mock: kept by policy
+Arabidopsis_thaliana	rna-seq	PRJNA1234132	SRR32633168	keep		3' RNA-seq of Col-0 mock: kept by policy
+Arabidopsis_thaliana	rna-seq	PRJNA1234132	SRR32633169	keep		3' RNA-seq of Col-0 mock: kept by policy
+Arabidopsis_thaliana	rna-seq	PRJNA1234132	SRR32633170	keep		3' RNA-seq of Col-0 mock: kept by policy
+Arabidopsis_thaliana	rna-seq	PRJNA357872	SRR5117878	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA357872	SRR5117876	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA357872	SRR5117880	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA357872	SRR5117879	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA357872	SRR5117883	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA357872	SRR5117882	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA357872	SRR5117877	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA357872	SRR5117884	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA357872	SRR5117881	keep		
+Arabidopsis_thaliana	rna-seq	PRJDB35100	DRR768427	keep		Col_22 = 22 C control; Col_4/3h/24h = chilling
+Arabidopsis_thaliana	rna-seq	PRJDB35100	DRR768426	keep		Col_22 = 22 C control; Col_4/3h/24h = chilling
+Arabidopsis_thaliana	rna-seq	PRJDB35100	DRR768436	leave	genotype	Col_22 = 22 C control; Col_4/3h/24h = chilling
+Arabidopsis_thaliana	rna-seq	PRJDB35100	DRR768446	leave	genotype	Col_22 = 22 C control; Col_4/3h/24h = chilling
+Arabidopsis_thaliana	rna-seq	PRJDB35100	DRR768438	keep		Col_22 = 22 C control; Col_4/3h/24h = chilling
+Arabidopsis_thaliana	rna-seq	PRJDB35100	DRR768429	leave	treatment	Col_22 = 22 C control; Col_4/3h/24h = chilling
+Arabidopsis_thaliana	rna-seq	PRJNA764922	SRR15993260	keep		agb1-2 mutant though genotype attribute says Col-0, WT
+Arabidopsis_thaliana	rna-seq	PRJNA764922	SRR15993248	keep		agb1-2 mutant though genotype attribute says Col-0, WT
+Arabidopsis_thaliana	rna-seq	PRJNA764922	SRR15993247	keep		agb1-2 mutant though genotype attribute says Col-0, WT
+Arabidopsis_thaliana	rna-seq	PRJNA764922	SRR15993259	keep		agb1-2 mutant though genotype attribute says Col-0, WT
+Arabidopsis_thaliana	rna-seq	PRJNA764922	SRR15993250	leave	genotype	agb1-2 mutant though genotype attribute says Col-0, WT
+Arabidopsis_thaliana	rna-seq	PRJNA764922	SRR15993251	leave	genotype	agb1-2 mutant though genotype attribute says Col-0, WT
+Arabidopsis_thaliana	rna-seq	PRJNA764922	SRR15993252	leave	genotype	agb1-2 mutant though genotype attribute says Col-0, WT
+Arabidopsis_thaliana	rna-seq	PRJDB41129	DRR975860	keep		study is about vernalization: 0w = before, 4w = after 4 weeks of vernalization
+Arabidopsis_thaliana	rna-seq	PRJDB41129	DRR975861	keep		study is about vernalization: 0w = before, 4w = after 4 weeks of vernalization
+Arabidopsis_thaliana	rna-seq	PRJDB41129	DRR975859	keep		study is about vernalization: 0w = before, 4w = after 4 weeks of vernalization
+Arabidopsis_thaliana	rna-seq	PRJDB41129	DRR975856	leave	genotype	study is about vernalization: 0w = before, 4w = after 4 weeks of vernalization
+Arabidopsis_thaliana	rna-seq	PRJDB41129	DRR975865	leave	treatment	study is about vernalization: 0w = before, 4w = after 4 weeks of vernalization
+Arabidopsis_thaliana	rna-seq	PRJDB41129	DRR975866	leave	treatment	study is about vernalization: 0w = before, 4w = after 4 weeks of vernalization
+Arabidopsis_thaliana	rna-seq	PRJDB41129	DRR975863	leave	genotype	study is about vernalization: 0w = before, 4w = after 4 weeks of vernalization
+Arabidopsis_thaliana	rna-seq	PRJNA1039314	SRR26798846	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1039314	SRR26796509	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1039314	SRR26796510	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1039314	SRR26798843	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1039314	SRR26798845	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1039314	SRR26798844	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA757403	SRR15598393	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA757403	SRR15598392	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA757403	SRR15598394	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA147389	SRR345554	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA147389	SRR345552	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA147389	SRR345551	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA147389	SRR345553	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA595604	SRR10691731	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA595604	SRR10691733	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA595604	SRR10691735	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA595604	SRR10691736	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA194429	SRR847506	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA194429	SRR847503	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA194429	SRR847502	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA194429	SRR847501	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA822702	SRR18595294	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA822702	SRR18595291	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA822702	SRR18595295	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA822702	SRR18595289	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA822702	SRR18595290	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA822702	SRR18595288	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA940103	SRR23715600	keep		CAS = Cologne agricultural soil, a growth substrate
+Arabidopsis_thaliana	rna-seq	PRJNA940103	SRR23715599	keep		CAS = Cologne agricultural soil, a growth substrate
+Arabidopsis_thaliana	rna-seq	PRJNA940103	SRR23715612	keep		CAS = Cologne agricultural soil, a growth substrate
+Arabidopsis_thaliana	rna-seq	PRJNA940103	SRR23715598	keep		CAS = Cologne agricultural soil, a growth substrate
+Arabidopsis_thaliana	rna-seq	PRJNA940103	SRR23715607	leave	genotype	CAS = Cologne agricultural soil, a growth substrate
+Arabidopsis_thaliana	rna-seq	PRJNA940103	SRR23715553	leave	genotype	CAS = Cologne agricultural soil, a growth substrate
+Arabidopsis_thaliana	rna-seq	PRJNA940103	SRR23715603	leave	genotype	CAS = Cologne agricultural soil, a growth substrate
+Arabidopsis_thaliana	rna-seq	PRJNA940103	SRR23715560	leave	genotype	CAS = Cologne agricultural soil, a growth substrate
+Arabidopsis_thaliana	rna-seq	PRJNA799802	SRR17774171	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA799802	SRR17774179	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA799802	SRR17774180	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA799802	SRR17774174	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA799802	SRR17774172	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA799802	SRR17774173	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1256242	SRR33396576	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1256242	SRR33396531	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1256242	SRR33396532	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1256242	SRR33396572	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA1256242	SRR35104317	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1256242	SRR33396518	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1256242	SRR35104321	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA1256242	SRR33396516	leave	genotype	
+Arabidopsis_thaliana	rna-seq	PRJNA609261	SRR11196725	keep		dark-grown seedlings treated as a developmental condition
+Arabidopsis_thaliana	rna-seq	PRJNA609261	SRR11196723	keep		dark-grown seedlings treated as a developmental condition
+Arabidopsis_thaliana	rna-seq	PRJNA609261	SRR11196724	keep		dark-grown seedlings treated as a developmental condition
+Arabidopsis_thaliana	rna-seq	PRJNA609261	SRR11196726	keep		dark-grown seedlings treated as a developmental condition
+Arabidopsis_thaliana	rna-seq	PRJNA609261	SRR11196729	leave	genotype	dark-grown seedlings treated as a developmental condition
+Arabidopsis_thaliana	rna-seq	PRJNA609261	SRR11196735	leave	genotype	dark-grown seedlings treated as a developmental condition
+Arabidopsis_thaliana	rna-seq	PRJNA609261	SRR11196733	leave	genotype	dark-grown seedlings treated as a developmental condition
+Arabidopsis_thaliana	rna-seq	PRJNA609261	SRR11196727	leave	genotype	dark-grown seedlings treated as a developmental condition
+Arabidopsis_thaliana	rna-seq	PRJNA578015	SRR10301564	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA578015	SRR10301563	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA578015	SRR10301565	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA975560	SRR24710322	leave	treatment	heat-selected line (multigenerational) counted as other
+Arabidopsis_thaliana	rna-seq	PRJNA975560	SRR24710325	keep		heat-selected line (multigenerational) counted as other
+Arabidopsis_thaliana	rna-seq	PRJNA975560	SRR24710327	keep		heat-selected line (multigenerational) counted as other
+Arabidopsis_thaliana	rna-seq	PRJNA975560	SRR24710318	leave	other	heat-selected line (multigenerational) counted as other
+Arabidopsis_thaliana	rna-seq	PRJNA717244	SRR14069886	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA717244	SRR14069933	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA717244	SRR14069928	leave	treatment	
+Arabidopsis_thaliana	rna-seq	PRJNA717244	SRR14069881	keep		
+Arabidopsis_thaliana	rna-seq	PRJNA397570	SRR5909366	leave	genotype	Col-S: near-isogenic line with a Cvi-0 segment
+Arabidopsis_thaliana	rna-seq	PRJNA397570	SRR5909367	leave	genotype	Col-S: near-isogenic line with a Cvi-0 segment
+Arabidopsis_thaliana	rna-seq	PRJNA397570	SRR5909365	leave	genotype	Col-S: near-isogenic line with a Cvi-0 segment
+Sorghum_bicolor	rna-seq	PRJNA343268	SRR4280412	keep		
+Sorghum_bicolor	rna-seq	PRJNA343268	SRR4280410	keep		
+Sorghum_bicolor	rna-seq	PRJNA343268	SRR4280421	keep		
+Sorghum_bicolor	rna-seq	PRJNA866867	SRR20912187	keep		
+Sorghum_bicolor	rna-seq	PRJNA866867	SRR20912188	keep		
+Sorghum_bicolor	rna-seq	PRJNA866867	SRR20912183	keep		
+Sorghum_bicolor	rna-seq	PRJNA866867	SRR20912172	keep		
+Sorghum_bicolor	rna-seq	PRJNA1032895	SRR26546274	keep		
+Sorghum_bicolor	rna-seq	PRJNA1032895	SRR26546273	keep		
+Sorghum_bicolor	rna-seq	PRJNA1032895	SRR26546271	keep		
+Sorghum_bicolor	rna-seq	PRJNA1032895	SRR26546272	keep		
+Sorghum_bicolor	rna-seq	PRJNA1032895	SRR26546276	leave	genotype	
+Sorghum_bicolor	rna-seq	PRJNA1032895	SRR26546277	leave	genotype	
+Sorghum_bicolor	rna-seq	PRJNA1032895	SRR26546278	leave	genotype	
+Sorghum_bicolor	rna-seq	PRJNA1032895	SRR26546267	leave	genotype	
+Sorghum_bicolor	rna-seq	PRJNA344653	SRR4301630	keep		
+Sorghum_bicolor	rna-seq	PRJNA344653	SRR4301665	keep		
+Sorghum_bicolor	rna-seq	PRJNA344653	SRR4301669	keep		
+Sorghum_bicolor	rna-seq	PRJNA344653	SRR4301625	keep		

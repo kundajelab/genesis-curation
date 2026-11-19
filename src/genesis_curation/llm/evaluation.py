@@ -125,6 +125,27 @@ def adjudicate_cases(gold: Path, species: str, workflow: str) -> list[dict[str, 
     return cases
 
 
+def verified_cases(path: Path, species: str, workflow: str) -> list[dict[str, Any]]:
+    """Cases from a hand-verified table (species, workflow, study, run, decision,
+    reason_class, note), such as evals/adjudication-verified.tsv."""
+    with path.open(newline="") as handle:
+        rows = list(csv.DictReader(handle, delimiter="\t"))
+    return [
+        {
+            "species": species,
+            "workflow": workflow,
+            "study": row["study"],
+            "run": row["run"],
+            "expected": row["decision"],
+            "reason_class": row["reason_class"],
+            "gold_reason": row["note"],
+            "split": split_of(row["study"]),
+        }
+        for row in rows
+        if row["species"] == species and row["workflow"] == workflow
+    ]
+
+
 def sample(
     cases: list[dict[str, Any]], split: str, studies: int, per_study: int, seed: int
 ) -> list[dict[str, Any]]:
@@ -346,6 +367,8 @@ def evaluate(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
     for species in args.species:
         if args.task == "triage":
             cases += triage_cases(args.gold, species)
+        elif args.verified:
+            cases += verified_cases(args.verified, species, args.workflow)
         else:
             cases += adjudicate_cases(args.gold, species, args.workflow)
     chosen = sample(cases, args.split, args.studies, args.per_study, args.seed)
@@ -407,6 +430,11 @@ def configure(parser: argparse.ArgumentParser) -> None:
     llm.add_argument("--root", type=Path, required=True, help="Runtime with the provider")
     llm.add_argument("--provider", help="Provider ID (default: the runtime's default)")
     llm.add_argument("--gold", type=Path, required=True, help="Folder from sheets gold-fetch")
+    llm.add_argument(
+        "--verified",
+        type=Path,
+        help="Adjudicate against this hand-verified table instead of the gold runs-qc tables",
+    )
     llm.add_argument("--species", nargs="+", required=True)
     llm.add_argument("--workflow", default="rna-seq", choices=sorted(adjudication.CRITERIA))
     llm.add_argument("--split", default="dev", choices=("dev", "test"))
