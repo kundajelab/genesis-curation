@@ -5,6 +5,30 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-20: treated samples are kept (issue #13)
+
+A policy change, not a correction of single runs. Treatment is no longer a reason to leave a
+run out: treated, stressed and infected samples of the reference genotype are usable data, and
+their treatment is recorded in the runs-qc `treatment` and `treatment_text` columns. The gold
+sheets published before this date leave those runs out, so measured rebuilds score lower
+precision against them (Sorghum RNA-seq 0.41, A. thaliana ATAC 0.58) while recall stays 1.0
+(Sorghum RNA-seq 0.9985, as before). The gold sheets are regenerated from the measured
+rebuilds; until then, read precision against the old gold as the share of runs that were
+already in it.
+
+| Gold | Before | After the rebuild |
+| --- | ---: | ---: |
+| Sorghum RNA-seq | 681 | 1,653 |
+| Sorghum scATAC (libraries) | 6 | 11 |
+| Sorghum TSS mapping | 0 | 4 |
+| A. thaliana bulk ATAC | 208 | 356 |
+| A. thaliana scATAC (libraries) | 18 | 35 |
+| A. thaliana DAP-seq | 120 | 124 |
+| A. thaliana TSS mapping | 62 | 93 |
+
+Issue #14 changed scATAC reasons only: sci-ATAC runs now name their 28-base barcode read, and a
+library mixing chemistries keeps its main chemistry's runs (rice SRP438549).
+
 ## 2026-11-18
 
 | Gold | Change | Runs | Evidence | Trap |

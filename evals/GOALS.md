@@ -8,7 +8,7 @@ LLM steps and coverage, and says what to work on next.
 
 | Area | Measure | Target | Now (2026-11-19) |
 | --- | --- | --- | --- |
-| Sheets | run precision and recall, every gold set | ≥ 0.95 | 1.0 / ≥ 0.9986 on all nine |
+| Sheets | run precision and recall, every gold set | ≥ 0.95 | recall ≥ 0.9985 on all; precision below target only against pre-#13 gold, which lacks treated runs (see gold-corrections.md, 2026-11-20) |
 | Sheets | accuracy on every workflow field | ≥ 0.98 | 1.0 |
 | Sheets | traps passing | all | all |
 | Adjudication | agreement with the verified set, every workflow and species, dev and test | ≥ 0.98 | 1.0 on all (RNA, ATAC, TSS, DAP; rice RNA) |
@@ -41,11 +41,13 @@ per change to confirm it holds.
 
 ## Next
 
-1. Publish measured rice sheets (RNA-seq with the model review, ATAC, DAP, TSS, scATAC) and
+1. Regenerate the gold sheets from the measured rebuilds that keep treated samples (#13), so
+   precision is measured against the current policy again.
+2. Publish measured rice sheets (RNA-seq with the model review, ATAC, DAP, TSS, scATAC) and
    add rice to `gold.yaml`, so rice is scored like the other two species.
-2. Bring uncertain answers under 5% for ATAC and TSS; read which runs the model leaves
+3. Bring uncertain answers under 5% for ATAC and TSS; read which runs the model leaves
    uncertain and decide whether the criteria or the verified labels should say more.
-3. Triage: show the model each study's experiment counts by library strategy, so studies whose
+4. Triage: show the model each study's experiment counts by library strategy, so studies whose
    RNA-seq runs fall outside the sampled experiments are not excluded.
-4. Verified-set policy questions still open: Arabidopsis DAP-seq whose genomic DNA accession is
+5. Verified-set policy questions still open: Arabidopsis DAP-seq whose genomic DNA accession is
    never stated; autotetraploid reference lines. Runs that hinge on them are labelled uncertain.
