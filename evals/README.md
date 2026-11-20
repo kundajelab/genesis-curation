@@ -42,7 +42,7 @@ configured in a runtime (`genesis workspace provider`). Two tasks:
 | Task | What it runs | Gold |
 | --- | --- | --- |
 | `triage` | The mining step that accepts, holds or excludes a study for an assay (`web/mining.py`) | A study with a kept run in a workflow's sheet matches that assay. A study kept for another assay and absent from this workflow's runs-qc, or whose runs were all left out as another assay, is excluded. |
-| `adjudicate` | Per-run keep or leave-out from free-text metadata (`sheets/adjudicate.py`) | Kept runs are keep. Runs left out for genotype, treatment, assay or tissue are leave. Read, file and duplicate reasons are skipped. |
+| `adjudicate` | Per-run keep or leave-out from free-text metadata (`sheets/adjudicate.py`) | Kept runs are keep. Runs left out for genotype, assay or tissue are leave (treated samples are kept, issue #13). Read, file and duplicate reasons are skipped. |
 
 ```sh
 genesis eval llm --task adjudicate --root "$GENESIS_RUNTIME" --gold gold \
@@ -61,9 +61,10 @@ enough, the ENA or GEO record) under the criteria in `sheets/adjudicate.py`:
 | Sorghum bicolor | RNA-seq, ATAC-seq | 19, 12 |
 | Oryza sativa | RNA-seq | 45 |
 
-For RNA-seq, 3' tag expression libraries and the untreated or wild-type controls of an
-experiment are kept; protoplasts (including vector controls), mutants, transgenics,
-near-isogenic lines and treatments are left out. Runs labelled `uncertain` are questions the
+For RNA-seq, 3' tag expression libraries, treated, stressed or infected samples of the
+reference genotype (issue #13), and the wild-type controls of a mutant experiment are kept;
+protoplasts (including vector controls), mutants, transgenics and near-isogenic lines are
+left out. Runs labelled `uncertain` are questions the
 metadata does not answer (for example DAP-seq whose genomic DNA accession is never stated);
 they are kept in the file as a record and not scored. Score adjudication against the set with
 `--verified evals/adjudication-verified.tsv --studies 100 --per-study 20`.

@@ -138,7 +138,8 @@ def check_traps(
     candidate_qc: dict[str, dict[str, str]],
 ) -> dict[str, Any]:
     """A trap passes when every listed run has the expected outcome (and reason class or
-    field values, when given). Runs absent from the candidate's runs-qc are "not seen"."""
+    field values, when given) and the runs-qc values under `qc`. Runs absent from the
+    candidate's runs-qc are "not seen"."""
     results = []
     for trap in traps:
         if trap["workflow"] != workflow or trap["species"] != species:
@@ -149,6 +150,10 @@ def check_traps(
             if not included and run not in candidate_qc:
                 problems.append(f"{run}: not seen")
                 continue
+            row = candidate_qc.get(run, {})
+            for name, want in (trap.get("qc") or {}).items():
+                if row.get(name) != str(want):
+                    problems.append(f"{run}: runs-qc {name}={row.get(name)!r}, expected {want!r}")
             if trap["expect"] == "excluded":
                 if included:
                     problems.append(f"{run}: included")

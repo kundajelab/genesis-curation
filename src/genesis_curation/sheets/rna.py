@@ -3,11 +3,11 @@
 Reasons are checked in this order; the first that applies is recorded:
  1. not bulk short-read RNA-seq (library source, platform, small-RNA size selection);
  2. the sample's deepest run has under 1M reads;
- 3. genotype is not the reference genotype; 4. treated or another condition;
+ 3. genotype is not the reference genotype (treated samples are kept, issue #13);
  5. the run's titles or library selection name another assay (classify.ASSAYS);
  6. a curated exception (data/exceptions.yaml);
  7. read files: paired run served as one file, no files, FASTQ under 1 MB (files.py);
- 8. within-study title rules; 9. a transgene, mutant or treatment named in the titles;
+ 8. within-study title rules; 9. a transgene or mutant named in the titles;
 10. duplicate submission of another kept run (same first reads);
 11. strandedness: download failed, too few reads on genes, unclear, or not measured.
 """
@@ -138,7 +138,6 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
                     for reason in (
                         "sample under 1M reads" if depth < MIN_SAMPLE_READS else "",
                         "" if classify.is_reference(value) else f"genotype: {value.genotype}",
-                        "" if classify.is_untreated(value) else f"treatment: {value.treatment}",
                         classify.assay_flag(run),
                         curated.get(run["run_accession"], ""),
                         item.reads.reason,

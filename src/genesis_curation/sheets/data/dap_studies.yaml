@@ -76,8 +76,6 @@ studies:
     name: HSFA1b/A2/A3 homo- and heteromers
     genotype: Col-0
     replace: [['^(A\d)', 'HSF\1']]
-    skip:
-      - {match: '_37$', reason: 'treatment: gDNA from seedlings at 37 °C'}
   PRJNA1222878:
     species: Arabidopsis_thaliana
     name: PLT3/5/7 DAP on SAM or IM gDNA

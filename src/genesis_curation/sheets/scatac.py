@@ -22,9 +22,13 @@ A library's reason is the first that applies:
  5. excluded by hand (`exclude` in data/scatac.yaml);
  6. read structure: every run needs exactly one barcode read (16 bases: 10x-atac-v1 with
     the 737K-cratac-v1 whitelist; 24 bases: 10x-multiome-atac, no whitelist) and two
-    genomic reads of at least 30 bases, and all runs of a library the same structure;
- 7. genotype is not the reference; 8. treated or another condition (shared classifier,
-    with study values from data/scatac.yaml);
+    genomic reads of at least 30 bases. A barcode read of another length (sci-ATAC's
+    28-base combinatorial index) is reported as such: the workflow reads 10x barcodes only.
+    When a library's runs differ in structure, it keeps the runs of the chemistry with the
+    most spots and leaves the others out (issue #14: rice SRP438549 has 24-base multiome
+    runs and runs whose 16-base barcode read is reverse-complemented, without the spacer);
+ 7. genotype is not the reference (shared classifier, with study values from
+    data/scatac.yaml); 8. (treated samples are kept and recorded, issue #13);
  9. within-study title rules and transgene words (classify.StudyTitles, transgene_flag);
 10. mixed instruments: reads after the first 200,000 come from another instrument family
     (measure/instruments.py), so the workflow's single barcode orientation is wrong for them.
@@ -53,6 +57,8 @@ WORKFLOW = "scatac-reads"
 # Barcode read length -> (chemistry, whitelist), as workflows/scatac-reads.nf reads them.
 BARCODES = {16: ("10x-atac-v1", "737K-cratac-v1.txt"), 24: ("10x-multiome-atac", "-")}
 MIN_GENOMIC = 30
+NOT_LOADED = "no reads in SRA (not loaded)"
+MIN_INDEX = 6  # shorter reads are sample indexes, not cell barcodes
 SEARCH = (
     '{organism} AND ("atac seq"[Strategy] OR "genomic single cell"[Source] '
     'OR scATAC OR snATAC OR "sci-ATAC" OR multiome OR "single cell ATAC" '
@@ -92,17 +98,23 @@ class Library:
     sample: classify.SampleClass | None = None
     sample_id: str = ""
     probes: dict[str, instruments.RunInstruments] = field(default_factory=dict)
+    dropped: dict[str, str] = field(default_factory=dict)  # run -> why it is left out
 
     @property
     def lead(self) -> SraExperiment:
         return self.experiments[0]
 
     @property
-    def runs(self) -> list[SraRun]:
+    def all_runs(self) -> list[SraRun]:
         return sorted(
             (run for experiment in self.experiments for run in experiment.runs),
             key=lambda run: (len(run.accession), run.accession),
         )
+
+    @property
+    def runs(self) -> list[SraRun]:
+        """The runs the sheet lists: every run but those left out on their own."""
+        return [run for run in self.all_runs if run.accession not in self.dropped]
 
 
 @dataclass(frozen=True)
@@ -147,14 +159,40 @@ def run_structure(run: SraRun) -> tuple[str, str]:
     if not run.public:
         return "", "run not public"
     if not run.spots or not run.reads:
-        return "", "no reads in SRA (not loaded)"
+        return "", NOT_LOADED
     lengths = run.lengths
     barcode = [n for n in lengths if n in BARCODES]
     genomic = [n for n in lengths if n >= MIN_GENOMIC]
-    if len(barcode) != 1 or len(genomic) < 2:
-        shown = ",".join(map(str, lengths))
-        return "", f"no 10x barcode read: reads of {shown} bases (sci-ATAC or plate-based)"
-    return BARCODES[barcode[0]][0], ""
+    if len(barcode) == 1 and len(genomic) >= 2:
+        return BARCODES[barcode[0]][0], ""
+    shown = ",".join(map(str, lengths))
+    short = [str(n) for n in lengths if MIN_INDEX <= n < MIN_GENOMIC]
+    if short:
+        return "", (
+            f"barcode read of {','.join(short)} bases, not a 10x chemistry the workflow reads "
+            f"(reads of {shown} bases; sci-ATAC or plate-based)"
+        )
+    return "", f"no barcode read in SRA: reads of {shown} bases (sci-ATAC or plate-based)"
+
+
+def keep_main_chemistry(library: Library, structures: Sequence[tuple[str, str]]) -> str:
+    """The chemistry of a library whose runs differ in structure: the readable 10x chemistry
+    with the most spots. Runs of another structure, or with no readable barcode, are left
+    out on their own; '' when no run has a readable chemistry."""
+    spots: Counter[str] = Counter()
+    for run, (chemistry, _) in zip(library.all_runs, structures, strict=True):
+        if chemistry:
+            spots[chemistry] += run.spots
+    if not spots:
+        return ""
+    main = spots.most_common(1)[0][0]
+    for run, (chemistry, why) in zip(library.all_runs, structures, strict=True):
+        if chemistry != main:
+            library.dropped[run.accession] = (
+                f"{why or 'barcode read is ' + chemistry}; differs from the library's other "
+                f"runs, which are kept ({main})"
+            )
+    return main
 
 
 def ten_x(experiment: SraExperiment) -> bool:
@@ -305,12 +343,10 @@ def classify_library(
 
 
 def title_flag(flag: str) -> str:
-    """StudyTitles' flag, named after its kind so the reason reads as treatment or genotype."""
+    """StudyTitles' flag, worded as a genotype reason."""
     if not flag:
         return ""
-    detail = flag.split(": ", 1)[1]
-    genotype = "mutant or transgene" in detail or "wild-type marker" in detail
-    return f"{'genotype' if genotype else 'treatment'} in titles: {detail}"
+    return f"genotype in titles: {flag.split(': ', 1)[1]}"
 
 
 def sample_ids(libraries: Sequence[Library]) -> None:
@@ -350,11 +386,13 @@ def metadata(
     for library in libraries:
         lead = library.lead
         library.sample = classify_library(species, library, chosen.studies.get(lead.study, {}))
-        structures = [run_structure(run) for run in library.runs]
+        structures = [run_structure(run) for run in library.all_runs]
         chemistry = {c for c, _ in structures}
-        library.chemistry = chemistry.pop() if len(chemistry) == 1 else ""
-        missing = [why for _, why in structures if why and not why.startswith("no 10x")]
-        missing += [] if library.runs else ["no runs in SRA"]
+        library.chemistry = (
+            chemistry.pop() if len(chemistry) == 1 else keep_main_chemistry(library, structures)
+        )
+        missing = [why for _, why in structures if why in ("run not public", NOT_LOADED)]
+        missing += [] if library.all_runs else ["no runs in SRA"]
         value = library.sample
         study_titles = titles.get(lead.study)
         reasons = (
@@ -370,12 +408,10 @@ def metadata(
                 ),
                 "",
             ),
-            next((why for _, why in structures if why), "")
-            or ("runs differ in read structure" if not library.chemistry else ""),
-            "" if classify.is_reference(value) else f"genotype: {value.genotype}",
             ""
-            if classify.is_untreated(value)
-            else f"treatment: {value.treatment_text or value.treatment}",
+            if library.chemistry
+            else next((why for _, why in structures if why), "runs differ in read structure"),
+            "" if classify.is_reference(value) else f"genotype: {value.genotype}",
             title_flag(study_titles.flag(lead.run_fields())) if study_titles else "",
             classify.transgene_flag(lead.run_fields(), study_titles.wild_type)
             if study_titles
@@ -468,15 +504,16 @@ def sheet_rows(
                     ),
                 }
             )
-        for run in library.runs:
+        for run in library.all_runs:
             probe = library.probes.get(run.accession)
+            reason = library.reason or library.dropped.get(run.accession, "")
             qc.append(
                 {
                     "run": run.accession,
                     "study": lead.study,
                     "sample_id": library.sample_id,
-                    "in_sheet": "no" if library.reason else "yes",
-                    "reason_left_out": library.reason,
+                    "in_sheet": "no" if reason else "yes",
+                    "reason_left_out": reason,
                     "experiments": ",".join(e.accession for e in library.experiments),
                     "sra_runs": runs,
                     "biosample": lead.sample.accession,

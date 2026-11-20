@@ -1,7 +1,7 @@
 """LLM adjudication of runs whose keep or leave-out decision rests on free-text metadata.
 
 The rule builders decide most runs from structured fields. Titles, sample attributes and
-study descriptions that name a mutant, a treatment or another assay are where rules are
+study descriptions that name a mutant or another assay are where rules are
 weakest, so this module asks a model to decide those runs for one study at a time, with a
 quote from the run's own metadata for every decision. A decision whose quotes are not found
 in the metadata it was given becomes "uncertain", so nothing is decided on text the model
@@ -64,51 +64,49 @@ BATCH = 25
 CRITERIA = {
     "rna-seq": (
         "Keep a run only if it is bulk short-read RNA-seq for gene expression of the "
-        "reference genotype {genotype} under control or untreated conditions, from any "
-        "tissue, organ, developmental stage or time point. Poly(A)-selected, rRNA-depleted "
+        "reference genotype {genotype}, from any tissue, organ, developmental stage, time "
+        "point or condition: treated, stressed, infected or otherwise perturbed samples are "
+        "kept (the build records their treatment). Poly(A)-selected, rRNA-depleted "
         "and 3' tag expression libraries (QuantSeq, 3' RNA-seq, BRB-seq) all count. "
         "Leave it out if any of these apply: (genotype) a mutant, knockout, knockdown, "
         "transgenic, overexpression, reporter or edited line, or another accession, "
-        "ecotype, cultivar or hybrid; (treatment) a treatment, stress, infection, "
-        "inoculation, hormone, chemical, or an altered growth condition; (assay) not "
+        "ecotype, cultivar or hybrid; (assay) not "
         "expression RNA-seq: single-cell or single-nucleus, small RNA, degradome, IP or "
         "pull-down, polysome or translatome, poly(A) tail or poly(A) site methods (PAT-seq, "
         "PAS-seq, 3'READS), 5' end methods, nascent RNA, structure probing, sorted nuclei "
         "or subcellular fractions; (tissue) protoplasts (including vector or mock-"
-        "transfected protoplast controls), cell culture or callus. The untreated, mock or "
-        "wild-type {genotype} control of a treatment or mutant experiment is kept. When the "
-        "metadata does not say enough to decide, answer uncertain rather than guess."
+        "transfected protoplast controls), cell culture or callus. The wild-type "
+        "{genotype} control of a mutant experiment is kept. When the metadata does not say "
+        "enough to decide, answer uncertain rather than guess."
     ),
     "atac-seq": (
-        "Keep a run only if it is bulk ATAC-seq of the reference genotype {genotype} under "
-        "control or untreated conditions, from any tissue, organ, developmental stage or "
-        "time point. Nuclei isolated by sorting (FANS) or gradients from wild-type plants "
+        "Keep a run only if it is bulk ATAC-seq of the reference genotype {genotype}, from "
+        "any tissue, organ, developmental stage, time point or condition: treated, stressed "
+        "or infected samples are kept (the build records their treatment). Nuclei isolated "
+        "by sorting (FANS) or gradients from wild-type plants "
         "count. Leave it out if any of these apply: (genotype) a mutant, knockout, "
         "knockdown, transgenic, overexpression, reporter or edited line, including INTACT "
         "or other tagged lines used to purify nuclei, or another accession, ecotype, "
-        "cultivar or hybrid; (treatment) a treatment, stress, infection, hormone, chemical "
-        "or an altered growth condition; (assay) not bulk ATAC-seq: single-cell or "
+        "cultivar or hybrid; (assay) not bulk ATAC-seq: single-cell or "
         "single-nucleus ATAC, ChIP-seq, MNase-seq, DNase-seq, input or genomic DNA, "
         "RNA-seq or another assay in the study; (tissue) protoplasts, cell culture or "
-        "callus. The untreated, mock or wild-type {genotype} control of a treatment or "
-        "mutant experiment is kept. When the metadata does not say enough to decide, "
-        "answer uncertain rather than guess."
+        "callus. The wild-type {genotype} control of a mutant experiment is kept. When the "
+        "metadata does not say enough to decide, answer uncertain rather than guess."
     ),
     "tss-seq": (
         "Keep a run only if it maps 5' capped transcription start sites (CAGE, nanoCAGE, "
         "TSS-seq or oligo-capping, PEAT, STRIPE-seq, RAMPAGE, Smar2C2, csRNA-seq) in the "
-        "reference genotype {genotype} under control or untreated conditions, from any "
-        "tissue, organ, stage or time point. Leave it out if any of these apply: "
+        "reference genotype {genotype}, from any tissue, organ, stage, time point or "
+        "condition: treated, stressed or infected samples are kept (the build records their "
+        "treatment). Leave it out if any of these apply: "
         "(genotype) a mutant, knockout, knockdown, transgenic, overexpression, reporter or "
-        "edited line, or another accession, ecotype, cultivar or hybrid; (treatment) a "
-        "treatment, stress, infection, hormone, chemical or an altered growth condition; "
+        "edited line, or another accession, ecotype, cultivar or hybrid; "
         "(assay) not cap-selected TSS mapping: nanoPARE or other methods that also capture "
         "uncapped 5' ends, NAD-RNA capture, TIF-seq, cap-less or no-enzyme control "
         "libraries, polysome or subcellular fractions, the small RNA input of csRNA-seq, "
         "RNA-seq or another assay in the study; (tissue) protoplasts, cell culture or "
-        "callus. The untreated, mock or wild-type {genotype} control of a treatment or "
-        "mutant experiment is kept. When the metadata does not say enough to decide, "
-        "answer uncertain rather than guess."
+        "callus. The wild-type {genotype} control of a mutant experiment is kept. When the "
+        "metadata does not say enough to decide, answer uncertain rather than guess."
     ),
     "dap-seq": (
         "Keep a run only if it is a DAP-seq or ampDAP-seq library on {genotype} genomic "
@@ -331,8 +329,8 @@ class Settings:
 
 def eligible(reason: str) -> bool:
     """Runs whose decision rests on free text: kept runs (the model may find a mutant or
-    treatment the rules missed) and runs the title rule left out (the model may find an
-    untreated or wild-type control). Runs left out on structured fields stay as they are."""
+    another assay the rules missed) and runs the title rule left out (the model may find a
+    wild-type control). Runs left out on structured fields stay as they are."""
     return not reason or reason.startswith(TITLE_RULE)
 
 

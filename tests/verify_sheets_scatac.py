@@ -64,11 +64,31 @@ def check_structure() -> None:
     }
     for lengths, expected in cases.items():
         assert scatac.run_structure(sra_run("SRR1", *lengths)) == expected, lengths
-    for lengths in ((150, 150), (28, 151), (10, 10, 28, 88), (107, 106, 28), (16, 16, 50, 50)):
+    chemistry, why = scatac.run_structure(sra_run("SRR1", 150, 150))
+    assert not chemistry and why.startswith("no barcode read in SRA"), why
+    for lengths in ((28, 151), (10, 10, 28, 88), (107, 106, 28), (16, 16, 50, 50)):
         chemistry, why = scatac.run_structure(sra_run("SRR1", *lengths))
-        assert not chemistry and why.startswith("no 10x barcode read"), (lengths, why)
+        assert not chemistry and "not a 10x chemistry the workflow reads" in why, (lengths, why)
+    # issue #14: sci-ATAC's 28-base combinatorial index is named, not called missing
+    assert "barcode read of 28 bases" in scatac.run_structure(sra_run("SRR1", 107, 106, 28))[1]
     assert scatac.run_structure(SraRun("SRR1", 0)) == ("", "no reads in SRA (not loaded)")
     assert scatac.run_structure(sra_run("SRR1", 23.8, 50.2, 49.9))[0] == "10x-multiome-atac"
+    # issue #14: a library mixing chemistries keeps the runs of the one with most spots
+    library = scatac.Library(
+        experiments=[
+            experiment(
+                "SRX1",
+                sra_run("SRR1", 8, 24, 150, 150, spots=900),
+                sra_run("SRR2", 8, 16, 150, 150, spots=100),
+                sra_run("SRR3", 150, 150, spots=50),
+            )
+        ]
+    )
+    structures = [scatac.run_structure(run) for run in library.all_runs]
+    assert scatac.keep_main_chemistry(library, structures) == "10x-multiome-atac"
+    assert [run.accession for run in library.runs] == ["SRR1"], library.dropped
+    assert "10x-atac-v1" in library.dropped["SRR2"]
+    assert library.dropped["SRR3"].startswith("no barcode read in SRA")
     print("PASS 10x read structure, chemistry and whitelist")
 
 
@@ -149,7 +169,8 @@ def check_reasons() -> None:
     ]
     libraries = {lib.lead.accession: lib for lib in scatac.metadata(AT, study, scatac.Decisions())}
     assert not libraries["SRX0"].reason and not libraries["SRX1"].reason
-    assert libraries["SRX2"].reason.startswith("treatment in titles: no mock/untreated marker")
+    # issue #13: treated libraries are kept; their treatment is recorded, not a reason
+    assert not libraries["SRX2"].reason, libraries["SRX2"].reason
     assert libraries["SRX0"].sample_id == "SRP1_root_control_rep1", libraries["SRX0"].sample_id
     print("PASS reasons: not ATAC, single-cell hints, mixed pools, within-study titles")
 
@@ -261,6 +282,7 @@ def check_build() -> None:
             "SRR20184262",
             "SRR24921616",
             "SRR24921615",
+            "SRR24921614",  # treated: kept and recorded (issue #13)
             "SRR38507149",
             "SRR12712405",
         }, (sorted(kept), reasons)
@@ -270,7 +292,6 @@ def check_build() -> None:
         assert kept["SRR12712405"]["reference_genes"] == "Athaliana_447_Araport11.genes.bed"
         expected = {
             "SRR14420340": "same library as SRX16219133, submitted as BAM without the barcode read",
-            "SRR24921614": "treatment in titles",
             "SRR38507144": "mixed instruments: first reads from M02100",
             "SRR38507152": "mixed-species pool",
             "SRR37841654": "not ATAC (snCUT&Tag)",
@@ -279,7 +300,7 @@ def check_build() -> None:
         }
         for run, reason in expected.items():
             assert reasons[run].startswith(reason), (run, reasons[run])
-        assert summary["in_sheet"] == 6 and summary["runs_in_sheet"] == 9, summary
+        assert summary["in_sheet"] == 7 and summary["runs_in_sheet"] == 10, summary
         assert qc["SRR38507144"]["instruments"] == "A00178x10,M02100x3"
         # A rebuild reads only the cache.
         again = scatac.Options(cache=root / "cache", dump=fixture_dump)

@@ -117,6 +117,8 @@ def main() -> None:
                 "traps:",
                 "  - {id: trimmed, species: At, workflow: dap-seq, runs: [SRR103],",
                 "     expect: excluded, reason_class: files}",
+                "  - {id: qc-value, species: At, workflow: dap-seq, runs: [SRR103],",
+                "     expect: excluded, qc: {reason_left_out: nope}}",
                 "  - {id: dap-word, species: At, workflow: dap-seq, runs: [SRR104],",
                 "     expect: excluded, reason_class: assay}",
                 "  - {id: paired, species: At, workflow: dap-seq, runs: [SRR102],",
@@ -135,13 +137,15 @@ def main() -> None:
             load_runs_qc(candidate_qc),
         )
         outcome = {item["id"]: item["problems"] for item in checked["results"]}
+        reason = load_runs_qc(candidate_qc)["SRR103"]["reason_left_out"]
         assert outcome == {
             "trimmed": [],
+            "qc-value": [f"SRR103: runs-qc reason_left_out={reason!r}, expected 'nope'"],
             "dap-word": ["SRR104: included"],
             "paired": ["SRR102: layout='single', expected 'paired'"],
             "unseen": ["SRR999: not seen"],
         }, outcome
-        assert checked["passed"] == 1 and checked["checked"] == 4
+        assert checked["passed"] == 1 and checked["checked"] == 5
         print("PASS traps: outcome, reason class, fields, not-seen runs, workflow filter")
 
         history = root / "HISTORY.md"
@@ -175,7 +179,7 @@ def main() -> None:
         assert json.loads(output)["traps"]["passed"] == 1
         lines = history.read_text().splitlines()
         assert lines[0].startswith("| Date |") and len(lines) == 4, lines
-        assert lines[-1].endswith("| At | dap-seq | fixture | 0.6 | 1.0 | 0.6667 | 1/4 |"), lines
+        assert lines[-1].endswith("| At | dap-seq | fixture | 0.6 | 1.0 | 0.6667 | 1/5 |"), lines
         print("PASS CLI score and history rows")
 
 

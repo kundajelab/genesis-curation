@@ -11,7 +11,7 @@ Reasons are checked in this order; the first that applies is recorded:
     workflow needs read 2; layout comes from the served files, as in files.py);
  4. not bulk ATAC: single-cell source, ChIP/DNase/MNase selection, or the titles name a
     control or another assay (classify.ATAC_ASSAY);
- 5. genotype is not the reference; 6. treated or another condition (classify.ATAC_TREATED);
+ 5. genotype is not the reference; 6. (treated samples are kept and recorded, issue #13);
  7. a curated exception (data/exceptions.yaml);
  8. within-study title rules (classify.StudyTitles);
  9. reads (measure/atac.py, first 200,000 pairs mapped with chromap): not measured, mapped
@@ -264,7 +264,6 @@ def metadata(
         item.reason = first_reason(
             classify.atac_assay_flag(run, sample.title),
             "" if classify.is_reference(value) else f"genotype: {value.genotype}",
-            "" if classify.is_untreated(value) else f"treatment: {value.treatment}",
             curated.get(run["run_accession"], ""),
             titles[run["study_accession"]].flag(run),
         )

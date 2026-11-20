@@ -12,9 +12,12 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
+from functools import cache
+
+import yaml
 
 from .archives import Run, Sample
-from .species import Species
+from .species import DATA, Species
 
 SHORT_READ = {"ILLUMINA", "DNBSEQ", "BGISEQ", "ELEMENT"}
 EMPTY = {"missing", "not applicable", "n/a", "na", "-", "not collected", "not provided"}
@@ -165,16 +168,6 @@ TRANSGENE = re.compile(
 )
 # Within-study title rules (from the ATAC curation): markers other titles of the study use.
 TITLE_WILD_TYPE = r"(?<![a-z])(wt|wild[- ]?type|wildtype)(?![a-z])"
-TITLE_CONTROL = re.compile(
-    r"(?<![a-z])(control|cont|ctrl|mock|untreated|uncut|normal|0 ?(h|d|w|min|hr|day)|day ?0|t0)"
-    r"(?![a-z])",
-    re.I,
-)
-TITLE_TREATMENT = re.compile(
-    r"(?<![a-z])(heat|cold|drought|salt|nacl|aba|mej?a|dark|blue|red|far-red|uv|lethal|recovery|"
-    r"stress|treat\w*|infect\w*|cim|sim|dex|\d+ ?(h|hr|hpi|dpi|min))(?![a-z])",
-    re.I,
-)
 TITLE_MUTANT = re.compile(
     r"(?<![a-z])(mutant|gfp|rfp|yfp|ntf|intact|knock-?out|overexpress\w*|oe)(?![a-z])", re.I
 )
@@ -330,6 +323,10 @@ def classify_sample(
         ),
         "not stated",
     )
+    curated = curated_treatment(species.folder, run)
+    if curated:
+        treatment = "treated"
+        treatment_text = joined(curated, treatment_text)
     return SampleClass(
         genotype=genotype,
         treatment=treatment,
@@ -340,12 +337,27 @@ def classify_sample(
     )
 
 
+@cache
+def curated_treatments(folder: str) -> dict[str, str]:
+    """data/treatments.yaml for one species: run or study accession -> treatment."""
+    data = yaml.safe_load((DATA / "treatments.yaml").read_text()) or {}
+    table: dict[str, str] = {}
+    for entry in data.get(folder) or []:
+        for key in entry.get("runs") or [entry["study"]]:
+            table[key] = entry["treatment"]
+    return table
+
+
+def curated_treatment(folder: str, run: Run) -> str:
+    """A treatment that only the study text states, from data/treatments.yaml, or ''."""
+    table = curated_treatments(folder)
+    return table.get(run.get("run_accession", ""), "") or table.get(
+        run.get("study_accession", ""), ""
+    )
+
+
 def is_reference(value: SampleClass) -> bool:
     return value.genotype.startswith("reference")
-
-
-def is_untreated(value: SampleClass) -> bool:
-    return value.treatment in ("control / untreated", "not stated")
 
 
 def titles(run: Run) -> str:
@@ -396,7 +408,7 @@ def states_wild_type(genotype: str) -> bool:
 
 
 def transgene_flag(run: Run, reference: re.Pattern[str], genotype: str = "") -> str:
-    """A transgene, mutant or treatment word in the run's titles. Titles often describe the
+    """A transgene or mutant word in the run's titles. Titles often describe the
     whole study ("RNA-seq of rog mutants"), so a title word does not count when:
     - the sample's own genotype field (`genotype`) says wild type and names no transgene;
     - it is found only in the experiment title and the sample title names the reference or
@@ -412,7 +424,7 @@ def transgene_flag(run: Run, reference: re.Pattern[str], genotype: str = "") -> 
     if sample and not study and reference.search(sample_title):
         sample = None if reference.search(experiment_title) else sample
     match = sample or (study if not reference.search(sample_title) else None)
-    return f"title suggests a transgene, mutant or treatment ({match.group(1)})" if match else ""
+    return f"title suggests a transgene or mutant ({match.group(1)})" if match else ""
 
 
 def title_label(run: Run) -> str:
@@ -423,8 +435,8 @@ def title_label(run: Run) -> str:
 
 class StudyTitles:
     """Within-study title rules: a run is flagged when other titles of its study carry a
-    wild-type or control marker that its own title lacks, or when its own title names a
-    treatment (without a control marker) or a mutant/transgene."""
+    wild-type marker that its own title lacks, or when its own title names a mutant or
+    transgene. Treatments are kept (issue #13): they are recorded, not left out."""
 
     def __init__(
         self,
@@ -438,25 +450,16 @@ class StudyTitles:
         self.label = label
         labels = [label(run) for run in study_runs]
         self.study_wild_type = any(self.wild_type.search(label) for label in labels)
-        self.study_control = any(TITLE_CONTROL.search(label) for label in labels)
 
     def flag(self, run: Run) -> str:
         label = self.label(run)
-        control = TITLE_CONTROL.search(label)
         reasons = []
         if self.study_wild_type and not self.wild_type.search(label):
             reasons.append("no wild-type marker, which other titles of the study have")
-        if self.study_control and not control:
-            reasons.append("no mock/untreated marker, which other titles of the study have")
-        treatment = TITLE_TREATMENT.search(label)
-        if treatment and not control:
-            reasons.append(f"names a treatment ({treatment.group(1)})")
         mutant = TITLE_MUTANT.search(label)
         if mutant:
             reasons.append(f"names a mutant or transgene ({mutant.group(1)})")
-        return (
-            "sample title suggests a mutant or treatment: " + "; ".join(reasons) if reasons else ""
-        )
+        return "sample title suggests a mutant: " + "; ".join(reasons) if reasons else ""
 
 
 def tissue_label(tissue: str) -> str:

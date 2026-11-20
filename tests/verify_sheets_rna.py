@@ -12,11 +12,13 @@ from email.message import Message
 from pathlib import Path
 from urllib.error import HTTPError
 
+import yaml
 from helpers import rejects
 
 from genesis_curation.sheets import classify, files, rna, species, writers
 from genesis_curation.sheets.archives import Archive, Sample
 from genesis_curation.sheets.measure import duplicates, strand
+from genesis_curation.sheets.species import DATA
 from genesis_curation.sheets.tables import load_runs_qc, load_sheet
 
 FIXTURES = Path(__file__).resolve().parent / "fixtures" / "sheets-rna"
@@ -130,8 +132,14 @@ def check_assays() -> None:
     ]
     rule = classify.StudyTitles(AT, study)
     assert rule.flag(study[0]) == ""
-    assert "names a treatment (heat)" in rule.flag(study[1])
+    assert rule.flag(study[1]) == ""  # issue #13: treatment is recorded, not a reason
     assert "no wild-type marker" in rule.flag(study[2])
+    # issue #13: a treatment stated only in the study text comes from data/treatments.yaml
+    treated = run(run_accession="DRR737566", study_accession="PRJDB36269")
+    assert "nitrogen deprivation" in classify.curated_treatment("Oryza_sativa", treated)
+    assert classify.curated_treatment("Oryza_sativa", run(run_accession="DRR1")) == ""
+    for folder, entries in yaml.safe_load((DATA / "treatments.yaml").read_text()).items():
+        assert all(e.get("why") and e.get("treatment") for e in entries), folder
     print("PASS assay flags (lookarounds, not \\b), transgene and within-study title rules")
 
 

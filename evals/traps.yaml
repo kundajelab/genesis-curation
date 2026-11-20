@@ -1,7 +1,8 @@
 # Known traps from earlier curation rounds. Each one is checked by `genesis sheets score`
 # against the candidate sheet and runs-qc table for the same species and workflow.
 # expect: included | excluded. Optional: reason_class (see sheets/score.py REASON_CLASSES)
-# for excluded runs, fields (sheet values) for included runs.
+# for excluded runs, fields (sheet values) for included runs, qc (runs-qc values) for any run.
+# Treated samples are kept and their treatment recorded in runs-qc (issue #13).
 traps:
   - id: dap-trimmed-uploads
     species: Arabidopsis_thaliana
@@ -259,13 +260,13 @@ traps:
     why: >-
       Four libraries (control and case, two replicates) share one BioSample; their titles
       differ by more than a lane, so they stay separate rows (SRP443792).
-  - id: scatac-case-without-control-marker
+  - id: scatac-case-library-is-kept
     species: Arabidopsis_thaliana
     workflow: scatac-reads
     runs: [SRR24921614, SRR24921613]
-    expect: excluded
-    reason_class: treatment
-    why: '"case" libraries lack the control marker of the study''s other titles (SRP443792).'
+    expect: included
+    qc: {treatment: treated}
+    why: '"case" libraries are treated samples; they are kept and recorded as treated (SRP443792).'
   - id: scatac-bam-resubmission
     species: Arabidopsis_thaliana
     workflow: scatac-reads
@@ -314,13 +315,15 @@ traps:
     why: >-
       SRA gives no genotype for SRP474955; the paper's Methods give BTx623
       (data/scatac.yaml). Time point 0 h of de-etiolation is the untreated sample.
-  - id: scatac-light-time-course
+  - id: scatac-light-time-course-is-kept
     species: Sorghum_bicolor
     workflow: scatac-reads
     runs: [SRR26989939, SRR26990003]
-    expect: excluded
-    reason_class: treatment
-    why: 12 h of light (de-etiolation) is a treatment; only titles say so (SRP474955).
+    expect: included
+    qc: {treatment: treated}
+    why: >-
+      12 h of light (de-etiolation) is a treatment; only titles say so. Kept and recorded
+      as treated (SRP474955; issue #13).
   - id: tss-unsupported-5p-methods
     species: Arabidopsis_thaliana
     workflow: tss-seq
@@ -397,12 +400,12 @@ traps:
     why: >-
       The sample protocol states the growth photoperiod ("16 hr light") and a kit name with
       "Index"; neither is a treatment (bare light/dark and "dex" inside a word misfire).
-  - id: atac-treatment-only-in-sample-alias
+  - id: atac-treatment-only-in-sample-alias-recorded
     species: Arabidopsis_thaliana
     workflow: atac-seq
     runs: [SRR13131332, SRR13131333]
-    expect: excluded
-    reason_class: treatment
+    expect: included
+    qc: {treatment: treated}
     why: >-
       Cold-treatment runs (PRJNA680653) whose titles say only "4C"; the sample alias
       (ATACseq_Cold_4C_Rep2) names the treatment.
@@ -424,21 +427,21 @@ traps:
     why: >-
       Runs only the metadata-sheet tab lists: a GSA run (files on a GSA download server,
       mates named _f1/_r2) and an INSDC run submitted as Tn-Seq.
-  - id: rna-growth-protocol-names-a-deficit
+  - id: rna-growth-protocol-deficit-recorded
     species: Sorghum_bicolor
     workflow: rna-seq
     runs: [SRR15558345, SRR15558350]
-    expect: excluded
-    reason_class: treatment
+    expect: included
+    qc: {treatment: treated}
     why: >-
       BioSample treatment says "No treatment" while growth_protocol says "Phosphorous
       deficit" or "Nitrogen deficit" (PRJNA746310, aliases Sorghum_Pdep and Sorghum_Ndep).
-  - id: rna-stage-after-infestation
+  - id: rna-stage-after-infestation-recorded
     species: Sorghum_bicolor
     workflow: rna-seq
     runs: [SRR26087204, SRR26087207]
-    expect: excluded
-    reason_class: treatment
+    expect: included
+    qc: {treatment: treated}
     why: >-
       The only treatment is in dev_stage: "4 days after aphid infestation" (PRJNA1009505).
   - id: rna-bare-mt-genotype

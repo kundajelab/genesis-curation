@@ -94,7 +94,7 @@ Run `genesis sheets build --help` for the full list.
 ## Metadata review with a model (RNA-seq, optional)
 
 The rules decide most runs from archive fields. Two groups rest on free text: runs the rules
-kept, and runs left out only because the sample title suggests a mutant or treatment. With
+kept, and runs left out only because the sample title suggests a mutant. With
 `--adjudicate RUNTIME`, a model configured in that runtime (`genesis workspace provider`)
 reads each study's text and these runs' sample metadata, and answers keep, leave or uncertain
 for each run, quoting the metadata it relied on.
@@ -106,7 +106,8 @@ genesis sheets build --workflow rna-seq --species Sorghum_bicolor --out sb-rna-r
 ```
 
 - **keep** clears a title-rule reason; **leave** leaves the run out with the reason
-  `metadata review: <class>` (genotype, treatment, tissue, assay, qc or other).
+  `metadata review: <class>` (genotype, tissue, assay, qc or other). Treated samples are
+  kept, not left out.
 - **uncertain**, a failed call, or an answer whose quotes are not in the metadata keeps the
   rules' decision.
 - Runs left out by any other rule are never sent. `--adjudicate-limit` (default 2000) stops
@@ -143,6 +144,7 @@ Some decisions cannot be made from archive metadata or reads. They live in data 
 | --- | --- |
 | `species.yaml` | Per-species settings (see above) |
 | `exceptions.yaml` | Runs to leave out of RNA or ATAC sheets, with a reason |
+| `treatments.yaml` | Treatments stated only in a study description, recorded in runs-qc (treated samples are kept) |
 | `tss.yaml` | TSS method or exclusion for studies the archive describes wrongly |
 | `dap_studies.yaml` | DAP studies whose libraries and controls need explicit pairing rules |
 | `scatac.yaml` | scATAC libraries to merge, mark as duplicates or exclude |

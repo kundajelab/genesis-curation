@@ -11,7 +11,7 @@ order; the first that applies is recorded:
     or nothing names a TSS method); the method comes from the run's text, then the study title,
     then a CAGE library selection, then a per-study entry in `data/tss.yaml`;
  4. genotype (sample attributes, alleles and mutants in titles, or a missing wild-type marker
-    that other titles of the study carry); 5. treatment named in the titles or attributes;
+    that other titles of the study carry); 5. (treated samples are kept, issue #13);
  6. a per-study exclusion in `data/tss.yaml`; 7. read files (files.py; the method's mates);
  8. duplicate submission of another kept run (same first reads);
  9. TSS signal of the first 20,000 reads at the chosen trim: at least 10,000 reads sampled,
@@ -122,16 +122,6 @@ CAP_LESS = re.compile(
     L + r"cap[-_ ]?less|no[-_ ]?cap|minus[-_ ]?cap|without[-_ ]cap|non[-_ ]?cap\w*" + R, re.I
 )
 RNA_SEQ = re.compile(L + r"m?rna-?seq\w*|rna-?sequencing|transcriptome" + R, re.I)
-# Treatments in titles. Light and dark conditions of photomorphogenesis studies count only by
-# colour (the dark or white-light samples are the controls), and only minutes count as a time
-# point (hours in seed and seedling titles are developmental stages).
-TREATMENT = re.compile(
-    L + r"heat|cold|chill\w*|freez\w*|drought|dehydrat\w*|salt|nacl|osmotic|mannitol|aba|"
-    r"mej?a|jasmon\w*|salicyl\w*|flg22|elf18|pamp|chitin|infect\w*|inocul\w*|pathogen|"
-    r"blue|red|far-?red|uv-?[ab]?|high-?light|stress\w*|treat\w*|\d+ ?min" + R,
-    re.I,
-)
-CONTROL = re.compile(L + r"mock|control|untreated|0 ?min" + R, re.I)
 SUFFIX_STRATEGY = re.compile(r"\s+(rna-seq|other|ncrna-seq|mirna-seq|cloneend|fl-cdna)\s*$", re.I)
 
 
@@ -277,12 +267,6 @@ class StudyTitles:
         return ""
 
 
-def treatment(text: str) -> str:
-    """A treatment named in titles or a treatment attribute, unless a control is named too."""
-    found = TREATMENT.search(text)
-    return f"treatment: {found.group(1)}" if found and not CONTROL.search(text) else ""
-
-
 def genotype_reason(species: Species, value: classify.SampleClass, text: str) -> str:
     """The sample's genotype class, where a line derived from the reference genotype (such as
     a cell line) counts as the reference and a genotype nobody states leaves the run out."""
@@ -353,8 +337,6 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
                     for reason in (
                         genotype_reason(species, value, text),
                         titles[item.study].genotype(text),
-                        treatment(text),
-                        treatment(value.treatment_text),
                         entry.get("reason", "")
                         if not entry.get("runs") or run["run_accession"] in entry["runs"]
                         else "",

@@ -1,0 +1,25 @@
+# Treatments that sample records do not state (the study description or paper does). These
+# runs are kept, like every treated sample (issue #13); the treatment is recorded in the
+# runs-qc table's treatment columns and in the curated metadata. Without `runs`, an entry
+# applies to every run of the study.
+Sorghum_bicolor:
+  - study: PRJNA1173527
+    runs: [SRR31020447]
+    treatment: plasma activated water
+    why: >-
+      Sample PAW100, study "Plasma Activated Water (PAW)-treated Sorghum seedlings"; the
+      study's other run is its control. Found by the model review of 2026-11-19.
+Oryza_sativa:
+  - study: PRJDB36269
+    runs: [DRR737566, DRR737567, DRR737568, DRR737569, DRR737570, DRR737571, DRR737572, DRR737573, DRR737574, DRR737575, DRR737576, DRR737577, DRR737578, DRR737579, DRR737580, DRR737581, DRR737582, DRR737583, DRR737584, DRR737585, DRR737586, DRR737587, DRR737588, DRR737589, DRR737590, DRR737591]
+    treatment: nitrogen deprivation, then ammonium nitrate resupply (0-120 min)
+    why: >-
+      The study description says every root sample was grown under N-deprived pretreatment
+      and resupplied with ammonium nitrate (time series 0 to 120 min); the sample records
+      state no treatment.
+  - study: PRJDB38614
+    runs: [DRR827033, DRR827034, DRR827035, DRR827036]
+    treatment: drought (DT) or rehydration after drought (DTR)
+    why: >-
+      The study is a drought-rehydration cycle (PRJCA038069); titles mark CK (control), DT
+      (drought) and DTR (rehydration).

@@ -85,9 +85,6 @@ def check_methods() -> None:
         AT,
     )
     assert text == "TSS-seq rep1", text
-    assert tss.treatment("Germinating seed, 26h light, rep1") == ""
-    assert tss.treatment("WT_cold_rep1").startswith("treatment: cold")
-    assert tss.treatment("Blue 30 min | control") == ""
     titles = tss.StudyTitles(AT, ["Col-0 TSS rep1", "abc1 TSS rep1", "x TSS rep1"])
     assert titles.genotype("Col-0 TSS rep1") == ""
     assert "no wild-type marker" in titles.genotype("x TSS rep1")
@@ -274,7 +271,7 @@ def check_build() -> None:
             "DRR221901": "RNA-seq run",
             "SRR10030449": "study is RNA-seq",
             "DRR095142": "genotype: mutant",
-            "SRR7772739": "treatment: cold",
+            "SRR7772739": "TSS signal not measured",  # cold-treated, kept on metadata (#13)
             "SRR2102806": "few uniquely mapped",
             "SRR2097904": "no TSS signal",
             "SRR27227855": "TSS signal not measured",
