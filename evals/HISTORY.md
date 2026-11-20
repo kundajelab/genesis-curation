@@ -49,3 +49,11 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-19 | Arabidopsis_thaliana | rna-seq | metadata-only campaign, rules v3 (growth protocol, stage, bare MT, crosses) (rna-seq) | 0.9999 | 0.9999 | 1.0 | 13/13 |
 | 2026-11-19 | Arabidopsis_thaliana | scatac-reads | metadata-only campaign, rules v3 (growth protocol, stage, bare MT, crosses) (scatac-reads) | 1.0 | 1.0 | 1.0 | 9/9 |
 | 2026-11-19 | Arabidopsis_thaliana | tss-seq | metadata-only campaign, rules v3 (growth protocol, stage, bare MT, crosses) (tss-seq) | 1.0 | 1.0 | 1.0 | 8/8 |
+| 2026-11-20 | Sorghum_bicolor | atac-seq | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 1.0 | 1.0 | 1.0 | 3/3 |
+| 2026-11-20 | Sorghum_bicolor | dap-seq | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 1.0 | 1.0 | 1.0 | 1/1 |
+| 2026-11-20 | Sorghum_bicolor | rna-seq | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 0.412 | 0.9985 | 1.0 | 6/6 |
+| 2026-11-20 | Sorghum_bicolor | scatac-reads | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 0.5217 | 1.0 | 1.0 | 2/2 |
+| 2026-11-20 | Arabidopsis_thaliana | atac-seq | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 0.5843 | 1.0 | 1.0 | 2/2 |
+| 2026-11-20 | Arabidopsis_thaliana | dap-seq | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 0.9597 | 1.0 | 1.0 | 11/11 |
+| 2026-11-20 | Arabidopsis_thaliana | scatac-reads | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 0.56 | 1.0 | 1.0 | 9/9 |
+| 2026-11-20 | Arabidopsis_thaliana | tss-seq | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 0.6667 | 1.0 | 1.0 | 8/8 |
