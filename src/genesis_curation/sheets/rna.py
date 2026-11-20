@@ -125,7 +125,9 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
             run = item.run
             # Classify each run: one BioSample can hold both control and treated runs,
             # told apart only by their experiment titles (PRJNA990533).
-            value = classify.classify_sample(species, sample, run)
+            value = titles[run["study_accession"]].record(
+                classify.classify_sample(species, sample, run), run
+            )
             study = run["study_accession"] or accession
             item.sample = value
             item.sample_id = (

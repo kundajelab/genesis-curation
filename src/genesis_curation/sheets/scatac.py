@@ -385,7 +385,10 @@ def metadata(
     titles = {study: classify.StudyTitles(species, runs) for study, runs in by_study.items()}
     for library in libraries:
         lead = library.lead
-        library.sample = classify_library(species, library, chosen.studies.get(lead.study, {}))
+        decided = chosen.studies.get(lead.study, {})
+        library.sample = classify_library(species, library, decided)
+        if lead.study in titles and "treatment" not in decided:
+            library.sample = titles[lead.study].record(library.sample, lead.run_fields())
         structures = [run_structure(run) for run in library.all_runs]
         chemistry = {c for c, _ in structures}
         library.chemistry = (

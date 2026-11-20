@@ -133,6 +133,18 @@ def check_assays() -> None:
     rule = classify.StudyTitles(AT, study)
     assert rule.flag(study[0]) == ""
     assert rule.flag(study[1]) == ""  # issue #13: treatment is recorded, not a reason
+    plain = classify.SampleClass("reference (Col-0)", "not stated", "leaf")
+    assert rule.record(plain, study[1]).treatment_text == "title: heat"
+    assert rule.record(plain, study[0]) == plain
+    cases = classify.StudyTitles(
+        AT, [run(sample_title="Col-0,control,rep1"), run(sample_title="Col-0,case,rep1")]
+    )
+    assert cases.record(plain, run(sample_title="Col-0,case,rep1")).treatment == "treated"
+    hours = classify.StudyTitles(
+        AT, [run(sample_title="seedling_0h_rep1"), run(sample_title="seedling_12h_rep1")]
+    )
+    assert hours.treatment(run(sample_title="seedling_12h_rep1")) == "title: 12h"
+    assert hours.treatment(run(sample_title="seedling_0h_rep1")) == ""
     assert "no wild-type marker" in rule.flag(study[2])
     # issue #13: a treatment stated only in the study text comes from data/treatments.yaml
     treated = run(run_accession="DRR737566", study_accession="PRJDB36269")

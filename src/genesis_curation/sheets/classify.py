@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import re
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from functools import cache
 
 import yaml
@@ -433,10 +433,24 @@ def title_label(run: Run) -> str:
     )
 
 
+TITLE_CONTROL = re.compile(
+    r"(?<![a-z])(control|cont|ctrl|ck\d*|mock|untreated|normal|0 ?(h|d|w|min|hr|day)|day ?0|t0)"
+    r"(?![a-z])",
+    re.I,
+)
+TITLE_TREATMENT = re.compile(
+    r"(?<![a-z])(heat|cold|drought|salt|nacl|aba|mej?a|lethal|recovery|stress|treat\w*|"
+    r"infect\w*|case|\d+ ?(h|hr|hpi|dpi|min))(?![a-z])",
+    re.I,
+)
+
+
 class StudyTitles:
     """Within-study title rules: a run is flagged when other titles of its study carry a
     wild-type marker that its own title lacks, or when its own title names a mutant or
-    transgene. Treatments are kept (issue #13): they are recorded, not left out."""
+    transgene. Treatments are kept (issue #13): `record` adds a treatment that only the
+    titles show (a treatment word, or no control marker where the study's other titles
+    have one) to the run's sample class."""
 
     def __init__(
         self,
@@ -450,6 +464,31 @@ class StudyTitles:
         self.label = label
         labels = [label(run) for run in study_runs]
         self.study_wild_type = any(self.wild_type.search(label) for label in labels)
+        self.study_control = any(TITLE_CONTROL.search(label) for label in labels)
+
+    def treatment(self, run: Run) -> str:
+        """A treatment the titles show, or ''."""
+        label = self.label(run)
+        if TITLE_CONTROL.search(label):
+            return ""
+        named = TITLE_TREATMENT.search(label)
+        if named:
+            return f"title: {named.group(1)}"
+        return (
+            "title lacks the control marker of the study's other titles"
+            if (self.study_control)
+            else ""
+        )
+
+    def record(self, value: SampleClass, run: Run) -> SampleClass:
+        """The sample class with a treatment from the titles added, when the sample record
+        states none."""
+        found = self.treatment(run) if value.treatment != "treated" else ""
+        if not found:
+            return value
+        return replace(
+            value, treatment="treated", treatment_text=joined(found, value.treatment_text)
+        )
 
     def flag(self, run: Run) -> str:
         label = self.label(run)

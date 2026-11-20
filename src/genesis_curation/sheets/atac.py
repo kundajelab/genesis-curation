@@ -256,6 +256,7 @@ def metadata(
             label(run)
         ):
             value = replace(value, genotype=f"reference ({species.reference_genotype})")
+        value = titles[run["study_accession"]].record(value, run)
         item.sample = value
         study = run["study_accession"] or accession
         item.sample_id = f"{study}_{classify.tissue_label(value.tissue)}_{run['run_accession']}"

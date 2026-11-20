@@ -319,11 +319,15 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
     for item in candidates:
         by_study[item.study].append(run_text(item.run, species))
     titles = {study: StudyTitles(species, texts) for study, texts in by_study.items()}
+    study_runs: dict[str, list[Run]] = defaultdict(list)
+    for item in candidates:
+        study_runs[item.study].append(item.run)
+    treated = {study: classify.StudyTitles(species, runs) for study, runs in study_runs.items()}
     for accession, items in by_sample.items():
         sample = samples.get(accession) or Sample(accession, missing=True)
         for item in items:
             run = item.run
-            value = classify.classify_sample(species, sample, run)
+            value = treated[item.study].record(classify.classify_sample(species, sample, run), run)
             entry = table.get(item.study) or {}
             text = run_text(run, species)
             item.sample = value
