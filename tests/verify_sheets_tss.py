@@ -298,11 +298,50 @@ def check_build() -> None:
     print("PASS offline build from recorded ENA responses with reused TSS signal")
 
 
+def check_tab_runs() -> None:
+    """Sheet-listed runs and experiments the search missed: fetched from ENA in batches of
+    one accession kind, deduplicated, and a reason for each one ENA does not serve."""
+    at = species.load("Arabidopsis_thaliana")
+    batches: list[list[str]] = []
+
+    def fetch(url: str, data: bytes | None) -> str:
+        from urllib.parse import parse_qs
+
+        form = parse_qs((data or b"").decode())
+        wanted = form["includeAccessions"][0].split(",")
+        assert len({a[2:3] == "X" for a in wanted}) == 1, wanted  # no mixed batch
+        batches.append(wanted)
+        header = "run_accession\texperiment_accession\ttax_id\n"
+        records = {"SRR2": "SRR2\tSRX2\t", "SRX3": "SRR3\tSRX3\t3702", "SRX2": "SRR2\tSRX2\t"}
+        return header + "".join(records[a] + "\n" for a in wanted if a in records)
+
+    with tempfile.TemporaryDirectory() as tmp:
+        tab = Path(tmp) / "tab.tsv"
+        tab.write_text(
+            "species\trun_accessions\texperiment_accession\n"
+            "Arabidopsis thaliana\tSRR1, SRR2\tSRX1\n"
+            "Arabidopsis thaliana\t\tSRX2\n"
+            "Arabidopsis thaliana\t\tSRX3\n"
+            "Arabidopsis thaliana\tSRR9\t\n"
+            "Arabidopsis thaliana\tCRR7\t\n"
+            "Sorghum bicolor\tSRR5\t\n"
+        )
+        archive = Archive(Path(tmp) / "cache", fetcher=fetch, attempts=1)
+        found, absent = tss.tab_runs(at, archive, tab, {"SRR1"}, lambda _: None)
+    assert sorted(run["run_accession"] for run in found) == ["SRR2", "SRR3"], found
+    assert absent == {"SRR9": tss.NOT_IN_ENA, "CRR7": tss.GSA_ONLY}, absent
+    assert sorted(map(sorted, batches)) == [["SRR2", "SRR9"], ["SRX2", "SRX3"]], batches
+    assert tss.other_species(at, {"tax_id": ""}) == ""  # ENA runs without taxonomy stay
+    assert tss.other_species(at, {"tax_id": "3701"}) == "other species (taxon 3701)"
+    print("PASS sheet-tab runs: one accession kind per ENA batch, reasons for unserved runs")
+
+
 def main() -> None:
     check_methods()
     check_read_structure()
     check_offsets()
     check_measure()
+    check_tab_runs()
     check_build()
 
 

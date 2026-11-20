@@ -6,8 +6,10 @@ for ATAC-seq, single-cell genomic libraries and single-cell ATAC terms, plus eve
 experiment of a study that holds a 10x-like run (mixed-species pools, BAM resubmissions,
 lanes in other experiments). An experiment is a candidate when it looks single-cell: a
 single-cell library source, a 16- or 24-base read, three or more reads per spot,
-single-cell words in its titles (or, for ATAC-seq, its study title), or a BioSample shared
-with such an experiment. Bulk ATAC-seq of two reads is not a candidate.
+single-cell words in its titles (or, for ATAC-seq, its study title), a BioSample shared
+with such an experiment, or a listing in a metadata-sheet tab (`--extra-runs`, see tabs.py).
+Bulk ATAC-seq of two reads is not a candidate. A listed run SRA does not serve (GSA runs) is
+recorded with that reason.
 
 Runs are grouped into libraries: one SRA experiment, merged with the other experiments of
 its study that share its BioSample and whose titles differ only by a lane or sample-index
@@ -40,7 +42,7 @@ import dataclasses
 import re
 import time
 from collections import Counter, defaultdict
-from collections.abc import Callable, Iterable, Sequence
+from collections.abc import Callable, Collection, Iterable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -52,6 +54,7 @@ from .archives import Archive, Run, SraExperiment, SraRun, sra_experiments, sra_
 from .classify import L, R
 from .measure import instruments
 from .species import DATA, Species
+from .tabs import is_gsa, tab_rows
 
 WORKFLOW = "scatac-reads"
 # Barcode read length -> (chemistry, whitelist), as workflows/scatac-reads.nf reads them.
@@ -81,11 +84,20 @@ TIME = re.compile(r"(?<![a-z0-9.])(\d+) ?(h|hr|hpi|d|dpi)(?![a-z])", re.I)
 CONTROL_WORD = re.compile(r"(?<![a-z])(mock|control|untreated)(?![a-z])", re.I)
 
 
+QC_FIELDS = (
+    "run", "study", "sample_id", "in_sheet", "reason_left_out", "experiments", "sra_runs",
+    "biosample", "spots", "read_lengths", "chemistry", "strategy", "source", "instruments",
+    "genotype", "treatment", "tissue", "genotype_text", "treatment_text", "titles",
+    "submitted_files",
+)  # fmt: skip
+
+
 @dataclass
 class Options:
     cache: Path
     probe: bool = True
     vdb_dump: str | None = None
+    extra_runs: Path | None = None
     dump: instruments.Dump | None = None  # replaces vdb-dump in tests
     timings: dict[str, float] = field(default_factory=dict)
 
@@ -225,28 +237,92 @@ def looks_single_cell(experiment: SraExperiment) -> bool:
     )
 
 
-def candidates(species: Species, found: Iterable[SraExperiment]) -> list[SraExperiment]:
-    """Experiments of the species (or pools naming it) that look single-cell, with the
-    experiments sharing their BioSample in the same study."""
+def candidates(
+    species: Species, found: Iterable[SraExperiment], listed: Collection[str] = ()
+) -> list[SraExperiment]:
+    """Experiments of the species (or pools naming it) that look single-cell or that the
+    metadata sheet lists, with the experiments sharing their BioSample in the same study."""
     mine = [e for e in found if species.has_taxon(e.taxon) or mixed_pool(species, e)]
-    chosen = {e.accession for e in mine if looks_single_cell(e)}
+    chosen = {
+        e.accession
+        for e in mine
+        if looks_single_cell(e) or e.accession in listed or listed_run(e, listed)
+    }
     samples = {(e.study, e.sample.accession) for e in mine if e.accession in chosen}
     chosen |= {e.accession for e in mine if (e.study, e.sample.accession) in samples}
     return sorted((e for e in mine if e.accession in chosen), key=lambda e: e.accession)
 
 
-def discover(species: Species, archive: Archive, log: Callable[[str], None]) -> list[SraExperiment]:
+def listed_run(experiment: SraExperiment, listed: Collection[str]) -> bool:
+    return any(run.accession in listed for run in experiment.runs)
+
+
+def tab_experiments(
+    archive: Archive, listed: Sequence[str], known: dict[str, SraExperiment]
+) -> list[SraExperiment]:
+    """SRA experiments of the accessions a sheet tab lists that the search missed."""
+    seen = set(known) | {run.accession for e in known.values() for run in e.runs}
+    wanted = [a for a in listed if a not in seen and not is_gsa(a)]
+    found: list[SraExperiment] = []
+    for start in range(0, len(wanted), 50):
+        term = " OR ".join(f"{a}[Accession]" for a in wanted[start : start + 50])
+        found += sra_experiments(archive, sra_search(archive, term))
+    return found
+
+
+def discover(
+    species: Species, archive: Archive, log: Callable[[str], None], extra: Path | None = None
+) -> tuple[list[SraExperiment], dict[str, dict[str, str]]]:
+    """Candidate experiments, and the tab rows of listed accessions SRA does not serve."""
     uids = sra_search(archive, SEARCH.format(organism=species.ncbi_organism))
     found = {e.accession: e for e in sra_experiments(archive, uids)}
     log(f"{species.folder}: {len(found)} SRA experiments from the search")
+    tab = tab_rows(extra, species) if extra else {}
+    for experiment in tab_experiments(archive, list(tab), found):
+        found.setdefault(experiment.accession, experiment)
     studies = sorted({e.study for e in found.values() if species.has_taxon(e.taxon) and ten_x(e)})
     for study in studies:
         for experiment in sra_experiments(archive, sra_search(archive, f"{study}[Accession]")):
             if experiment.study == study:
                 found.setdefault(experiment.accession, experiment)
-    chosen = candidates(species, found.values())
-    log(f"{species.folder}: {len(chosen)} candidate experiments in {len(studies)} 10x studies")
-    return chosen
+    chosen = candidates(species, found.values(), set(tab))
+    served = set(found) | {run.accession for e in found.values() for run in e.runs}
+    absent = {a: row for a, row in tab.items() if a not in served}
+    log(
+        f"{species.folder}: {len(chosen)} candidate experiments in {len(studies)} 10x studies;"
+        f" {len(tab)} tab accessions, {len(absent)} not in SRA"
+    )
+    return chosen, absent
+
+
+def absent_rows(absent: dict[str, dict[str, str]]) -> list[dict[str, str]]:
+    """runs-qc rows for accessions a sheet tab lists that SRA does not serve: GSA runs
+    have no SRA record of their read structure, so the chemistry cannot be checked."""
+    rows = []
+    for accession, row in sorted(absent.items()):
+        reason = (
+            "GSA run (listed in the metadata sheet): no SRA record of the read structure"
+            if is_gsa(accession)
+            else "not in SRA (listed in the metadata sheet)"
+        )
+        rows.append(
+            {
+                **dict.fromkeys(QC_FIELDS, ""),
+                "run": accession,
+                "study": row.get("study_accession", ""),
+                "in_sheet": "no",
+                "reason_left_out": reason,
+                "experiments": row.get("experiment_accession", ""),
+                "biosample": row.get("biosample", ""),
+                "spots": row.get("spots", ""),
+                "chemistry": "NA",
+                "instruments": "NA",
+                "titles": " | ".join(
+                    t for t in (row.get("library_name"), row.get("sample_title")) if t
+                )[:300],
+            }
+        )
+    return rows
 
 
 def lane_free(value: str) -> str:
@@ -452,7 +528,7 @@ def build(
 ) -> dict[str, Any]:
     started = time.monotonic()
     chosen = decisions(species)
-    experiments = discover(species, archive, log)
+    experiments, absent = discover(species, archive, log, options.extra_runs)
     libraries = metadata(species, experiments, chosen)
     options.timings["metadata_seconds"] = round(time.monotonic() - started, 1)
     started = time.monotonic()
@@ -461,6 +537,7 @@ def build(
     options.timings["probe_seconds"] = round(time.monotonic() - started, 1)
 
     rows, qc = sheet_rows(species, libraries)
+    qc += absent_rows(absent)
     if rows:
         writers.write_sheet(out / f"{WORKFLOW}.tsv", WORKFLOW, rows)
     else:

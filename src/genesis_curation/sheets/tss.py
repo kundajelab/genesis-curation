@@ -2,9 +2,11 @@
 
 Candidates are runs of the species whose library selection is CAGE or whose study, experiment
 or sample title or library name names a TSS method, plus every other run of those studies (so
-RNA-seq and control runs inside a TSS study are seen and explained). Reasons are checked in this
-order; the first that applies is recorded:
- 1. not short-read transcriptomic, or no sample accession;
+RNA-seq and control runs inside a TSS study are seen and explained), plus the runs of a
+metadata-sheet tab (`--extra-runs`, see tabs.py) that the search missed, such as ENA runs
+without taxonomy. Reasons are checked in this order; the first that applies is recorded:
+ 1. listed in the tab but not served by ENA; another species; not short-read
+    transcriptomic, or no sample accession;
  2. an unsupported 5'-end method (nanoPARE/degradome, NAD-RNA capture, TIF-seq, PEAT, nascent
     capped RNA, differential TSS RNA-seq) or a cap-less control library;
  3. no supported method (the run's own text names another assay such as RNA-seq or small RNA,
@@ -41,6 +43,7 @@ from .archives import RUN_FIELDS, Archive, Run, Sample
 from .measure import duplicates
 from .measure import tss as signal
 from .species import DATA, Species
+from .tabs import is_gsa, tab_rows
 
 WORKFLOW = "tss-seq"
 MIN_SAMPLED, MIN_UNIQUE, MIN_NEAR = 10_000, 0.2, 0.3
@@ -134,6 +137,7 @@ class Options:
     star_index: Path | None = None
     tools: signal.Tools | None = None
     probe_duplicates: bool = True
+    extra_runs: Path | None = None
     timings: dict[str, float] = field(default_factory=dict)
 
 
@@ -300,13 +304,60 @@ def discover(species: Species, archive: Archive, log: Callable[[str], None]) -> 
     return sorted(found.values(), key=lambda run: run["run_accession"])
 
 
-def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> list[Candidate]:
+NOT_IN_ENA = "not in ENA (listed in the metadata sheet)"
+GSA_ONLY = "GSA run (listed in the metadata sheet); not in ENA"
+
+
+def tab_runs(
+    species: Species, archive: Archive, extra: Path, known: set[str], log: Callable[[str], None]
+) -> tuple[list[Run], dict[str, str]]:
+    """ENA records of the runs a sheet tab lists that the search missed (ENA runs without
+    taxonomy among them), and a reason for each listed accession ENA does not serve."""
+    tab = tab_rows(extra, species)
+    wanted = [a for a in tab if a not in known and not is_gsa(a)]
+    fetched = {run["run_accession"]: run for run in archive.runs(wanted, FIELDS)}
+    found = [run for accession, run in fetched.items() if accession not in known]
+    served = {run["run_accession"] for run in found} | {
+        run.get("experiment_accession", "") for run in found
+    }
+    absent = {a: GSA_ONLY if is_gsa(a) else NOT_IN_ENA for a in tab if a not in known}
+    absent = {a: why for a, why in absent.items() if a not in served}
+    for accession in absent:
+        if accession.startswith(("SRX", "ERX", "DRX", "CRX")):
+            absent[accession] = absent[accession].replace("not in ENA", "no runs in ENA")
+    log(
+        f"{species.folder}: {len(tab)} tab accessions; {len(found)} more runs from ENA,"
+        f" {len(absent)} not served"
+    )
+    return found, absent
+
+
+def other_species(species: Species, run: Run) -> str:
+    taxon = run.get("tax_id", "")
+    return f"other species (taxon {taxon})" if taxon and not species.has_taxon(taxon) else ""
+
+
+def metadata(
+    species: Species, archive: Archive, log: Callable[[str], None], extra: Path | None = None
+) -> list[Candidate]:
     runs = discover(species, archive, log)
+    absent: dict[str, str] = {}
+    if extra:
+        known = {run["run_accession"] for run in runs}
+        known |= {run.get("experiment_accession", "") for run in runs}
+        more, absent = tab_runs(species, archive, extra, known, log)
+        runs += more
+        runs += [
+            {**dict.fromkeys(FIELDS, ""), "run_accession": accession}
+            for accession in sorted(absent)
+        ]
     table = overrides(species)
     candidates = []
     for run in runs:
         item = Candidate(run, study_of(run))
-        item.reason = usable(run)
+        item.reason = (
+            absent.get(run["run_accession"], "") or other_species(species, run) or usable(run)
+        )
         if not item.reason:
             item.method, item.method_source, item.reason = method_of(run, species, table)
         candidates.append(item)
@@ -444,7 +495,7 @@ def build(
     log: Callable[[str], None] = print,
 ) -> dict[str, Any]:
     started = time.monotonic()
-    candidates = metadata(species, archive, log)
+    candidates = metadata(species, archive, log, options.extra_runs)
     kept = [c for c in candidates if not c.reason]
     log(f"{species.folder}: {len(kept)} runs kept on metadata")
     if options.probe_duplicates:
@@ -590,4 +641,5 @@ def options(args: argparse.Namespace, cache: Path) -> Options:
         star_index=args.star_index,
         tools=signal.Tools.find(args.star, args.threads) if measure else None,
         probe_duplicates=not args.no_probe,
+        extra_runs=args.extra_runs,
     )

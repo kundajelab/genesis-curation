@@ -29,9 +29,9 @@ Prefix the commands below with `uv run`, or activate `.venv` first.
 | --- | --- | --- | --- |
 | `rna-seq` | ENA | Strandedness (sampled reads mapped with STAR, counted with featureCounts); duplicate submissions | STAR, featureCounts, gffread, species references |
 | `atac-seq` | ENA, plus GSA runs from `--extra-runs` | Mapped fraction, organelle fraction and TSS enrichment of 200,000 read pairs (chromap) | chromap, species references |
-| `tss-seq` | ENA | 5' trim, 3' adapter and TSS signal of 20,000 reads (STAR) | STAR, species references |
+| `tss-seq` | ENA, plus runs from `--extra-runs` | 5' trim, 3' adapter and TSS signal of 20,000 reads (STAR) | STAR, species references |
 | `dap-seq` | ENA | Untrimmed reads (first 100 read lengths) | none |
-| `scatac-reads` | NCBI SRA | Read structure, chemistry, whitelist, instruments | `vdb-dump` (SRA Toolkit) |
+| `scatac-reads` | NCBI SRA, plus experiments from `--extra-runs` | Read structure, chemistry, whitelist, instruments | `vdb-dump` (SRA Toolkit) |
 
 `--species` takes the folder name used in genesis-preprocessing sheets. Species settings live in
 [`src/genesis_curation/sheets/data/species.yaml`](../../src/genesis_curation/sheets/data/species.yaml):
@@ -72,6 +72,13 @@ More examples:
 # exported as TSV. It adds runs ENA does not label ATAC-seq and the GSA (CRR) runs.
 genesis sheets build --workflow atac-seq --species Sorghum_bicolor --out sb-atac \
     --extra-runs bulk-atac-tab.tsv --references REFS --chromap CHROMAP
+
+# TSS and scATAC take the "TSS Fable Curated" and "scATAC Fable Curated" tabs the same way
+# (the TSV needs species and run_accessions, sra_runs or experiment_accession). Listed runs the
+# search missed, such as ENA runs without taxonomy, get a decision; a listed run that ENA or
+# SRA does not serve (GSA, withdrawn) is recorded with that reason.
+genesis sheets build --workflow tss-seq --species Arabidopsis_thaliana --out at-tss \
+    --extra-runs tss-tab.tsv --references REFS --star STAR
 
 # DAP-seq, leaving out studies that a repository sheet already covers
 genesis sheets build --workflow dap-seq --species Arabidopsis_thaliana --out at-dap \
@@ -184,8 +191,8 @@ genesis sheets campaign --species Sorghum_bicolor --out sb-all --gold-dir gold \
 ```
 
 It writes `OUT/<workflow>/` (the build's three files and `score.json`) and `OUT/campaign.json`,
-and exits non-zero if any workflow fails. `--workflows` picks a subset, and `--atac-extra-runs`
-and `--dap-skip-runs-in` pass through to those builds. With `--gold-dir`, DAP-seq skips the
+and exits non-zero if any workflow fails. `--workflows` picks a subset, and `--atac-extra-runs`,
+`--tss-extra-runs`, `--scatac-extra-runs` and `--dap-skip-runs-in` pass through to those builds. With `--gold-dir`, DAP-seq skips the
 studies of the former repository sheets that `gold-fetch` downloads (listed in `gold.yaml`). For a species without gold, such as
 rice, it only builds.
 

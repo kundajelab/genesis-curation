@@ -149,7 +149,12 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
             chosen,
             archive,
             args.out,
-            scatac.Options(cache=cache, probe=not args.no_probe, vdb_dump=args.vdb_dump),
+            scatac.Options(
+                cache=cache,
+                probe=not args.no_probe,
+                vdb_dump=args.vdb_dump,
+                extra_runs=args.extra_runs,
+            ),
             log=log,
         )
         (args.out / "build.json").write_text(json.dumps(found, indent=2) + "\n")
@@ -261,7 +266,7 @@ def run_campaign(
             no_probe=args.no_probe,
             strandedness_from=reuse if workflow == "rna-seq" else None,
             measure_from=reuse if workflow in ("tss-seq", "atac-seq") else None,
-            extra_runs=args.atac_extra_runs if workflow == "atac-seq" else None,
+            extra_runs=getattr(args, workflow.replace("-seq", "_extra_runs"), None),
             skip_runs_in=skip_runs_in if workflow == "dap-seq" else [],
         )
         log(f"campaign: {args.species} {workflow}")
@@ -378,10 +383,13 @@ def configure(parser: argparse.ArgumentParser) -> None:
         default=2000,
         help="Refuse to start if more runs than this would be sent (default 2000)",
     )
-    atac_group = build.add_argument_group("atac-seq")
-    atac_group.add_argument(
-        "--extra-runs", type=Path, help="More candidate runs: a metadata-sheet tab export (TSV)"
+    build.add_argument(
+        "--extra-runs",
+        type=Path,
+        help="atac-seq, tss-seq, scatac-seq: more candidate runs, from a metadata-sheet tab "
+        "export (TSV with species and run_accessions, sra_runs or experiment_accession)",
     )
+    atac_group = build.add_argument_group("atac-seq")
     atac_group.add_argument("--chromap", help="chromap executable (default: on PATH)")
     atac_group.add_argument("--chromap-index", type=Path, help="Default: built into the cache")
     atac_group.add_argument(
@@ -413,9 +421,12 @@ def configure(parser: argparse.ArgumentParser) -> None:
     campaign.add_argument("--cache", type=Path, help="Default: OUT/cache")
     campaign.add_argument("--offline", action="store_true", help="Use only cached responses")
     campaign.add_argument("--no-probe", action="store_true", help="Skip read probes")
-    campaign.add_argument(
-        "--atac-extra-runs", type=Path, help="atac-seq: more candidate runs (TSV, see build)"
-    )
+    for workflow in ("atac", "tss", "scatac"):
+        campaign.add_argument(
+            f"--{workflow}-extra-runs",
+            type=Path,
+            help=f"{workflow}-seq: more candidate runs (TSV, see build --extra-runs)",
+        )
     campaign.add_argument(
         "--dap-skip-runs-in",
         type=Path,

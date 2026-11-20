@@ -37,6 +37,7 @@ from . import classify, files, writers
 from .archives import Archive, Run, Sample
 from .measure import atac as checks
 from .species import DATA, Species
+from .tabs import tab_rows
 
 WORKFLOW = "atac-seq"
 STRATEGY = "ATAC-seq"
@@ -97,23 +98,6 @@ def reused_metrics(path: Path) -> dict[str, checks.Metrics]:
                 continue
             values = {k: row[k] for k in METRIC_COLUMNS if row.get(k)}
             found[row["run"]] = replace(checks.Metrics(row["run"]), **values)
-    return found
-
-
-def tab_rows(path: Path, species: Species) -> dict[str, dict[str, str]]:
-    """run -> tab row, for the species' rows of a metadata-sheet tab export (TSV with
-    `species` and `run_accessions`; GSA rows also need study_accession, biosample, spots,
-    library_layout, instrument, library_name, sample_title and sample_attributes)."""
-    genus = species.scientific_name.split()[0]
-    found = {}
-    with path.open(newline="") as handle:
-        for row in csv.DictReader(handle, delimiter="\t"):
-            name = (row.get("species") or "").strip()
-            if not (name.startswith(species.scientific_name) or name == genus):
-                continue
-            for run in re.split(r"[;, ]+", row.get("run_accessions") or ""):
-                if run:
-                    found[run] = row
     return found
 
 

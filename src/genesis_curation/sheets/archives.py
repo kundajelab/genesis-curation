@@ -235,19 +235,22 @@ class Archive:
         return parse_tsv(self.request(PORTAL + "search", form))
 
     def runs(self, accessions: Iterable[str], fields: Iterable[str] = RUN_FIELDS) -> list[Run]:
-        """ENA records of the given run accessions (in batches of 300); unknown ones are
+        """ENA records of the given run accessions, or of the runs of experiment accessions
+        (in batches of 300; ENA rejects a batch that mixes the two kinds); unknown ones are
         absent from the result."""
-        wanted = sorted(set(accessions))
         found: list[Run] = []
-        for start in range(0, len(wanted), RUN_BATCH):
-            form = {
-                "result": "read_run",
-                "includeAccessions": ",".join(wanted[start : start + RUN_BATCH]),
-                "fields": ",".join(fields),
-                "format": "tsv",
-                "limit": "0",
-            }
-            found += parse_tsv(self.request(PORTAL + "search", form))
+        unique = set(accessions)
+        for kind in (False, True):
+            wanted = sorted(a for a in unique if (a[2:3] == "X") == kind)
+            for start in range(0, len(wanted), RUN_BATCH):
+                form = {
+                    "result": "read_run",
+                    "includeAccessions": ",".join(wanted[start : start + RUN_BATCH]),
+                    "fields": ",".join(fields),
+                    "format": "tsv",
+                    "limit": "0",
+                }
+                found += parse_tsv(self.request(PORTAL + "search", form))
         return found
 
     def gsa_files(self, study: str, run: str) -> list[tuple[str, int]]:
