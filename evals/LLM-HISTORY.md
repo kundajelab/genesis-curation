@@ -22,3 +22,7 @@ One row per `genesis eval llm` run.
 | 2026-11-19 | adjudicate | test | claude-opus-5-5 | 3 | agreement 1.0, uncertain 0.0, errors 0 | 0.02 | 14 | verified set v2, rice |
 | 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 56 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0714, errors 0 | 0.31 | 123 | verified set v2, atac-seq criteria v1 |
 | 2026-11-19 | adjudicate | dev | claude-opus-5-5 | 36 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0833, errors 0 | 0.21 | 105 | verified set v2, tss-seq criteria v1 |
+| 2026-11-20 | adjudicate | dev | claude-opus-5-5 | 106 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0377, errors 0 | 0.53 | 233 | criteria v2: treated samples kept (#13) |
+| 2026-11-20 | adjudicate | dev | claude-opus-5-5 | 32 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.125, errors 0 | 0.19 | 58 | criteria v2: treated samples kept (#13) |
+| 2026-11-20 | adjudicate | dev | claude-opus-5-5 | 56 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0357, errors 0 | 0.30 | 102 | criteria v2: treated samples kept (#13) |
+| 2026-11-20 | adjudicate | dev | claude-opus-5-5 | 36 | agreement 1.0, keep_precision 1.0, keep_recall 1.0, uncertain 0.0, errors 0 | 0.21 | 59 | criteria v2: treated samples kept (#13) |

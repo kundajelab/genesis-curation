@@ -76,6 +76,11 @@ studies:
     name: HSFA1b/A2/A3 homo- and heteromers
     genotype: Col-0
     replace: [['^(A\d)', 'HSF\1']]
+    # gDNA from seedlings at 25 °C and at 37 °C (heat-treated; kept, issue #13): each set
+    # uses the HALO-only control made from the same DNA.
+    pairs:
+      - {match: '^.*(_37)$', control: 'PIX-HALO\1'}
+      - {match: '^(?!.*_37$).*$', control: 'PIX-HALO'}
   PRJNA1222878:
     species: Arabidopsis_thaliana
     name: PLT3/5/7 DAP on SAM or IM gDNA

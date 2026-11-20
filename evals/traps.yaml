@@ -459,3 +459,12 @@ traps:
     expect: excluded
     reason_class: genotype
     why: Cultivar "Tx623*SV", a near-isogenic line from a cross (PRJNA325381).
+  - id: dap-heat-gdna-uses-its-own-control
+    species: Arabidopsis_thaliana
+    workflow: dap-seq
+    runs: [SRR17297719, SRR17297718]
+    expect: included
+    why: >-
+      PRJNA791363 has HSF DAP on gDNA from seedlings at 25 °C and at 37 °C, each with a
+      HALO-only control from the same DNA (PIX-HALO and PIX-HALO_37). Heat-treated libraries
+      are kept (issue #13) and pair with the 37 °C control; the 25 °C control stays in use.
