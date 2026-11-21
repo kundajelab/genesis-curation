@@ -23,9 +23,10 @@ A library's reason is the first that applies:
     BioSample and spot count, usually a BAM), or listed in `same_as`;
  5. excluded by hand (`exclude` in data/scatac.yaml);
  6. read structure: every run needs exactly one barcode read (16 bases: 10x-atac-v1 with
-    the 737K-cratac-v1 whitelist; 24 bases: 10x-multiome-atac, no whitelist) and two
-    genomic reads of at least 30 bases. A barcode read of another length (sci-ATAC's
-    28-base combinatorial index) is reported as such: the workflow reads 10x barcodes only.
+    the 737K-cratac-v1 whitelist; 24 bases: 10x-multiome-atac, no whitelist; 28 bases:
+    sci-atac, a sample index then the combinatorial cell index, no whitelist) and two
+    genomic reads of at least 30 bases. A barcode read of another length is reported as
+    such.
     When a library's runs differ in structure, it keeps the runs of the chemistry with the
     most spots and leaves the others out (issue #14: rice SRP438549 has 24-base multiome
     runs and runs whose 16-base barcode read is reverse-complemented, without the spacer);
@@ -58,7 +59,11 @@ from .tabs import is_gsa, tab_rows
 
 WORKFLOW = "scatac-reads"
 # Barcode read length -> (chemistry, whitelist), as workflows/scatac-reads.nf reads them.
-BARCODES = {16: ("10x-atac-v1", "737K-cratac-v1.txt"), 24: ("10x-multiome-atac", "-")}
+BARCODES = {
+    16: ("10x-atac-v1", "737K-cratac-v1.txt"),
+    24: ("10x-multiome-atac", "-"),
+    28: ("sci-atac", "-"),
+}
 MIN_GENOMIC = 30
 NOT_LOADED = "no reads in SRA (not loaded)"
 MIN_INDEX = 6  # shorter reads are sample indexes, not cell barcodes
@@ -167,7 +172,7 @@ def decisions(species: Species, path: Path = DATA / "scatac.yaml") -> Decisions:
 
 
 def run_structure(run: SraRun) -> tuple[str, str]:
-    """(chemistry, '') for a 10x ATAC run, or ('', why not)."""
+    """(chemistry, '') for a 10x ATAC or sci-ATAC run, or ('', why not)."""
     if not run.public:
         return "", "run not public"
     if not run.spots or not run.reads:
@@ -181,8 +186,8 @@ def run_structure(run: SraRun) -> tuple[str, str]:
     short = [str(n) for n in lengths if MIN_INDEX <= n < MIN_GENOMIC]
     if short:
         return "", (
-            f"barcode read of {','.join(short)} bases, not a 10x chemistry the workflow reads "
-            f"(reads of {shown} bases; sci-ATAC or plate-based)"
+            f"barcode read of {','.join(short)} bases, not a chemistry the workflow reads "
+            f"(reads of {shown} bases; plate-based or another index layout)"
         )
     return "", f"no barcode read in SRA: reads of {shown} bases (sci-ATAC or plate-based)"
 
