@@ -61,16 +61,18 @@ def check_structure() -> None:
         (150, 16, 150): ("10x-atac-v1", ""),
         (8, 24, 151, 151): ("10x-multiome-atac", ""),
         (50, 24, 50): ("10x-multiome-atac", ""),
+        # sci-ATAC (SRR27704581): a 28-base index read, a sample index then the cell index
+        (107, 106, 28): ("sci-atac", ""),
     }
     for lengths, expected in cases.items():
         assert scatac.run_structure(sra_run("SRR1", *lengths)) == expected, lengths
     chemistry, why = scatac.run_structure(sra_run("SRR1", 150, 150))
     assert not chemistry and why.startswith("no barcode read in SRA"), why
-    for lengths in ((28, 151), (10, 10, 28, 88), (107, 106, 28), (16, 16, 50, 50)):
+    for lengths in ((28, 151), (10, 10, 28, 88), (107, 106, 20), (16, 16, 50, 50)):
         chemistry, why = scatac.run_structure(sra_run("SRR1", *lengths))
-        assert not chemistry and "not a 10x chemistry the workflow reads" in why, (lengths, why)
-    # issue #14: sci-ATAC's 28-base combinatorial index is named, not called missing
-    assert "barcode read of 28 bases" in scatac.run_structure(sra_run("SRR1", 107, 106, 28))[1]
+        assert not chemistry and "not a chemistry the workflow reads" in why, (lengths, why)
+    # an index read of another length is named, not called missing
+    assert "barcode read of 20 bases" in scatac.run_structure(sra_run("SRR1", 107, 106, 20))[1]
     assert scatac.run_structure(SraRun("SRR1", 0)) == ("", "no reads in SRA (not loaded)")
     assert scatac.run_structure(sra_run("SRR1", 23.8, 50.2, 49.9))[0] == "10x-multiome-atac"
     # issue #14: a library mixing chemistries keeps the runs of the one with most spots
@@ -89,7 +91,7 @@ def check_structure() -> None:
     assert [run.accession for run in library.runs] == ["SRR1"], library.dropped
     assert "10x-atac-v1" in library.dropped["SRR2"]
     assert library.dropped["SRR3"].startswith("no barcode read in SRA")
-    print("PASS 10x read structure, chemistry and whitelist")
+    print("PASS 10x and sci-ATAC read structure, chemistry and whitelist")
 
 
 def check_parse() -> None:

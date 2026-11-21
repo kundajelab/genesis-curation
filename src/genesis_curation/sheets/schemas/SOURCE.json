@@ -1,11 +1,11 @@
 {
   "repository": "kundajelab/genesis-preprocessing",
-  "commit": "c5af63858da32912cc8b7403040c3e68738e3096",
+  "commit": "7eb5b0e391157f1a3c668e5c8fa7bca98edd7b8b",
   "sha256": {
     "atac-seq.samples.schema.json": "75bb066a9c53a685e251708f97dcdcc7e73ed1f4fce07aa90a6400edb09f6dcd",
     "dap-seq.samples.schema.json": "8a55dd4a3634462de0c571345de50e2c850676560269a34435bbb663dc4aa7c2",
     "rna-seq.samples.schema.json": "8cb3163f433bcc271a6c4bf7c663ac1c408ce63897acb4962dc85aab6dc046b5",
-    "scatac-reads.samples.schema.json": "dff57be5dc9a9a529ad0f7de7372c4f1ae496e16572eafdb6c2977cc0753faf3",
+    "scatac-reads.samples.schema.json": "479c9f04d4709ca63c3663d42c7463a53540ec06c7d38801ff958bea053cc31e",
     "scatac-seq.samples.schema.json": "4ecd1739712e14a30e63e57d02481d72adb6fc9f698487a3079f33f90bf5a78d",
     "tss-seq.samples.schema.json": "c46a2856d637cc00a490d2eae8f9a3007902bed1fe81f33c812d62efe8da66ea"
   }
