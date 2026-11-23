@@ -54,9 +54,9 @@ gold:
   - species: Sorghum_bicolor
     workflow: scatac-reads
     sheet: Sorghum_bicolor/scatac-reads-curated.tsv
-    sheet_sha256: b3c7ee512e5a43df161fd435ed3f1563043620776cc4be9550f7b51448ac3c2b
+    sheet_sha256: ec8c36e891967f0a8d9bdd3d64af69afedeb10ee817fbb4c85688925c2a927f7
     runs_qc: Sorghum_bicolor/scatac-reads-curated.runs-qc.tsv
-    runs_qc_sha256: 355b868cb775ce8cc845ea66048a4f4ca1493413650a1ee053e4676d0b01f32c
+    runs_qc_sha256: 32c674a44a7ac5246a3a861e1f09223f69bd5c45b571daf23c199aa839099309
 # DAP-seq sheets that were in the genesis-preprocessing repository. The curated DAP sheets leave
 # their studies out, so `campaign` skips them too (as --dap-skip-runs-in would).
 repository_sheets:

@@ -57,3 +57,4 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-20 | Arabidopsis_thaliana | dap-seq | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 0.9597 | 1.0 | 1.0 | 11/11 |
 | 2026-11-20 | Arabidopsis_thaliana | scatac-reads | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 0.56 | 1.0 | 1.0 | 9/9 |
 | 2026-11-20 | Arabidopsis_thaliana | tss-seq | measured rebuild, treated samples kept (#13), scATAC chemistry (#14); gold predates #13 | 0.6667 | 1.0 | 1.0 | 8/8 |
+| 2026-11-23 | Sorghum_bicolor | scatac-reads | metadata build with sci-atac (#16); gold with the sci-ATAC pair, predates #13 | 0.56 | 1.0 | 1.0 | 3/3 |

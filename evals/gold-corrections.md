@@ -5,6 +5,13 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-23: Sorghum sci-ATAC added
+
+Sorghum scATAC, 2 libraries added (6 → 8 rows): SRP483298 leaf rep 1 and rep 2 (SRR27704581,
+SRR27704580; Mendieta 2024). They were left out only because the workflow did not read their
+28-base index read. genesis-preprocessing #54 added the `sci-atac` chemistry for it. On 200k
+spots of SRR27704581, 80% of reads mapped and 1,224 barcodes had at least 20 fragments.
+
 ## 2026-11-20: treated samples are kept (issue #13)
 
 A policy change, not a correction of single runs. Treatment is no longer a reason to leave a

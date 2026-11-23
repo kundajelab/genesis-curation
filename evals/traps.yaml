@@ -324,6 +324,15 @@ traps:
     why: >-
       12 h of light (de-etiolation) is a treatment; only titles say so. Kept and recorded
       as treated (SRP474955; issue #13).
+  - id: scatac-sci-atac-index-read
+    species: Sorghum_bicolor
+    workflow: scatac-reads
+    runs: [SRR27704581, SRR27704580]
+    expect: included
+    fields: {chemistry: sci-atac, barcode_whitelist: '-'}
+    why: >-
+      The 28-base index read, which SRA marks technical, is a 6-base sample index and a 22-base
+      combinatorial cell index; the whole read is the barcode, with no whitelist (SRP483298).
   - id: tss-unsupported-5p-methods
     species: Arabidopsis_thaliana
     workflow: tss-seq
