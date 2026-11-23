@@ -6,57 +6,57 @@ gold:
   - species: Arabidopsis_thaliana
     workflow: rna-seq
     sheet: Arabidopsis_thaliana/rna-seq-curated.tsv
-    sheet_sha256: 86b12b99fb5448ec16196549a1443c21fcd13fc47c0c93916ac003a6f8ebae01
+    sheet_sha256: 08957d452b71798787a54f4dba5c5f0eede884608ab0ce69a3dc7effeb313213
     runs_qc: Arabidopsis_thaliana/rna-seq-curated.runs-qc.tsv
-    runs_qc_sha256: 430037d0820db8f362b4cdddec3177c8b74a01018cccafcfe114e486704eb400
+    runs_qc_sha256: cc2d4dd24812219351f4f37519b6c261cf706dbba3d8cb36f892d647050045f3
   - species: Arabidopsis_thaliana
     workflow: atac-seq
     sheet: Arabidopsis_thaliana/atac-seq-curated.tsv
-    sheet_sha256: adbb86f031945565d0310ca5bf946bb78cf092458261441777a075d8f41c5736
+    sheet_sha256: 07e8d1c7f3ac9d4b7ce335c34f98108f1100b3c22a849bf07c11267f87d9c637
     runs_qc: Arabidopsis_thaliana/atac-seq-curated.runs-qc.tsv
-    runs_qc_sha256: f491d4c1bee03573b91fb7177a7f29998087a02f3fe3c35d90015c9698e56500
+    runs_qc_sha256: 7bd2985466206eb1d3238745adb554ec0dd042510a2e0e9c000e25ef1cb823fb
   - species: Arabidopsis_thaliana
     workflow: dap-seq
     sheet: Arabidopsis_thaliana/dap-seq-curated.tsv
-    sheet_sha256: 4bcf2b25c1ae28d00d656e73cfd33c94de74e34776c9f3a0b184da08aecc8417
+    sheet_sha256: d5c6805ef78da093bc952139ae1cda80ae3d24caeed88cfa9f5a0bba71df6ded
     runs_qc: Arabidopsis_thaliana/dap-seq-curated.runs-qc.tsv
-    runs_qc_sha256: e13293cfebbf7c6a9cb46e215f8352732b3b2ec7d9978672dcaaaabe7f61701a
+    runs_qc_sha256: 73f302b0e041bfdbf2c1c6e723d4a07148bb25af2ed7e41f6a295d6506860e1c
   - species: Arabidopsis_thaliana
     workflow: tss-seq
     sheet: Arabidopsis_thaliana/tss-seq-curated.tsv
-    sheet_sha256: de6e09e2917cdc2691672dbb94ea078200be0d195f3a2062ba49cea445c7b928
+    sheet_sha256: 9bc05b1db1a042d4841a06d1b8d4bd56a8d69f85411a0b170951c24bd9579a31
     runs_qc: Arabidopsis_thaliana/tss-seq-curated.runs-qc.tsv
-    runs_qc_sha256: 7f630bbba4872bf4669a9f4fb99ea170a76e7eef8bfaf8d93a7a423e56312bc4
+    runs_qc_sha256: 3c249a1c118a40fb9c040e2d0de1eeb79a80d9ee2ba74f97b2a7783607740962
   - species: Arabidopsis_thaliana
     workflow: scatac-reads
     sheet: Arabidopsis_thaliana/scatac-reads-curated.tsv
-    sheet_sha256: a4558a6c6a1b0fcc6bb94a7c82d3b1b03190690a1321d6f9a872833bad9d8e2c
+    sheet_sha256: 0eefee9859c7b2dd43e8382a312641c5219ab136ca4d2f6926a151a090b9d304
     runs_qc: Arabidopsis_thaliana/scatac-reads-curated.runs-qc.tsv
-    runs_qc_sha256: ea6ae60651d7e1e23afdcb1cc6d15ad7c778b03b61b1e1c20922caa7aa1691a0
+    runs_qc_sha256: 6dc9081fcfcdcde14be47d785170bcceef58be00165aa1fa15586e8cc9651265
   - species: Sorghum_bicolor
     workflow: rna-seq
     sheet: Sorghum_bicolor/rna-seq-curated.tsv
-    sheet_sha256: fc6540badfaf19060dd2b3cd733cfa3a989fd616ff41dff94c661a3432cc4201
+    sheet_sha256: 8642d5f9b1f9d48dcde7adc149d54269597efd35f4e41e1a301b431329c7d066
     runs_qc: Sorghum_bicolor/rna-seq-curated.runs-qc.tsv
-    runs_qc_sha256: 425fa067183bebd84d3959576f7b5485ab084626babfbd156f3692dc0422bec8
+    runs_qc_sha256: 64d535505cba54903c623b08e06ab4621a946e41c7c93bec0cf9074bf69e6390
   - species: Sorghum_bicolor
     workflow: atac-seq
     sheet: Sorghum_bicolor/atac-seq-curated.tsv
     sheet_sha256: 9377ced437badaf42ef88eae5efde66867fdc21114e5f391a3ff5b5646899041
     runs_qc: Sorghum_bicolor/atac-seq-curated.runs-qc.tsv
-    runs_qc_sha256: 426da21723dd43637e7ae351114b13ee0618b8552bab4c04c4a7e3620e583dc4
+    runs_qc_sha256: 7e95ac384be1bc581339f6e34d10b2667bb7a07d8804c12ecd3e975b6eb7f08e
   - species: Sorghum_bicolor
     workflow: dap-seq
     sheet: Sorghum_bicolor/dap-seq-curated.tsv
-    sheet_sha256: d3a2d17073db9b3cdb10cdb2f2cfb9dd99a1b6e0cfe0e5c61c644d11961841ec
+    sheet_sha256: 67ebd9b28cde4867296d72bd21f8e3d4e5331720d983857e7ac1044310136cc2
     runs_qc: Sorghum_bicolor/dap-seq-curated.runs-qc.tsv
-    runs_qc_sha256: 53237f5c20960ccab79b3597f9762fd29bf98de8a9216070fac683d98e566295
+    runs_qc_sha256: 1ccdff93b23aa5e3a5f77fab79937b069ee3a1b62420fe5f4e3a5680cd3a82b0
   - species: Sorghum_bicolor
     workflow: scatac-reads
     sheet: Sorghum_bicolor/scatac-reads-curated.tsv
-    sheet_sha256: ec8c36e891967f0a8d9bdd3d64af69afedeb10ee817fbb4c85688925c2a927f7
+    sheet_sha256: 0a3ad41b2d5c6a31d6bf0b71ff1d068525cee9d3b1b0ad927a1c66e8999bbb7e
     runs_qc: Sorghum_bicolor/scatac-reads-curated.runs-qc.tsv
-    runs_qc_sha256: 32c674a44a7ac5246a3a861e1f09223f69bd5c45b571daf23c199aa839099309
+    runs_qc_sha256: 07b8aacba131a21709126c7ae4484f9941c375d6b5755ef9710c91ad607a1ff8
 # DAP-seq sheets that were in the genesis-preprocessing repository. The curated DAP sheets leave
 # their studies out, so `campaign` skips them too (as --dap-skip-runs-in would).
 repository_sheets:

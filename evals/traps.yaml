@@ -477,3 +477,28 @@ traps:
       PRJNA791363 has HSF DAP on gDNA from seedlings at 25 °C and at 37 °C, each with a
       HALO-only control from the same DNA (PIX-HALO and PIX-HALO_37). Heat-treated libraries
       are kept (issue #13) and pair with the 37 °C control; the 25 °C control stays in use.
+  - id: rna-mutant-named-only-in-alias
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR26349345, SRR14520149, SRR27606461, SRR20971311]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      The genotype field says Col-0; only the sample alias names the mutant ('mta Control 3',
+      'arr1 ck12h', '-Mn n1' for nramp1, 'M_12h' beside 'WT_12h' in a max2 study).
+  - id: rna-transgenic-line-in-title
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [DRR704059, DRR744976, SRR33819490, ERR10387784, SRR11544631]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      Col-0 background, but the titles name a transgenic line: VP16-GR, pER8-LEC2,
+      'VPS34 DN line', ECT2 HyperTRIBE FLAG-ADAR, and DD (GVG-NtMEK2DD).
+  - id: rna-subcellular-fraction
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR19440484, SRR23970367]
+    expect: excluded
+    reason_class: assay
+    why: Chromatin-bound and nuclear RNA fractions (PRJNA843332), not whole-cell RNA-seq.

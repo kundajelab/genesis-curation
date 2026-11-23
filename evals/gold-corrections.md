@@ -5,6 +5,54 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-23: regenerated from the measured rebuilds
+
+Every gold set was replaced by its measured rebuild (`genesis sheets build` with read
+measurements), so the gold follows the policy of keeping treated samples (#13) and the
+scATAC chemistry rules (#14, #16). Rows, old → new:
+
+| Gold | Before | After |
+| --- | ---: | ---: |
+| A. thaliana RNA-seq | 14,215 | 33,283 |
+| A. thaliana bulk ATAC | 208 | 356 |
+| A. thaliana scATAC (libraries) | 18 | 35 |
+| A. thaliana TSS mapping | 62 | 93 |
+| A. thaliana DAP-seq | 120 | 125 |
+| Sorghum RNA-seq | 682 | 1,653 |
+| Sorghum bulk ATAC | 8 | 8 |
+| Sorghum scATAC (libraries) | 8 | 13 |
+| Sorghum DAP-seq | 15 | 15 |
+
+Every run of the earlier gold is kept, except:
+- 22 A. thaliana RNA-seq runs and 1 Sorghum one (SRR6205694) that duplicate another
+  submission. The rebuild keeps the original run and leaves out the resubmission; the old gold
+  had kept the resubmission.
+- 10 A. thaliana RNA-seq runs, part of the review below.
+
+**Review of the A. thaliana RNA-seq additions.** Treated runs from studies whose untreated runs
+the old gold had left out were never checked for genotype. The ENA sample alias, sample title
+and experiment title of every study with added runs (1,763 of 1,764 studies) were read, and 104
+runs were changed to left out:
+- 99 runs of mutant or transgenic lines named only in the alias or title, while the genotype
+  field says Col-0: GR and pER8 inducible lines, HyperTRIBE, dominant-negative (DN) and DD
+  lines, and mutant aliases such as bon123pad4-1, mta and nramp1. Their reason is
+  `genotype: mutant / transgenic (<evidence>)`. They include SRR27606461-2 (PRJNA1065151),
+  whose reads are those of the study's nramp1 mutant runs.
+- 5 runs of subcellular fractions (PRJNA843332): `not standard RNA-seq (subcellular fraction)`.
+
+The 3 PRJNA412215 cell-culture runs dropped on 2026-11-19 stay out (`tissue: cell culture`).
+Per study: PRJNA729190 27, PRJDB35644 15; PRJNA1000649, PRJNA602051, PRJNA907415, PRJDB33703,
+PRJNA1271688 and PRJNA625276 6 each; PRJNA843332, PRJEB56577 and PRJEB28655 5 each;
+PRJNA1025919 and PRJNA1064056 3 each; PRJNA1065151 and PRJNA867415 2 each; PRJNA1199402 1.
+The builder does not catch
+these yet; traps `rna-mutant-named-only-in-alias`, `rna-transgenic-line-in-title` and
+`rna-subcellular-fraction` fail on the rebuild until it reads the sample alias and these
+transgene markers. A random check of 60 other added runs found 1 to 3 more such lines (about
+2–5% of the about 19,000 added RNA-seq runs).
+
+**DAP-seq label.** PRJNA1086931's rows keep genotype Col-0, as in the old gold (BioSample
+genotype Col-0); the rebuild names them `unknown` because it read no genotype.
+
 ## 2026-11-23: Sorghum sci-ATAC added
 
 Sorghum scATAC, 2 libraries added (6 → 8 rows): SRP483298 leaf rep 1 and rep 2 (SRR27704581,
@@ -19,9 +67,8 @@ run out: treated, stressed and infected samples of the reference genotype are us
 their treatment is recorded in the runs-qc `treatment` and `treatment_text` columns. The gold
 sheets published before this date leave those runs out, so measured rebuilds score lower
 precision against them (Sorghum RNA-seq 0.41, A. thaliana ATAC 0.58) while recall stays 1.0
-(Sorghum RNA-seq 0.9985, as before). The gold sheets are regenerated from the measured
-rebuilds; until then, read precision against the old gold as the share of runs that were
-already in it.
+(Sorghum RNA-seq 0.9985, as before). The gold sheets were regenerated from the measured
+rebuilds on 2026-11-23 (above).
 
 | Gold | Before | After the rebuild |
 | --- | ---: | ---: |
