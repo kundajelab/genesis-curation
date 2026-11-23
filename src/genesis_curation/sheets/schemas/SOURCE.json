@@ -1,6 +1,6 @@
 {
   "repository": "kundajelab/genesis-preprocessing",
-  "commit": "7eb5b0e391157f1a3c668e5c8fa7bca98edd7b8b",
+  "commit": "ea1068cbde9930f02f2bcc4fbdf8cdd806008b31",
   "sha256": {
     "atac-seq.samples.schema.json": "75bb066a9c53a685e251708f97dcdcc7e73ed1f4fce07aa90a6400edb09f6dcd",
     "dap-seq.samples.schema.json": "8a55dd4a3634462de0c571345de50e2c850676560269a34435bbb663dc4aa7c2",
