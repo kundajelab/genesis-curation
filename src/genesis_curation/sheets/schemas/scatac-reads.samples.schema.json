@@ -50,12 +50,13 @@
         "enum": [
           "10x-atac-v1",
           "10x-atac-v2",
-          "10x-multiome-atac"
+          "10x-multiome-atac",
+          "sci-atac"
         ],
         "meta": [
           "chemistry"
         ],
-        "errorMessage": "chemistry must be 10x-atac-v1, 10x-atac-v2 or 10x-multiome-atac"
+        "errorMessage": "chemistry must be 10x-atac-v1, 10x-atac-v2, 10x-multiome-atac or sci-atac"
       },
       "cells_url": {
         "type": "string",
