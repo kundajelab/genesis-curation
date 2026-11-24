@@ -10,12 +10,14 @@ import tempfile
 from collections.abc import Iterator
 from email.message import Message
 from pathlib import Path
+from typing import Any, cast
+from unittest import mock
 from urllib.error import HTTPError
 
 import yaml
 from helpers import rejects
 
-from genesis_curation.sheets import classify, files, rna, species, writers
+from genesis_curation.sheets import adjudicate, classify, files, rna, species, writers
 from genesis_curation.sheets.archives import Archive, Sample
 from genesis_curation.sheets.measure import duplicates, strand
 from genesis_curation.sheets.species import DATA
@@ -425,6 +427,50 @@ def check_build() -> None:
     print("PASS offline build from recorded ENA responses with reused strandedness")
 
 
+def check_alias_candidates() -> None:
+    reference = classify.StudyTitles(AT, []).wild_type
+    study = [
+        run(run_accession="SRR1", sample_alias="Col-0_rep1", sample_title="leaf"),
+        run(run_accession="SRR2", sample_alias="hda19-3_rep1", sample_title="leaf"),
+        run(run_accession="SRR3", sample_alias="PFBS_treated_1", sample_title="WT leaf"),
+        run(run_accession="SRR4", sample_alias="SAMN123", sample_title="leaf"),
+        run(run_accession="SRR5", sample_alias="", sample_title="leaf"),
+    ]
+    # only SRR2: SRR3's title names the wild type, SRR4 and SRR5 have no named alias
+    assert classify.alias_candidates(study, reference) == {"SRR2"}
+    # without a wild-type alias in the study there is nothing to compare against
+    assert classify.alias_candidates(study[1:], reference) == set()
+    items = [rna.Candidate(r, sample=classify.classify_sample(AT, Sample("S"), r)) for r in study]
+    items[1].reason = "genotype: mutant"
+    assert rna.alias_pool(AT, items) == set()
+    items[1].reason = ""
+    assert rna.alias_pool(AT, items) == {"SRR2"}
+
+    seen: list[str] = []
+
+    def answer(*args: object, **_: object) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+        pairs = cast(list[tuple[dict[str, str], None]], args[5])
+        seen.extend(r["run_accession"] for r, _ in pairs)
+        decision = {"decision": "leave", "reason_class": "genotype", "reason": "hda19"}
+        return [{"run": r["run_accession"], **decision, "quotes": ["x"]} for r, _ in pairs], {}
+
+    with (
+        mock.patch.object(adjudicate, "adjudicate_study", answer),
+        mock.patch.object(adjudicate.providers, "select", lambda path, ident: {}),
+        mock.patch.object(adjudicate.providers, "default_id", lambda path: "test"),
+        mock.patch("genesis_curation.web.mining_sources.inspect", side_effect=ValueError("off")),
+    ):
+        archive = mock.Mock()
+        archive.samples.return_value = {}
+        settings = adjudicate.Settings(Path("runtime"), scope="alias")
+        summary = adjudicate.apply(
+            items, AT, "rna-seq", archive, settings, lambda _: None, {"SRR2"}
+        )
+    assert seen == ["SRR2"] and summary["runs"] == 1, (seen, summary)
+    assert items[1].reason == "metadata review: genotype" and not items[0].reason
+    print("PASS alias candidates go to the metadata review, other kept runs do not")
+
+
 def main() -> None:
     check_species()
     check_classes()
@@ -435,6 +481,7 @@ def main() -> None:
     check_writers()
     check_archive_retries()
     check_build()
+    check_alias_candidates()
 
 
 if __name__ == "__main__":

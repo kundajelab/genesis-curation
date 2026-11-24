@@ -325,6 +325,9 @@ class Settings:
     runtime: Path
     provider: str | None = None
     limit: int = 2000
+    # "title": every kept run and every run the title rule left out; "alias": only the kept
+    # runs `classify.alias_candidates` picks, small enough for a whole species.
+    scope: str = "title"
 
 
 def eligible(reason: str) -> bool:
@@ -341,14 +344,19 @@ def apply(
     archive: Samples,
     settings: Settings,
     log: Callable[[str], None] = print,
+    only: set[str] | None = None,
 ) -> dict[str, Any]:
     """Adjudicate the eligible candidates in place. Each candidate needs `.run` and
     `.reason`; the decision is recorded in `.adjudication` as (decision, reason). A keep
     clears a title-rule reason, a leave sets one, and an uncertain answer keeps the rule's
-    decision."""
+    decision. `only`, when given, limits the review to those runs."""
     from ..web import mining_sources
 
-    pool = [c for c in candidates if eligible(c.reason)]
+    pool = [
+        c
+        for c in candidates
+        if eligible(c.reason) and (only is None or c.run["run_accession"] in only)
+    ]
     if len(pool) > settings.limit:
         raise ValueError(
             f"{len(pool)} runs to adjudicate is over --adjudicate-limit {settings.limit}"

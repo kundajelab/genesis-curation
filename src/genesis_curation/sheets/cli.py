@@ -195,7 +195,10 @@ def adjudication_settings(args: argparse.Namespace) -> adjudicate.Settings | Non
         # builder applies the review so far
         raise ValueError("--adjudicate supports rna-seq only")
     return adjudicate.Settings(
-        runtime, getattr(args, "adjudicate_provider", None), args.adjudicate_limit
+        runtime,
+        getattr(args, "adjudicate_provider", None),
+        args.adjudicate_limit,
+        getattr(args, "adjudicate_scope", "title"),
     )
 
 
@@ -210,6 +213,7 @@ def build_namespace(**values: object) -> argparse.Namespace:
         "adjudicate": None,
         "adjudicate_provider": None,
         "adjudicate_limit": 2000,
+        "adjudicate_scope": "title",
         "vdb_dump": None,
         "skip_runs_in": [],
         "offline": False,
@@ -382,6 +386,13 @@ def configure(parser: argparse.ArgumentParser) -> None:
         type=int,
         default=2000,
         help="Refuse to start if more runs than this would be sent (default 2000)",
+    )
+    review.add_argument(
+        "--adjudicate-scope",
+        choices=("title", "alias"),
+        default="title",
+        help="title: every kept run and every run the title rule left out; alias: only kept "
+        "runs whose sample alias lacks the wild-type marker other aliases of the study carry",
     )
     build.add_argument(
         "--extra-runs",

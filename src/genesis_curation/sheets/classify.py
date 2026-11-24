@@ -456,6 +456,27 @@ def alias_flag(run: Run, reference: re.Pattern[str]) -> str:
     return f"sample alias suggests a transgene or mutant ({match.group(1)})" if match else ""
 
 
+def alias_candidates(study_runs: Sequence[Run], reference: re.Pattern[str]) -> set[str]:
+    """Runs of one study whose sample alias and sample title both lack the wild-type marker
+    that other aliases of the study carry ("hda19-3_rep1" next to "Col-0_rep1"). About 3 in
+    4 such runs are mutant or transgenic lines (gold v3); the rest are treated wild type
+    ("PFBS_treated_1"), so these runs go to the metadata review, not straight out."""
+
+    def named(run: Run) -> str:
+        alias = run.get("sample_alias", "").strip()
+        return "" if not alias or ACCESSION_ALIAS.match(alias) else alias
+
+    if not any(named(run) and reference.search(named(run)) for run in study_runs):
+        return set()
+    return {
+        run["run_accession"]
+        for run in study_runs
+        if named(run)
+        and not reference.search(named(run))
+        and not reference.search(run.get("sample_title", ""))
+    }
+
+
 def title_label(run: Run) -> str:
     return f"{SEQUENCING_PREFIX.sub('', run.get('experiment_title', ''))} | " + run.get(
         "sample_title", ""

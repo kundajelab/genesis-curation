@@ -120,6 +120,12 @@ genesis sheets build --workflow rna-seq --species Sorghum_bicolor --out sb-rna-r
 - Runs left out by any other rule are never sent. `--adjudicate-limit` (default 2000) stops
   the build before it sends more runs than that; `--adjudicate-provider` picks a provider
   other than the runtime's default.
+- `--adjudicate-scope alias` sends only the kept runs whose sample alias and title lack the
+  wild-type word that other aliases of the same study carry ("hda19-3_rep1" next to
+  "Col-0_rep1"). About 3 in 4 of these are mutant or transgenic lines and the rest are
+  treated wild type, so they get the review rather than a rule. This scope is small enough
+  for a whole species: about 900 A. thaliana runs, where the default `title` scope sends every
+  kept run.
 - The runs-qc table gains `adjudication` and `adjudication_reason` columns, and `build.json`
   gains an `adjudication` block with counts of changed decisions and tokens used.
 

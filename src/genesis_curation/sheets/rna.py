@@ -159,6 +159,19 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
     return candidates
 
 
+def alias_pool(species: Species, candidates: list[Candidate]) -> set[str]:
+    """Kept runs whose alias lacks the wild-type marker other aliases of their study carry."""
+    reference = classify.StudyTitles(species, []).wild_type
+    by_study: dict[str, list[Run]] = defaultdict(list)
+    for item in candidates:
+        if not item.reason:
+            by_study[item.run["study_accession"]].append(item.run)
+    found: set[str] = set()
+    for runs in by_study.values():
+        found |= classify.alias_candidates(runs, reference)
+    return found
+
+
 def build(
     species: Species,
     archive: Archive,
@@ -187,7 +200,13 @@ def build(
     if options.adjudicate:
         started = time.monotonic()
         pool = [c for c in candidates if c.sample]
-        reviewed = adjudication.apply(pool, species, WORKFLOW, archive, options.adjudicate, log)
+        only = None
+        if options.adjudicate.scope == "alias":
+            only = alias_pool(species, pool)
+            log(f"{species.folder}: {len(only)} kept runs named against wild-type aliases")
+        reviewed = adjudication.apply(
+            pool, species, WORKFLOW, archive, options.adjudicate, log, only=only
+        )
         options.timings["adjudication_seconds"] = round(time.monotonic() - started, 1)
 
     started = time.monotonic()
