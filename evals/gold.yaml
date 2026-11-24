@@ -30,7 +30,7 @@ gold:
   - species: Arabidopsis_thaliana
     workflow: scatac-reads
     sheet: Arabidopsis_thaliana/scatac-reads-curated.tsv
-    sheet_sha256: 0eefee9859c7b2dd43e8382a312641c5219ab136ca4d2f6926a151a090b9d304
+    sheet_sha256: e36c4b83d12b7dcd452a6213e7a84d6660fc0d8bb1b07929c5c327c448cd961a
     runs_qc: Arabidopsis_thaliana/scatac-reads-curated.runs-qc.tsv
     runs_qc_sha256: 6dc9081fcfcdcde14be47d785170bcceef58be00165aa1fa15586e8cc9651265
   - species: Sorghum_bicolor
@@ -54,7 +54,7 @@ gold:
   - species: Sorghum_bicolor
     workflow: scatac-reads
     sheet: Sorghum_bicolor/scatac-reads-curated.tsv
-    sheet_sha256: 0a3ad41b2d5c6a31d6bf0b71ff1d068525cee9d3b1b0ad927a1c66e8999bbb7e
+    sheet_sha256: 9a6c7fcb78e60c1d3bfeca1229e3b687da7a08b832478764f98a506b9bee5489
     runs_qc: Sorghum_bicolor/scatac-reads-curated.runs-qc.tsv
     runs_qc_sha256: 07b8aacba131a21709126c7ae4484f9941c375d6b5755ef9710c91ad607a1ff8
 # DAP-seq sheets that were in the genesis-preprocessing repository. The curated DAP sheets leave

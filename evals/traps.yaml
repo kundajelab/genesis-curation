@@ -256,7 +256,7 @@ traps:
     workflow: scatac-reads
     runs: [SRR24921616, SRR24921615]
     expect: included
-    fields: {chemistry: 10x-multiome-atac, barcode_whitelist: '-'}
+    fields: {chemistry: 10x-multiome-atac, barcode_whitelist: 737K-arc-v1.txt}
     why: >-
       Four libraries (control and case, two replicates) share one BioSample; their titles
       differ by more than a lane, so they stay separate rows (SRP443792).

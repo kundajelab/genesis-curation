@@ -289,7 +289,7 @@ def check_build() -> None:
             "SRR12712405",
         }, (sorted(kept), reasons)
         assert kept["SRR24921616"]["chemistry"] == "10x-multiome-atac"
-        assert kept["SRR24921616"]["barcode_whitelist"] == "-"
+        assert kept["SRR24921616"]["barcode_whitelist"] == "737K-arc-v1.txt"
         assert kept["SRR20184262"]["barcode_whitelist"] == "737K-cratac-v1.txt"
         assert kept["SRR12712405"]["reference_genes"] == "Athaliana_447_Araport11.genes.bed"
         expected = {

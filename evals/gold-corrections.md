@@ -5,6 +5,13 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-24, later: multiome ATAC whitelist (issue #17)
+
+The 36 `10x-multiome-atac` rows of the scATAC-reads gold (25 A. thaliana, 11 Sorghum) name
+`737K-arc-v1.txt` instead of `-`: multiome ATAC barcodes are corrected against Cell Ranger ARC's
+ATAC list (SRR26989943 needs it). The builder takes the whitelist from the chemistry; the
+rebuild differs from the old gold in this column only.
+
 ## 2026-11-24: A. thaliana RNA-seq gold v3
 
 The measured rebuild drops 638 more runs (33,031 → 32,393 rows) and changes nothing else;
