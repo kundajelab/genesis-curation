@@ -68,6 +68,15 @@ def check_classes() -> None:
     assert genotype(SB, "Tx430") == "other accession / cultivar"  # same shape, a cultivar
     assert genotype(SB, "BTx623") == "reference (BTx623)"
     assert genotype(SB, "BTx623 bmr6") == "mutant / transgenic"
+    # protoplasts, callus and cell lines are cell culture; a bacterial suspension is not
+    for tissue, expected in (
+        ("root protoplasts", "cell culture"),
+        ("hypocotyl explant-derived callus", "cell culture"),
+        ("Cell suspension culture", "cell culture"),
+        ("leaves infiltrated with a bacterial suspension", "leaf"),
+    ):
+        found = classify.classify_sample(AT, Sample("S", attributes={"tissue": tissue}), run())
+        assert found.tissue == expected, (tissue, found.tissue)
     assert genotype(AT, "wild type") == "wild type, accession not stated"
     sample = Sample("SAMN1", attributes={"treatment": "mock", "tissue": "rosette leaves"})
     value = classify.classify_sample(AT, sample, run())

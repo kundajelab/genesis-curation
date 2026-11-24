@@ -91,7 +91,12 @@ ATAC_TREATED = re.compile(
 TISSUES: tuple[tuple[str, re.Pattern[str]], ...] = tuple(
     (name, re.compile(pattern, re.I))
     for name, pattern in (
-        ("cell culture", r"protoplast|cell culture|suspension|callus|cell line"),
+        # "suspension" alone also names bacterial inocula in protocol text (PRJEB13938).
+        (
+            "cell culture",
+            r"protoplast|cell culture|cell suspension|suspension cultur\w*|suspension cells?|"
+            r"callus|cell line",
+        ),
         ("pollen", r"pollen"),
         ("seedling", r"seedling|seeding\b"),
         ("seed", r"\bseeds?\b|seed[ _-]|embryo|endosperm|silique|grain|kernel|caryopsis"),
