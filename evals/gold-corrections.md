@@ -5,6 +5,26 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-24: A. thaliana RNA-seq gold v3
+
+The measured rebuild drops 638 more runs (33,031 → 32,393 rows) and changes nothing else;
+build and gold agree at 1.0 with 20/20 traps.
+
+How they were found: in 98 studies, some sample aliases name the wild type (`WT_1`,
+`Col-0_ctrl_1`) and other kept runs' aliases do not. A rule on that contrast would be right
+about three times in four (treated wild type such as `PFBS treated 1 d_1`, `Botrytis-infected`,
+or glued markers such as `HWT1` and `R10_WTU6HI` also lack the word), so the 798 runs were
+reviewed with the model instead (about $4.40, Opus 5.5): 504 leave, 155 keep, 139 uncertain.
+Uncertain groups were settled by their siblings and the study design (`snc1_*`, `tga256_*`,
+`m0-*` next to `WT0-*`, `co-9`); doubtful calls were checked against ENA (CNP: BioSample
+`sample_type` Mutant1; PRJNA770668 genotype `X0` next to `WT`; PRJNA271927 `FN_*`: ecotype
+Col-0/Ped-0). Four calls were overruled and the runs kept: `ColORoot3` (a typo of `Col0Root3`),
+`C-C-root-FN` (a Col/Col homograft), `CW-2_S53` and `NPR1 MOD Control` (controls).
+
+The 638 runs, from 81 studies, are curated exceptions in `sheets/data/exceptions.yaml`, one entry
+per study with the aliases as evidence. Traps: `rna-mutant-named-against-wild-type-aliases`,
+`rna-treated-wild-type-without-wild-type-marker`.
+
 ## 2026-11-23, later: A. thaliana RNA-seq gold v2
 
 The builder now does what the review below did by hand, and the A. thaliana RNA-seq gold is

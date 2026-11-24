@@ -44,11 +44,14 @@ per change to confirm it holds.
 1. Duplicates of left-out runs: the duplicate probe compares kept runs only, so a
    resubmission of a mutant run is kept unless its own metadata says mutant (SRR27606461,
    now an exception). Read the BioSample genotype in DAP-seq instead of per-study entries.
-2. Publish measured rice sheets (RNA-seq with the model review, ATAC, DAP, TSS, scATAC) and
+2. Make the within-study alias comparison part of the builder: runs whose alias lacks the
+   wild-type word that other aliases of the study carry go to `--adjudicate`, so new studies
+   get the review that gold v3 had by hand (2026-11-24: 798 candidates, 638 left out).
+3. Publish measured rice sheets (RNA-seq with the model review, ATAC, DAP, TSS, scATAC) and
    add rice to `gold.yaml`, so rice is scored like the other two species.
-3. Bring uncertain answers under 5% for ATAC and TSS; read which runs the model leaves
+4. Bring uncertain answers under 5% for ATAC and TSS; read which runs the model leaves
    uncertain and decide whether the criteria or the verified labels should say more.
-4. Triage: show the model each study's experiment counts by library strategy, so studies whose
+5. Triage: show the model each study's experiment counts by library strategy, so studies whose
    RNA-seq runs fall outside the sampled experiments are not excluded.
-5. Verified-set policy questions still open: Arabidopsis DAP-seq whose genomic DNA accession is
+6. Verified-set policy questions still open: Arabidopsis DAP-seq whose genomic DNA accession is
    never stated; autotetraploid reference lines. Runs that hinge on them are labelled uncertain.

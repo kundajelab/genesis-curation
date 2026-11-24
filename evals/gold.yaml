@@ -6,9 +6,9 @@ gold:
   - species: Arabidopsis_thaliana
     workflow: rna-seq
     sheet: Arabidopsis_thaliana/rna-seq-curated.tsv
-    sheet_sha256: 9062b566bbfe5dde8a7ffe505985ec0abfe71fb0bfc1faaaef3ac81abce846ea
+    sheet_sha256: 9001460f5ea4ff9e037241993f6c0eef0ea63698f5aba6a776c1b7fa05e1ce1e
     runs_qc: Arabidopsis_thaliana/rna-seq-curated.runs-qc.tsv
-    runs_qc_sha256: 8857eb15d6353190b69b29dacc1de8ad38a2130182e55ff7823ca52e4d2fed43
+    runs_qc_sha256: bd3245eb80c03111086e5d6bd8b5e9c941db35f67f5f132825ffaa9fe5a4ac79
   - species: Arabidopsis_thaliana
     workflow: atac-seq
     sheet: Arabidopsis_thaliana/atac-seq-curated.tsv

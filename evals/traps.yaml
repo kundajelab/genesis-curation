@@ -521,3 +521,22 @@ traps:
       Aliases that look like alleles but name a treatment: 'ENO2-3' (yeast ENO2 protein),
       'Pb0-3' (lead stress, 0 h) and 'Irradiated or unirradiated ... protoplasts'. Treated
       samples are kept (issue #13); mutant alleles are written in lower case.
+  - id: rna-mutant-named-against-wild-type-aliases
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR12687364, SRR33692877, SRR16301462]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      Only the alias names the line, and the study's other aliases name the wild type:
+      'OR35S' (a 35S overexpression line), '03_hy5_ctrl_r1' (hy5 mutant, untreated) and
+      '04_X0_S' (genotype X0 next to 03_WT_S).
+  - id: rna-treated-wild-type-without-wild-type-marker
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR16957239, SRR35841092, SRR22981888]
+    expect: included
+    why: >-
+      Col-0 samples whose aliases lack the study's wild-type word: 'PFBS treated 1 d_1'
+      (chemical treatment), 'HWT1' (heat-treated WT) and 'R10_WTU6HI' (WT glued to other
+      codes).

@@ -84,6 +84,333 @@ rna-seq:
       why: >-
         title 'Col-0 TYDC-THT-1.3 transcriptome'. Found in the review of the regenerated gold
         (2026-11-23).
+    # Mutants and transgenic lines named only in the sample alias, in studies whose other
+    # aliases name the wild type (WT_1 next to hy5_1). Candidates found by comparing aliases
+    # within each study, reviewed with the model, and checked against ENA (2026-11-24).
+    - study: PRJNA1028367
+      runs: [SRR26390530, SRR26390531, SRR26390538, SRR26390539]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases bi1abc_Mock_Rep1, bi1abc_Mock_Rep2, bi1abc_PSM_24h_Rep1, bi1abc_PSM_24h_Rep2 next to wild-type aliases WT_Mock_Rep1; WT_Mock_Rep2; WT_PSM_24h_Rep1. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1041945
+      runs: [SRR26875973, SRR26875974, SRR26875975, SRR26875976, SRR26875981, SRR26875982, SRR26893869, SRR26893870, SRR26893871, SRR26893872, SRR26893877, SRR26893878]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases MaoLab_B2h_rbohdf_B-1, MaoLab_B2h_rbohdf_B-2, MaoLab_B2h_rbohdf_B-3, MaoLab_B4h_rbohdf_CK-1 and 8 more next to wild-type aliases MaoLab_B2h_Col-0_B-1; MaoLab_B2h_Col-0_B-2; MaoLab_B2h_Col-0_B-7. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1062618
+      runs: [SRR27470059, SRR27470060, SRR27470063, SRR27470064, SRR27470065, SRR27470066, SRR27470067, SRR32392228, SRR32392229, SRR32392230]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases CC1s1, CC2d1d2, CC2s1, CC3d1d2 and 6 more next to wild-type aliases CC1Wt; CC2Wt; CC3Wt. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1091570
+      runs: [SRR28435689, SRR28435690, SRR28435691, SRR28435692, SRR28435693, SRR28435694, SRR28435695, SRR28435697, SRR28435698]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases cpr5_rep1, cpr5_rep2, cpr5_rep3, cpr5_sard1_cbp60g_rep1 and 5 more next to wild-type aliases WT_rep1; WT_rep2; WT_rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1103072
+      runs: [SRR28872333, SRR28872340, SRR28872341, SRR28872342, SRR28872343, SRR28872344, SRR28872345, SRR28872346, SRR28872348, SRR28872349, SRR28872350, SRR28872351, SRR28872352, SRR28872353, SRR28872354, SRR28872355, SRR28872356, SRR28872357]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases snc1_ax_1, snc1_ax_2, snc1_ax_3, snc1_hk_1 and 14 more next to wild-type aliases Col-0_ax_1; Col-0_ax_2; Col-0_ax_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1188310
+      runs: [SRR31404377, SRR31404378, SRR31404379]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases OE1, OE2, OE3 next to wild-type aliases WT1; WT2; WT3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1205419
+      runs: [SRR31877782, SRR31877783, SRR31877784]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases mns1 mns2_salt_1, mns1 mns2_salt_2, mns1 mns2_salt_3 next to wild-type aliases WT_salt_1; WT_salt_2; WT_salt_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1208225
+      runs: [SRR31947677, SRR31947678, SRR31947679, SRR31947680, SRR31947685, SRR31947686]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases WOX8_2_0_1, WOX8_2_0_2, WOX8_2_0_3, WOX8_2_50_1 and 2 more next to wild-type aliases WT_0_1; WT_0_2; WT_0_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1217148
+      runs: [SRR32175901, SRR32175902, SRR32175903, SRR32175904, SRR32175905, SRR32175906, SRR32175907, SRR32175912, SRR32175921, SRR32175922, SRR32175923, SRR32175924]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases lwd1lwd2_18_1, lwd1lwd2_18_2, lwd1lwd2_18_3, lwd1lwd2_6_1 and 8 more next to wild-type aliases Col-0_18_1; Col-0_18_2; Col-0_18_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1218802
+      runs: [SRR32217451, SRR32217452, SRR32217453, SRR32217454, SRR32217455, SRR32217456, SRR32217458, SRR32217459, SRR32217460, SRR32217461, SRR32217462, SRR32217463, SRR32217464, SRR32217465, SRR32217466, SRR32217467, SRR32217469, SRR32217470]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases 19. smb_3.5 D_rep1, 20. smb_3.5 D_rep2, 21. smb_3.5 D_rep3, 22. smb_4 D_rep1 and 14 more next to wild-type aliases 1. wildtype_3.5 D_rep1; 10. wildtype_5 D_rep1; 11. wildtype_5 D_rep2. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1223477
+      runs: [SRR32339267, SRR32339268, SRR32339269]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases CNP 1, CNP 2, CNP 3 next to wild-type aliases Col 1; Col 2; Col 3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1226758
+      runs: [SRR32453008, SRR32453009, SRR32453010, SRR32453011, SRR32453012, SRR32453013, SRR32453014, SRR32453016, SRR32453017]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases T3_10_1, T3_10_2, T3_10_3, T3_5_1 and 5 more next to wild-type aliases WT-1; WT-2; WT-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1262711
+      runs: [SRR33577893, SRR33577894, SRR33577895, SRR33577899, SRR33577902, SRR33577903]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases 1-atg13ab-0h, 1-atg13ab-24h, 1-atg13ab-3h, 2-atg13ab-0h and 2 more next to wild-type aliases 1-Col-0h; 1-Col-24h; 1-Col-3h. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1266856
+      runs: [SRR33675333, SRR33675334, SRR33675335, SRR33675336]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases TCP15SRD_1, TCP15SRD_2, tek1, tek2 next to wild-type aliases Col1; Col2. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1267522
+      runs: [SRR33692872, SRR33692873, SRR33692876, SRR33692877, SRR33692878, SRR33692879]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases 03_hy5_ctrl_r1, 04_hy5_cd_r1, 07_hy5_ctrl_r2, 08_hy5_cd_r2 and 2 more next to wild-type aliases 01_col_ctrl_r1; 02_col_cd_r1; 05_col_ctrl_r2. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1285879
+      runs: [SRR34355012, SRR34355013, SRR34355014, SRR34355015, SRR34355017, SRR34355018, SRR34355019, SRR34355020, SRR34355021, SRR34355022, SRR34355023, SRR34355024]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases rbp47abcc''_ctrl_1, rbp47abcc''_ctrl_2, rbp47abcc''_ctrl_3, rbp47abcc''_ctrl_4 and 8 more next to wild-type aliases Col-0_ctrl_1; Col-0_ctrl_2; Col-0_ctrl_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1297940
+      runs: [SRR34746647, SRR34746648, SRR34746649, SRR34746650, SRR34746651, SRR34746652, SRR34746659, SRR34746660, SRR34746662, SRR34746663, SRR34746664, SRR34746665, SRR34746666, SRR34746667, SRR34746668, SRR34746669, SRR34746670, SRR34746671, SRR34746673, SRR34746674, SRR34746675, SRR34746676, SRR34746677, SRR34746678, SRR34746679, SRR34746680, SRR34746681, SRR34746682]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases drm12_A, drm12_B, drm12_MMS_A, drm12_MMS_B and 24 more next to wild-type aliases Col-0_A; Col-0_B; Col-0_MMS_A. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1301811
+      runs: [SRR34876566, SRR34876567, SRR34876568, SRR34876569]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases nlp7_22_1, nlp7_22_2, nlp7_37_1, nlp7_37_2 next to wild-type aliases COL_22_1; COL_22_2; COL_37_1. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1347565
+      runs: [SRR35841087, SRR35841088, SRR35841089]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases mA81, mA82, mA83 next to wild-type aliases WT1; WT2; WT4. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1380040
+      runs: [SRR36418330, SRR36418331, SRR36418332, SRR36418333, SRR36418334, SRR36418335, SRR36418336, SRR36418339, SRR36418340]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases 396-1-1, 396-1-2, 396-1-3, 396-4-1 and 5 more next to wild-type aliases WT-1; WT-2; WT-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1405947
+      runs: [SRR36912020, SRR36912021, SRR36912022]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases atg2_2_1, atg2_2_2, atg2_2_3 next to wild-type aliases col_0_1; col_0_2; col_0_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1417898
+      runs: [SRR37082831, SRR37082832, SRR37082833, SRR37082834, SRR37082835, SRR37082836, SRR37082837, SRR37082838, SRR37082839, SRR37082840, SRR37082841, SRR37082843, SRR37082844, SRR37082845, SRR37082846, SRR37082847, SRR37082851, SRR37082852]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases OE5-CK-1, OE5-CK-2, OE5-CK-3, OE5-JA-1 and 14 more next to wild-type aliases WT-CK-1; WT-CK-2; WT-CK-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1420217
+      runs: [SRR37166226, SRR37166227, SRR37166229, SRR37166230, SRR37166231, SRR37166232]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases HDC1+Fe-1, HDC1+Fe-2, HDC1+Fe-3, HDC1-DFe-1 and 2 more next to wild-type aliases WT+Fe-1; WT+Fe-2; WT+Fe-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1433039
+      runs: [SRR38033166, SRR38033167, SRR38033168, SRR38033169, SRR38033174, SRR38033175]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases OXH_1, OXH_2, OXH_3, OXH_D_1 and 2 more next to wild-type aliases Col_1; Col_2; Col_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA1464431
+      runs: [SRR38493704, SRR38493705, SRR38493706, SRR38493707, SRR38493708, SRR38493713, SRR38493714, SRR38493715, SRR38493716, SRR38493717, SRR38493718, SRR38493719, SRR38493720, SRR38493721, SRR38493724, SRR38493727, SRR38493728, SRR38493729, SRR38493730, SRR38493731, SRR38493732, SRR38493733, SRR38493734, SRR38493735, SRR38493740, SRR38493741, SRR38493742, SRR38493743, SRR38493744, SRR38493745, SRR38493747, SRR38493748, SRR38493752, SRR38493753, SRR38493754, SRR38493755, SRR38493756, SRR38493757, SRR38493759, SRR38493760, SRR38493761, SRR38493762, SRR38493764, SRR38493765, SRR38493766, SRR38493767, SRR38493772, SRR38493773]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases PEC1ox-11-48h-1, PEC1ox-11-48h-2, PEC1ox-11-48h-3, PEC1ox-11-48h-4 and 44 more next to wild-type aliases WT-48h-1; WT-48h-2; WT-48h-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA223275
+      runs: [SRR1013899, SRR1013900, SRR1013909, SRR1013912, SRR1013913, SRR1013915, SRR1013918, SRR1013919, SRR1013921, SRR1013922, SRR1013923, SRR1013925]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases rd26ko-1, rd26ko-2, rd26ko-3, rd26ko-4 and 4 more next to wild-type aliases col-1; col-2; col-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA271927
+      runs: [SRR1773569, SRR1773570, SRR1773571, SRR1773572, SRR1773573, SRR1773574, SRR1773575, SRR1773576, SRR1773577, SRR1773578, SRR1773579, SRR1773580, SRR1773581, SRR1773582, SRR1773583, SRR1773584, SRR1773585]
+      reason: "genotype: Col-0/Ped-0 heterograft (BioSample ecotype Col-0/Ped-0)"
+      why: 'aliases FN_flower, FN_root, FN_rosette, FN_stemLower and 5 more next to wild-type aliases Col-FN-root; Col-FN-shoot; Col-N-root. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA289431
+      runs: [SRR2097138, SRR2097140, SRR2097143, SRR2097146]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases At12cys1_At12cys2b_6d_control, At12cys1_At12cys2b_6d_stress, At12cys1_At12cys2b_9d_control, At12cys1_At12cys2b_9d_stress next to wild-type aliases Col-0_6d_control; Col-0_6d_stress; Col-0_9d_control. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA307056
+      runs: [SRR3061385, SRR3061386, SRR3061387, SRR3061388, SRR3061389, SRR3061390]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases R-2-15, R-2-3, R-2-4, Y-3-2 and 2 more next to wild-type aliases WT1; WT2; WT3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA342199
+      runs: [SRR4195867, SRR4195869, SRR4195870, SRR4195871]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases myb29EMS-minus_AA, myb29EMS-plus_AA, myb29KO-minus_AA, myb29KO-plus_AA next to wild-type aliases Col0-minus_AA; Col0-plus_AA. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA352413
+      runs: [SRR4896630, SRR4896636, SRR4896637, SRR4896638, SRR4896639, SRR4896640]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases tga256_C1, tga256_C2, tga256_C3, tga256_UV1 and 2 more next to wild-type aliases WT_C1; WT_C2; WT_C3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA407426
+      runs: [SRR6108675, SRR6108676, SRR6108677, SRR6108678]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases R011lsd1Inf, R011lsd1K, R11lsd1Inf, R11lsd1K next to wild-type aliases R11Col0Inf; R11Col0K; R21Col0Inf. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA439197
+      runs: [SRR6868813, SRR6868814, SRR6868815]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases ANT-1, ANT-2, ANT-3 next to wild-type aliases WT-1; WT-2; WT-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA454174
+      runs: [SRR7081632, SRR7081633, SRR7081634, SRR7081635]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases atx51, atx51-replicate, atx52, atx52-replicate next to wild-type aliases wt1; wt1-replicate; wt2. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA490074
+      runs: [SRR7851398, SRR7851399, SRR7851400, SRR7851401, SRR7851402, SRR7851403, SRR7851404, SRR7851405, SRR7851406, SRR7851407, SRR7851410]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases MaRACK1-CK1, MaRACK1-CK2, MaRACK1-CK3, MaRACK1-D1 and 7 more next to wild-type aliases WT-CK1; WT-CK2; WT-CK3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA494862
+      runs: [SRR7970127, SRR7970132, SRR7970159, SRR7970172, SRR7970189, SRR7970190, SRR7970192, SRR7970193, SRR7970195, SRR7970196, SRR7970197, SRR7970198]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases OxP2K1 ATP replicate 1, OxP2K1 ATP replicate 2, OxP2K1 ATP replicate 3, OxP2K1 ATP replicate 4 and 8 more next to wild-type aliases Col-0 ATP replicate 1; Col-0 ATP replicate 2; Col-0 ATP replicate 3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA503682
+      runs: [SRR8149453, SRR8149454, SRR8149455, SRR8149456, SRR8149457, SRR8149458, SRR8149459, SRR8149460, SRR8149461]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases OE11, OE12, OE13, OE21 and 5 more next to wild-type aliases WT1; WT2; WT3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA509371
+      runs: [SRR8317840, SRR8317844, SRR8317845]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases oxs2_1, oxs2_2, oxs2_3 next to wild-type aliases WT_1; WT_2; WT_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA510885
+      runs: [SRR8357168, SRR8357172, SRR8357173]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases bbx30bbx31_1, bbx30bbx31_2, bbx30bbx31_3 next to wild-type aliases col_1; col_2; col_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA514839
+      runs: [SRR8436523, SRR8436524, SRR8436525, SRR8436534]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases cat2 biological replicate 1, cat2 biological replicate 2, cat2 biological replicate 3, cat2 biological replicate 4 next to wild-type aliases Col-0 biological replicate 1; Col-0 biological replicate 2; Col-0 biological replicate 3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA560053
+      runs: [SRR9961296, SRR9961297, SRR9961298, SRR9961299, SRR9961301, SRR9961304, SRR9961308, SRR9961309, SRR9961310, SRR9961311, SRR9961312, SRR9961313]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases fd-3_1_LD17, fd-3_1_LD3, fd-3_2_LD17, fd-3_2_LD3 and 8 more next to wild-type aliases WT_1_LD17; WT_1_LD3; WT_2_LD17. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA615807
+      runs: [SRR11431914, SRR11431915, SRR11431916, SRR11431917, SRR11431922, SRR11431923]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases arr -Fe1, arr -Fe3, arr -Fe4, arr control1 and 2 more next to wild-type aliases col -Fe2; col -Fe3; col -Fe4. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA629078
+      runs: [SRR11637987, SRR11637988]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases 530M_root_CK, 530M_root_Cd next to wild-type aliases WT_root_CK; WT_root_Cd. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA631322
+      runs: [SRR11775816, SRR11775820]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases jmj17-ABA-3 h next to wild-type aliases Col-0 h; Col-ABA-3 h. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA633227
+      runs: [SRR11815669, SRR11815670, SRR11815671, SRR11815672, SRR11815673, SRR11815674, SRR11815675, SRR11815677, SRR11815678, SRR11815679, SRR11815680, SRR11815681]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases iPLC, miR408OE, pif1 next to wild-type aliases wild type. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA641751
+      runs: [SRR12123477, SRR12123478, SRR12123479]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases dyt1-3bhlh089_1, dyt1-3bhlh089_2, dyt1-3bhlh089_3 next to wild-type aliases Col0_1; Col0_2; Col0_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA646824
+      runs: [SRR12245740, SRR12245741, SRR12245744, SRR12245745, SRR12245746, SRR12245747, SRR12245752, SRR12245753, SRR12245754, SRR12245755, SRR12245756, SRR12245757]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases rao9T1-AA-rep1, rao9T1-AA-rep2, rao9T1-AA-rep3, rao9T1-control-rep1 and 8 more next to wild-type aliases Col-AA-rep1; Col-AA-rep2; Col-AA-rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA653772
+      runs: [SRR12381507, SRR12381508, SRR12381509]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases emb1579 rep1, emb1579 rep2, emb1579 rep3 next to wild-type aliases WT rep1; WT rep2; WT rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA661065
+      runs: [SRR12576626, SRR12576627, SRR12576628]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases crn-10 Rep 1, crn-10 Rep 2, crn-10 Rep 3 next to wild-type aliases Col-0 Rep 1; Col-0 Rep 2; Col-0 Rep 3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA662689
+      runs: [SRR12630915, SRR12630916, SRR12630917, SRR12630918, SRR12630919, SRR12630920, SRR12630921, SRR12630923, SRR12630924]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases OE3-control-rep1, OE3-control-rep2, OE3-control-rep3, OE3-desubmg-rep1 and 5 more next to wild-type aliases Col-cont-rep1; Col-cont-rep2; Col-cont-rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA663767
+      runs: [SRR13109049, SRR13109050, SRR13109051, SRR13109052]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases Odr1-3-A, Odr1-3-B, Odr1-4-A, Odr1-4-B next to wild-type aliases Col-A; Col-B. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA664437
+      runs: [SRR12687363, SRR12687364, SRR12687365, SRR12687366, SRR12687377, SRR12687378]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases OR35S, OR35S_7d next to wild-type aliases WT; WT_7d. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA678483
+      runs: [SRR13063297, SRR13063298, SRR13063299, SRR13063300, SRR13063301, SRR13063302, SRR13063305, SRR13063306]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases hda15_ABA replicate 1, hda15_ABA replicate 2, hda15_mock replicate 1, hda15_mock replicate 2 and 4 more next to wild-type aliases Col_ABA replicate 1; Col_ABA replicate 2; Col_mock replicate 1. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA686693
+      runs: [SRR13291154, SRR13291155, SRR13291156, SRR13291157, SRR13291160, SRR13291161]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases ddcc, ddccmB, ddccmS next to wild-type aliases Col-0. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA694230
+      runs: [SRR13575633, SRR13575637, SRR13575638, SRR13575639, SRR13575641, SRR13575642]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases lks4 HK1, lks4 HK3, lks4 HK4, lks4 LK1 and 2 more next to wild-type aliases col HK1; col HK2; col HK3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA701129
+      runs: [SRR13674606, SRR13674607, SRR13674608, SRR13674610, SRR13674611, SRR13674612, SRR13674613, SRR13674614, SRR13674615, SRR13674616]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases abs3-1D_Cde, abs3-1D_Pri, abs3-1D_arf2_Cde, abs3-1D_arf2_Pri and 6 more next to wild-type aliases WT_Cde; WT_Pri. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA724748
+      runs: [SRR14316983, SRR14316991, SRR14316992, SRR14316993, SRR14316994, SRR14316995, SRR14316996, SRR14316997, SRR14316998]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases T1-1, T1-2, T1-3, T2-1 and 5 more next to wild-type aliases WT1-1; WT1-2; WT1-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA737003
+      runs: [SRR14792863, SRR14792864, SRR14792865, SRR14792866, SRR14792867, SRR14792868, SRR14792869, SRR14792871, SRR14792872, SRR28435057, SRR28435058, SRR28435059, SRR28435060, SRR28435061, SRR28435062]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases cpr5_prl1_fip1_rep1, cpr5_prl1_fip1_rep2, cpr5_prl1_fip1_rep3, cpr5_rep1 and 10 more next to wild-type aliases WT_rep1; WT_rep2; WT_rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA737012
+      runs: [SRR14793087, SRR14793088, SRR14793089]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases AS-cpr5_rep1, AS-cpr5_rep2, AS-cpr5_rep3 next to wild-type aliases AS-WT_rep1; AS-WT_rep2; AS-WT_rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA737284
+      runs: [SRR14801279, SRR14801280, SRR14801281]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases PAS-cpr5_rep1, PAS-cpr5_rep2, PAS-cpr5_rep3 next to wild-type aliases PAS-WT_rep1; PAS-WT_rep2; PAS-WT_rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA747146
+      runs: [SRR15173300, SRR15173301, SRR15173302, SRR15173307, SRR15173308, SRR15173309]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases cdfq Coty-rep-1, cdfq Coty-rep-2, cdfq Coty-rep-3, cdfq Hypo-rep-1 and 2 more next to wild-type aliases Col-0 Coty-rep-1; Col-0 Coty-rep-2; Col-0 Coty-rep-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA748845
+      runs: [SRR15212248, SRR15212249, SRR15212250, SRR15212251]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases 01_Phos0_RNAseq, 02_Phos0_RNAseq, 03_Phos0_RNAseq, 04_Phos0_RNAseq next to wild-type aliases 05_WT_RNAseq; 06_WT_RNAseq; 07_WT_RNAseq. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA756828
+      runs: [SRR15561557, SRR15561558, SRR15561559, SRR15561564, SRR15561565, SRR15561566, SRR15561579, SRR15561581, SRR15561582, SRR15561593, SRR15561594, SRR15561595]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases 07_spt4-R3_no_HS_rep1_S7, 08_spt4-R3_2-30_min_HS_rep1_S8, 09_spt4-R3_10_min_HS_rep1_S9, 19_spt4-R3_no_HS_rep2_S17 and 8 more next to wild-type aliases 01_Col0_no_HS_rep1_S1; 02_Col0_2-30_min_HS_rep1_S2; 03_Col0_10_min_HS_rep1_S3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA770668
+      runs: [SRR16301461, SRR16301462, SRR16301464, SRR16301466, SRR16301467, SRR16301468, SRR16301470, SRR16301471, SRR16301472]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases 04_X0_S, 05_X1_S, 06_X3_S, 08_X0_S and 5 more next to wild-type aliases 03_WT_S; 07_WT_S; 11_WT_S. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA799165
+      runs: [SRR17687191, SRR17687192, SRR17687193, SRR17687194, SRR17687195, SRR17687196, SRR17687197, SRR17687198, SRR17687203, SRR17687204, SRR17687205, SRR17687206, SRR17687207, SRR17687208, SRR17687209, SRR17687210]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases dxo1_2, dxo1_3, dxo1_5, dxo1_6 and 12 more next to wild-type aliases wt_1; wt_2; wt_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA799181
+      runs: [SRR17687260, SRR17687261, SRR17687262]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases clf-28 next to wild-type aliases Col-0. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA806346
+      runs: [SRR18002556, SRR18002557, SRR18002558, SRR18002559, SRR18002560, SRR18002561]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases rcd1_3_rep1, rcd1_3_rep2, rcd1_3_rep3, sro1_1_rep1 and 2 more next to wild-type aliases WT_rep1; WT_rep2; WT_rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA827694
+      runs: [SRR18802999, SRR18803000, SRR18803001]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases B1 co-9 #1, B2 co-9 #2, B3 co-9 #3 next to wild-type aliases A1 Col-0 #1; A2 Col-0 #2; A3 Col-0 #3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA833153
+      runs: [SRR18969381, SRR18969382, SRR18969383, SRR18969384, SRR18969389, SRR18969390]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases erf-0-1, erf-0-2, erf-0-3, erf-50-1 and 2 more next to wild-type aliases WT-0-1; WT-0-2; WT-0-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA833488
+      runs: [SRR19095547, SRR19095548, SRR19095549, SRR19095550, SRR19095555, SRR19095556]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases m0-1, m0-2, m0-3, m40-1 and 2 more next to wild-type aliases WT0-1; WT0-3; WT40-1. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA839519
+      runs: [SRR19281219, SRR19281227, SRR19281228]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases eno2-S-1, eno2-S-2, eno2-S-3 next to wild-type aliases WT-1; WT-2; WT-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA856854
+      runs: [SRR20046396, SRR20046404, SRR20046405, SRR20046406, SRR20046407, SRR20046408, SRR20046409, SRR20046410, SRR20046411]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases naa15 next to wild-type aliases WT. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA857332
+      runs: [SRR20076123, SRR20076124, SRR20076125, SRR20076126, SRR20076127, SRR20076128, SRR20076134, SRR20076135, SRR20076136, SRR20076137, SRR20076138]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases haehsl2_1, haehsl2_2, haehsl2_3, haehsl2_fal3_1 and 7 more next to wild-type aliases Col_1; Col_2; Col_3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA883985
+      runs: [SRR21699268, SRR21699269, SRR21699270, SRR21699271, SRR21699272, SRR21699273, SRR21699274, SRR21699276, SRR21699277, SRR21699278, SRR21699279, SRR21699280]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases int51 nac17_1 rep1, int51 nac17_1 rep2, int51 nac17_1 rep3, int51 rep1 and 8 more next to wild-type aliases Col-0 rep1; Col-0 rep2; Col-0 rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA887206
+      runs: [SRR21811120, SRR21811121, SRR21811122, SRR21811123, SRR21811124, SRR21811125, SRR21811127, SRR21811128, SRR21811129, SRR21811130, SRR21811131, SRR21811132]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases RipL1-M.1, RipL1-M.2, RipL1-M.3, RipL1-Pto.1 and 8 more next to wild-type aliases WT-M.1; WT-M.2; WT-M.3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA890583
+      runs: [SRR21930719, SRR21930720]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases VDof1-1, VDof1-2 next to wild-type aliases WT-1; WT-2. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA899318
+      runs: [SRR22225463, SRR22225464, SRR22225465, SRR22225466]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases vir_0h_1, vir_0h_2, vir_4h_1, vir_4h_2 next to wild-type aliases Col-0_0h_1; Col-0_0h_2; Col-0_4h_1. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA905116
+      runs: [SRR22412180, SRR22412181, SRR22412182, SRR22412183, SRR22412184, SRR22412185]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases TaASR3-1, TaASR3-2, TaASR3-3, TaASR3/Pst21674-1 and 2 more next to wild-type aliases WT-1; WT-2; WT-3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA916289
+      runs: [SRR22991816, SRR22991817, SRR22991827, SRR22991828]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases albah-C-1, albah-C-2, albah-H-1, albah-H-2 next to wild-type aliases Col-0-C-1; Col-0-C-2; Col-0-H-1. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA930058
+      runs: [SRR23293971, SRR23293972, SRR23293973, SRR23293974, SRR23293975, SRR23293976]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases acyr1/+ acyr2_RNA-seq_rep1, acyr1/+ acyr2_RNA-seq_rep2, acyr1/+ acyr2_RNA-seq_rep3, acyr1acyr2/+_RNA-seq_rep1 and 2 more next to wild-type aliases Col-0_RNA-seq_rep1; Col-0_RNA-seq_rep2; Col-0_RNA-seq_rep3. Reviewed with the model and checked against ENA (2026-11-24).'
+    - study: PRJNA936625
+      runs: [SRR23595724, SRR23595725]
+      reason: "genotype: mutant / transgenic (named in the sample alias)"
+      why: 'aliases MBD3-embryo-1, MBD3-embryo-2 next to wild-type aliases Col-0-embryo-1; Col-0-embryo-2. Reviewed with the model and checked against ENA (2026-11-24).'
   Sorghum_bicolor:
     - study: PRJNA302593
       runs: [SRR2924917, SRR2924918]
