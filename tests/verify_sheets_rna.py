@@ -118,6 +118,43 @@ def check_assays() -> None:
     study_level = run(experiment_title="RNAseq of rog mutants", sample_title="Col0_cont-rep3")
     assert classify.transgene_flag(study_level, reference) == ""
     assert classify.transgene_flag(study_level | {"sample_title": "rep3"}, reference)
+    # Inducible and tagged lines (2026-11-23 gold review).
+    for title in (
+        "seedlings of VP16-GR (DEX)",
+        "pER8-LEC2-72h-R1",
+        "VPS34 DN line2_rep3",
+        "ECT2 HyperTRIBE FLAG-ADAR",
+        "tps1-2 GVG::TPS1",
+    ):
+        assert classify.transgene_flag(run(sample_title=title), reference), title
+    # The line is often named only in the sample alias.
+    for alias in (
+        "bon123pad4-1_MOCK1",
+        "OE-E2Fa-DPa-3",
+        "brx_mutant",
+        "DN2-4 VPS34 DN",
+        "cat2 gsnor1-3 biological replicate 4",
+        "eno2-1",
+        "WT/p35S::CUC2:GR DEX",
+    ):
+        assert classify.alias_flag(run(sample_alias=alias), reference), alias
+    for alias in (
+        "GSM8014186",
+        "SAMD01597362",
+        "E-MTAB-7203:L5 23 set_A",
+        "Col-0_mock_1",
+        "WT_KO_line_pool",
+        "control-1_S11",
+        "GR_leaf_rep1",
+        "ENO2-1",
+        "Pb0-1",
+        "NP3-2",
+        "rep1-2",
+        "flg22-2",
+        "Irradiated or unirradiated",
+        "FN.pp5-1",
+    ):
+        assert classify.alias_flag(run(sample_alias=alias), reference) == "", alias
     for title in ("RNA-seq of Col-0 (control for 10X tpp-KO)", "chromatin interaction network"):
         assert classify.assay_flag(run(experiment_title=title)) == "", title
     assert classify.assay_flag(run(sample_title="chromatin-bound RNA")).endswith("fraction)")

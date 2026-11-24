@@ -67,3 +67,5 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-23 | Sorghum_bicolor | atac-seq | measured rebuild; gold regenerated from it (2026-11-23) | 1.0 | 1.0 | 1.0 | 3/3 |
 | 2026-11-23 | Sorghum_bicolor | dap-seq | measured rebuild; gold regenerated from it (2026-11-23) | 1.0 | 1.0 | 1.0 | 1/1 |
 | 2026-11-23 | Sorghum_bicolor | scatac-reads | measured rebuild; gold regenerated from it (2026-11-23) | 1.0 | 1.0 | 1.0 | 3/3 |
+| 2026-11-23 | Arabidopsis_thaliana | rna-seq | measured rebuild with the sample-alias rule and curated exceptions; gold v2 | 1.0 | 1.0 | 1.0 | 18/18 |
+| 2026-11-23 | Arabidopsis_thaliana | dap-seq | rebuild with PRJNA1086931 genotype Col-0 (dap_studies.yaml) | 1.0 | 1.0 | 1.0 | 12/12 |

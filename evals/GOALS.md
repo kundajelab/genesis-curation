@@ -8,9 +8,9 @@ LLM steps and coverage, and says what to work on next.
 
 | Area | Measure | Target | Now (2026-11-19) |
 | --- | --- | --- | --- |
-| Sheets | run precision and recall, every gold set | ≥ 0.95 | 2026-11-23, gold regenerated: 1.0 on all, except A. thaliana RNA-seq precision 0.9968 (the 104 reviewed runs plus 3 cell-culture runs the builder still keeps) |
+| Sheets | run precision and recall, every gold set | ≥ 0.95 | 1.0 on all (2026-11-23, gold v2) |
 | Sheets | accuracy on every workflow field | ≥ 0.98 | 1.0 |
-| Sheets | traps passing | all | all but 3 RNA-seq traps added 2026-11-23 (sample alias, transgene markers, subcellular fractions; builder fix pending) |
+| Sheets | traps passing | all | all (2026-11-23: 18/18 RNA-seq) |
 | Adjudication | agreement with the verified set, every workflow and species, dev and test | ≥ 0.98 | 1.0 on all (RNA, ATAC, TSS, DAP; rice RNA) |
 | Adjudication | runs answered uncertain | ≤ 5% | RNA 1.9% dev, 6.5% test; ATAC 7.1%, TSS 8.3% dev; DAP and rice 0% |
 | Triage | `match_not_excluded` (studies that match a gold study and are not excluded) | ≥ 0.98 | 1.0 |
@@ -41,10 +41,9 @@ per change to confirm it holds.
 
 ## Next
 
-1. RNA-seq builder: read the sample alias for mutant and transgene names, add the transgene
-   markers found in the 2026-11-23 review (GR, pER8, HyperTRIBE, DN, DD), leave out subcellular
-   fractions and runs with the same reads as a left-out run, and read DAP-seq genotypes from
-   the BioSample (PRJNA1086931). The three new RNA-seq traps then pass.
+1. Duplicates of left-out runs: the duplicate probe compares kept runs only, so a
+   resubmission of a mutant run is kept unless its own metadata says mutant (SRR27606461,
+   now an exception). Read the BioSample genotype in DAP-seq instead of per-study entries.
 2. Publish measured rice sheets (RNA-seq with the model review, ATAC, DAP, TSS, scATAC) and
    add rice to `gold.yaml`, so rice is scored like the other two species.
 3. Bring uncertain answers under 5% for ATAC and TSS; read which runs the model leaves

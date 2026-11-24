@@ -5,6 +5,34 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-23, later: A. thaliana RNA-seq gold v2
+
+The builder now does what the review below did by hand, and the A. thaliana RNA-seq gold is
+its measured rebuild (33,283 → 33,031 rows; build and gold agree at 1.0 with 18/18 traps):
+- `classify.alias_flag` reads the sample alias: a transgene word, a promoter fusion (`::`,
+  even beside `WT`), or a mutant allele in lower case (`pad4-1`, `gsnor1-3`; upper case such
+  as `ENO2-3` or `Pb0-3` is a protein or a treatment, and irradiation words are a
+  treatment). `TRANSGENE` also names GR fusions, pER8, GVG, HyperTRIBE and DN lines.
+- The 66 reviewed runs no rule sees (`arr1 ...`, `M_*`, `CB_*`, the Mock of a pER8 line, ...)
+  are curated exceptions in `sheets/data/exceptions.yaml`, with their evidence.
+
+Newly left out, each checked against the ENA sample aliases (and BioSample where unclear):
+- 249 runs of mutant or transgenic lines from 45 studies that the review had not reached:
+  lower-case alleles (gsnor1-3, pepr1-2, ago10-1, ga1-13, elf7-3, ssrp1-2, ap2-12, sdg8-1,
+  bbx5-1, ...), OE/OX/KO/kd lines, GFP fusions, `p35S::CUC2:GR`, and inducible lines
+  (DOF2.1-GR, PTLg-GR, pER8-LEC2, pER8::YUC6, GVG::TPS1, ECT2 HyperTRIBE).
+- 6 duplicate submissions the previous build had missed (PRJNA910862, PRJNA445833,
+  PRJNA525432); both copies had been kept.
+
+Back in: the 3 PRJNA412215 runs. A Col-0 cell culture is a kept tissue, and the culture
+conditions that led to the 2026-11-19 drop are a treatment, which is kept since #13.
+
+Not flagged, on purpose: PRJNA904293's `pp5-1`-style codes (BioSample ecotype Col-0, no
+genotype stated) and uppercase labels such as `MAC5-1`.
+
+DAP-seq: PRJNA1086931 now has `genotype: Col-0` in `dap_studies.yaml`, so the build gives the
+gold's sample IDs.
+
 ## 2026-11-23: regenerated from the measured rebuilds
 
 Every gold set was replaced by its measured rebuild (`genesis sheets build` with read
@@ -44,11 +72,11 @@ The 3 PRJNA412215 cell-culture runs dropped on 2026-11-19 stay out (`tissue: cel
 Per study: PRJNA729190 27, PRJDB35644 15; PRJNA1000649, PRJNA602051, PRJNA907415, PRJDB33703,
 PRJNA1271688 and PRJNA625276 6 each; PRJNA843332, PRJEB56577 and PRJEB28655 5 each;
 PRJNA1025919 and PRJNA1064056 3 each; PRJNA1065151 and PRJNA867415 2 each; PRJNA1199402 1.
-The builder does not catch
-these yet; traps `rna-mutant-named-only-in-alias`, `rna-transgenic-line-in-title` and
-`rna-subcellular-fraction` fail on the rebuild until it reads the sample alias and these
-transgene markers. A random check of 60 other added runs found 1 to 3 more such lines (about
-2–5% of the about 19,000 added RNA-seq runs).
+Traps
+`rna-mutant-named-only-in-alias`, `rna-transgenic-line-in-title` and
+`rna-subcellular-fraction` record them; the builder catches them since gold v2 (above).
+A random check of 60 other added runs found 1 to 3 more such lines; gold v2 removed 249 of
+them.
 
 **DAP-seq label.** PRJNA1086931's rows keep genotype Col-0, as in the old gold (BioSample
 genotype Col-0); the rebuild names them `unknown` because it read no genotype.

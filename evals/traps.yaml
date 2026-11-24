@@ -502,3 +502,22 @@ traps:
     expect: excluded
     reason_class: assay
     why: Chromatin-bound and nuclear RNA fractions (PRJNA843332), not whole-cell RNA-seq.
+  - id: rna-allele-in-alias
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR8436521, SRR18587585, SRR19646406]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      Only the sample alias names the line: 'cat2 gsnor1-3', 'pepr1-2 pepr2-1' (mutant
+      alleles, written in lower case) and 'WT/p35S::CUC2:GR' (a promoter fusion beside the
+      wild-type background).
+  - id: rna-uppercase-alias-is-not-an-allele
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR33133704, SRR10582880, SRR5378413]
+    expect: included
+    why: >-
+      Aliases that look like alleles but name a treatment: 'ENO2-3' (yeast ENO2 protein),
+      'Pb0-3' (lead stress, 0 h) and 'Irradiated or unirradiated ... protoplasts'. Treated
+      samples are kept (issue #13); mutant alleles are written in lower case.

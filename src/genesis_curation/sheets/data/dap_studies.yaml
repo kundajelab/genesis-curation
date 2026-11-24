@@ -134,6 +134,11 @@ studies:
     pairs:
       - {match: '.', control: pIXHALO_Col-B_b}
     notes: {'^ps-': heterodimer seq-DAP}
+  PRJNA1086931:
+    species: Arabidopsis_thaliana
+    name: MYB67 DAP (root gDNA)
+    # ENA's run fields have no ecotype; the BioSample genotype attribute is Col-0.
+    genotype: Col-0
   # Sorghum bicolor
   PRJNA1301280:
     species: Sorghum_bicolor

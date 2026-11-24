@@ -8,8 +8,9 @@ Reasons are checked in this order; the first that applies is recorded:
  6. a curated exception (data/exceptions.yaml);
  7. read files: paired run served as one file, no files, FASTQ under 1 MB (files.py);
  8. within-study title rules; 9. a transgene or mutant named in the titles;
-10. duplicate submission of another kept run (same first reads);
-11. strandedness: download failed, too few reads on genes, unclear, or not measured.
+10. a transgene, promoter fusion or lower-case mutant allele named in the sample alias;
+11. duplicate submission of another kept run (same first reads);
+12. strandedness: download failed, too few reads on genes, unclear, or not measured.
 """
 
 from __future__ import annotations
@@ -149,6 +150,7 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
                             titles[run["study_accession"]].wild_type,
                             stated[accession] if run["study_accession"] in mixed_studies else "",
                         ),
+                        classify.alias_flag(run, titles[run["study_accession"]].wild_type),
                     )
                     if reason
                 ),

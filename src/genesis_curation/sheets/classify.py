@@ -163,8 +163,19 @@ SHAPE = re.compile(r"(?<![A-Za-z0-9])SHAPE(?![A-Za-z0-9])")  # upper case only: 
 TRANSGENE = re.compile(
     L + r"expressing|overexpress\w*|over ?expression|over-?expressing|transgenic|35s|"
     r"crispr|cas9|amirna|rnai|knock-?down|knock-?out|complemented|complementation|gfp|yfp|"
-    r"mcherry|oe|ox|ko|kd|mutants?|t-?dna|ems|irradiat\w*" + R,
+    r"mcherry|oe|ox|ko|kd|mutants?|t-?dna|ems|irradiat\w*|"
+    # inducible and tagged lines: VP16-GR, pER8-LEC2, GVG-NtMEK2DD, HyperTRIBE, VPS34 DN line
+    r"[a-z0-9]+-gr|per8|gvg|hypertribe|dn|dominant[- ]negative" + R,
     re.I,
+)
+# A sample alias that is an accession or a GEO/ArrayExpress id says nothing about the sample.
+ACCESSION_ALIAS = re.compile(r"^(sam[nde][a-z]?\d|gsm\d|[sed]rs\d|e-[a-z]+-\d+:?$)", re.I)
+# A mutant allele as aliases write it, in lower case (pad4-1 in bon123pad4-1, gsnor1-3, ga1-13).
+# Upper case is a protein, element or treatment (ENO2-1 protein, Pb0-1 lead, MAC5-1), and
+# replicate, batch, control and treatment tokens look the same (rep1-2, ck1-0, flg22-2).
+ALIAS_ALLELE = re.compile(
+    r"(?<![a-zA-Z])((?!(rep|flg|ck|np|set|run|day|exp|br|bio|tech|lane|plate|batch|sample|block|"
+    r"time|pgp|pp|col|s|r|t)\d)[a-z]{2,6}\d{1,3}-\d{1,3})(?![a-zA-Z0-9])"
 )
 # Within-study title rules (from the ATAC curation): markers other titles of the study use.
 TITLE_WILD_TYPE = r"(?<![a-z])(wt|wild[- ]?type|wildtype)(?![a-z])"
@@ -425,6 +436,24 @@ def transgene_flag(run: Run, reference: re.Pattern[str], genotype: str = "") -> 
         sample = None if reference.search(experiment_title) else sample
     match = sample or (study if not reference.search(sample_title) else None)
     return f"title suggests a transgene or mutant ({match.group(1)})" if match else ""
+
+
+def alias_flag(run: Run, reference: re.Pattern[str]) -> str:
+    """A transgene word in the sample alias, which submitters often use for the line name
+    ("bon123pad4-1_MOCK1", "OE-E2Fa-DPa-3") while the genotype field gives the background. An
+    alias that names the reference or wild type, or is an accession, does not count."""
+    alias = run.get("sample_alias", "").strip()
+    if not alias or ACCESSION_ALIAS.match(alias):
+        return ""
+    # A promoter fusion names a transgene even beside the background ("WT/p35S::CUC2:GR").
+    if "::" in alias:
+        return "sample alias suggests a transgene or mutant (::)"
+    if reference.search(alias):
+        return ""
+    # Irradiation and EMS name a treatment of the sample ("Irradiated or unirradiated").
+    words = (m for m in TRANSGENE.finditer(alias) if not re.match(r"(?i)irradiat|ems$", m.group(1)))
+    match = next(words, None) or ALIAS_ALLELE.search(alias)
+    return f"sample alias suggests a transgene or mutant ({match.group(1)})" if match else ""
 
 
 def title_label(run: Run) -> str:
