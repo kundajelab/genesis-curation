@@ -70,3 +70,5 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-23 | Arabidopsis_thaliana | rna-seq | measured rebuild with the sample-alias rule and curated exceptions; gold v2 | 1.0 | 1.0 | 1.0 | 18/18 |
 | 2026-11-23 | Arabidopsis_thaliana | dap-seq | rebuild with PRJNA1086931 genotype Col-0 (dap_studies.yaml) | 1.0 | 1.0 | 1.0 | 12/12 |
 | 2026-11-24 | Arabidopsis_thaliana | rna-seq | measured rebuild with the reviewed alias exceptions; gold v3 | 1.0 | 1.0 | 1.0 | 20/20 |
+| 2026-11-24 | Sorghum_bicolor | scatac-reads | multiome rows name the 737K-arc-v1 whitelist (issue #17) | 1.0 | 1.0 | 1.0 | 3/3 |
+| 2026-11-24 | Arabidopsis_thaliana | scatac-reads | multiome rows name the 737K-arc-v1 whitelist (issue #17) | 1.0 | 1.0 | 1.0 | 9/9 |

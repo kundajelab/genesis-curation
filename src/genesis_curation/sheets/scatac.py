@@ -23,7 +23,7 @@ A library's reason is the first that applies:
     BioSample and spot count, usually a BAM), or listed in `same_as`;
  5. excluded by hand (`exclude` in data/scatac.yaml);
  6. read structure: every run needs exactly one barcode read (16 bases: 10x-atac-v1 with
-    the 737K-cratac-v1 whitelist; 24 bases: 10x-multiome-atac, no whitelist; 28 bases:
+    the 737K-cratac-v1 whitelist; 24 bases: 10x-multiome-atac with 737K-arc-v1; 28 bases:
     sci-atac, a sample index then the combinatorial cell index, no whitelist) and two
     genomic reads of at least 30 bases. A barcode read of another length is reported as
     such.
@@ -59,9 +59,13 @@ from .tabs import is_gsa, tab_rows
 
 WORKFLOW = "scatac-reads"
 # Barcode read length -> (chemistry, whitelist), as workflows/scatac-reads.nf reads them.
+# The whitelist follows the chemistry, not the assay: multiome ATAC barcodes come from Cell
+# Ranger ARC's ATAC list (737K-arc-v1, issue #17), which the workflow cannot download, so it
+# must be in the references folder. Read length cannot tell 10x kits that share a read
+# structure apart (Next GEM from GEM-X); such a kit needs its own chemistry and list.
 BARCODES = {
     16: ("10x-atac-v1", "737K-cratac-v1.txt"),
-    24: ("10x-multiome-atac", "-"),
+    24: ("10x-multiome-atac", "737K-arc-v1.txt"),
     28: ("sci-atac", "-"),
 }
 MIN_GENOMIC = 30
