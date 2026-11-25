@@ -5,6 +5,22 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-25, later: A. thaliana RNA-seq gold v6
+
+The rebuild drops 24 runs from 6 studies (31,305 → 31,281 rows) and changes nothing else.
+These are protoplasts and callus that the cell-culture rule missed because the tissue
+field says root, leaf or nothing; the word is only in the sample alias (PRJNA380494, root-tip
+protoplasts), sample title (PRJNA881937 `Pooled protoplasts`, PRJNA649267
+`At_root_proto_RNA`, PRJDB12627 `Callus_0day_WT`), dev_stage (PRJNA941486 `after
+protoplast`) or protocol (PRJEB15204, calli on shoot-induction medium). Found by searching
+every kept run's ENA fields for protoplast and callus words and reading each hit; bulk
+tissue controls in the same studies (`before protoplast`, `non-dissociated`, `bulk`) are
+kept. SRR5378413 was listed as a kept example in the trap
+`rna-uppercase-alias-is-not-an-allele` and was removed from it.
+
+A last model batch reviewed about 220 runs in 22 more studies and found nothing to leave out;
+the spending cap stopped the rest.
+
 ## 2026-11-25, audit: A. thaliana RNA-seq gold v5
 
 The rebuild drops 339 runs from 49 studies (31,644 → 31,305 rows) and changes nothing else.

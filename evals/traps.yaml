@@ -515,12 +515,13 @@ traps:
   - id: rna-uppercase-alias-is-not-an-allele
     species: Arabidopsis_thaliana
     workflow: rna-seq
-    runs: [SRR33133704, SRR10582880, SRR5378413]
+    runs: [SRR33133704, SRR10582880]
     expect: included
     why: >-
-      Aliases that look like alleles but name a treatment: 'ENO2-3' (yeast ENO2 protein),
-      'Pb0-3' (lead stress, 0 h) and 'Irradiated or unirradiated ... protoplasts'. Treated
-      samples are kept (issue #13); mutant alleles are written in lower case.
+      Aliases that look like alleles but name a treatment: 'ENO2-3' (yeast ENO2 protein) and
+      'Pb0-3' (lead stress, 0 h). Treated samples are kept (issue #13); mutant alleles are
+      written in lower case. (SRR5378413 was dropped from this trap on 2026-11-25: its alias
+      names protoplasts, which are left out.)
   - id: rna-mutant-named-against-wild-type-aliases
     species: Arabidopsis_thaliana
     workflow: rna-seq
@@ -575,3 +576,21 @@ traps:
     why: >-
       Mock samples of inducible transgenic lines ('cyc-mock1' of p16:HEC1-GR, GUS_XVE):
       untreated, but not wild-type Col-0.
+  - id: rna-protoplast-named-outside-tissue-fields
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR5378413, SRR25360750, SRR21621991]
+    expect: excluded
+    reason_class: tissue
+    why: >-
+      Protoplasts named only in the sample alias (PRJNA380494), dev_stage "after protoplast"
+      (PRJNA941486) or sample title "Pooled protoplasts" (PRJNA881937); the tissue field says
+      root or leaf.
+  - id: rna-tissue-before-protoplasting-kept
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR25360747, ERR10753228, SRR21621994]
+    expect: included
+    why: >-
+      Bulk tissue controls of protoplasting studies: dev_stage "before protoplast", "12h
+      non-dissociated", and "P. syringae-treated Arabidopsis leaf (bulk)".
