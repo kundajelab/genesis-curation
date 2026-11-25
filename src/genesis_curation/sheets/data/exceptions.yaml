@@ -637,6 +637,203 @@ rna-seq:
       runs: [SRR10236253]
       reason: "genotype: mutant / transgenic (cop1 mutant)"
       why: 'quoted metadata: "cop1 stamens rep.1". Model audit of gold v3 (2026-11-24).'
+    # Model audit, second pass (2026-11-25): 5,811 kept runs of 634 more random studies of gold v4.
+    - study: PRJNA847965
+      runs: [SRR19619777, SRR19619778, SRR19619779, SRR19619780, SRR19619781, SRR19619782, SRR19619783, SRR19619784, SRR19619785, SRR19619786, SRR19619787, SRR19619788, SRR19619789, SRR19619790, SRR19619791, SRR19619792, SRR19619793, SRR19619794, SRR19619795, SRR19619796, SRR19619797, SRR19619798, SRR19619799, SRR19619800]
+      reason: "genotype: mutant / transgenic (ch1 mutant)"
+      why: 'quoted metadata: "Ch1 whole seedlings". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA403945
+      runs: [SRR6023538, SRR6023539, SRR6023540, SRR6023541, SRR6023542, SRR6023543, SRR6023544, SRR6023545, SRR6023546, SRR6023547, SRR6023548, SRR6023549, SRR6023550, SRR6023551, SRR6023552, SRR6023553, SRR6023554, SRR6023555]
+      reason: "tissue: cell culture (protoplasts, empty-vector control)"
+      why: 'quoted metadata: "RNA-seq of Arabidopsis protoplasts: EV_Rep_1_14h". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1330207
+      runs: [SRR35436387, SRR35436388, SRR35436389, SRR35436390, SRR35436391, SRR35436392, SRR35436393, SRR35436394, SRR35436398, SRR35436399, SRR35436402, SRR35436403, SRR35436404, SRR35436405, SRR35436406, SRR35436407]
+      reason: "not standard RNA-seq (subcellular fraction)"
+      why: 'quoted metadata: "Col_0_Nuc_HS_5". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA880805
+      runs: [SRR21587747, SRR21587748, SRR21587749, SRR21587750, SRR21587751, SRR21587752, SRR21587753, SRR21587754, SRR21587755, SRR21587756, SRR21587757, SRR21587758, SRR21587759, SRR21587760, SRR21587761, SRR21587762]
+      reason: "genotype: mutant / transgenic (dCas9-KRAB line)"
+      why: 'quoted metadata: "pTA7002-Dexp:KRAB". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1260971
+      runs: [SRR33482790, SRR33482792, SRR33482793, SRR33482794, SRR33482797, SRR33482798, SRR33482800, SRR33482801, SRR33482802, SRR33482803, SRR33482805, SRR33482807, SRR33482808, SRR33482812, SRR33482813]
+      reason: "genotype: mutant / transgenic (the1-4 mutant)"
+      why: 'quoted metadata: "the1-4". Model audit of gold v4 (2026-11-25).'
+    - study: PRJDB16204
+      runs: [DRR492778, DRR492779, DRR492780, DRR492781, DRR492782, DRR492783, DRR492784, DRR492785, DRR492786, DRR492787, DRR492788, DRR492789, DRR492790, DRR492791]
+      reason: "genotype: mutant / transgenic (pWRKY33-LUC reporter line)"
+      why: 'quoted metadata: "pWRKY33-LUC". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA789586
+      runs: [SRR17266933, SRR17266934, SRR17266936, SRR17266937, SRR17266938, SRR17266947, SRR17266948, SRR17266950, SRR17266951, SRR17266952, SRR17266958, SRR17266967, SRR17266968, SRR17266970]
+      reason: "not standard RNA-seq (intron capture)"
+      why: 'quoted metadata: "Intron capture for Arabidopsis leafs at 12hr after Pseudomonas syringae pv.tomato AvrRpt2 (Pst AvrRpt2) infection". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1125006
+      runs: [SRR29437845, SRR29437846, SRR29437847, SRR29437848, SRR29437853, SRR29437854, SRR29437855, SRR29437856, SRR29437857, SRR29437858, SRR29437859, SRR29437860]
+      reason: "genotype: mutant / transgenic (p4h5 lines, BioSample phenotype p*)"
+      why: 'quoted metadata: "p24_4". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1227269
+      runs: [SRR32478687, SRR32478688, SRR32478689, SRR32478690, SRR32478691, SRR32478692, SRR32478693, SRR32478694, SRR32478699, SRR32478700, SRR32478701, SRR32478702]
+      reason: "genotype: mutant / transgenic (iNAC58 inducible line)"
+      why: 'quoted metadata: "5-d-old seedlings of iNAC58 treated with 5μM beta estradiol for 24h". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1241715
+      runs: [SRR32847482, SRR32847483, SRR32847484, SRR32847485, SRR32847487, SRR32847488, SRR32847489, SRR32847490, SRR32847491, SRR32847492, SRR32847493, SRR32847494]
+      reason: "genotype: mutant / transgenic (35S:AOX1c line)"
+      why: 'quoted metadata: "Col35SAOX1C-2-HL-rep3". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA408295
+      runs: [SRR6057925, SRR6057926, SRR6057929, SRR6057930, SRR6057933, SRR6057934, SRR6057937, SRR6057938, SRR6057941, SRR6057942, SRR6057945, SRR6057946]
+      reason: "not standard RNA-seq (translatome)"
+      why: 'quoted metadata: "Col0_p35S_HF-RPL18-IP Rep1". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA610830
+      runs: [SRR11252108, SRR11252109, SRR11252110, SRR11252111, SRR11252112, SRR11252113, SRR11252114, SRR11252115, SRR11252116, SRR11252117, SRR11252118, SRR11252119]
+      reason: "genotype: mutant / transgenic (pAP1:AP1:GR ap1 cal)"
+      why: 'quoted metadata: "pAP1:AP1:GR ap1 cal, DEX treated, 8d, rep1". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA666511
+      runs: [SRR12822927, SRR12822928, SRR12822933, SRR12822938, SRR12822943, SRR12822944, SRR12822945, SRR12822946, SRR12822947, SRR12822948, SRR12822949, SRR12822950]
+      reason: "genotype: mutant / transgenic (coe2 mutant)"
+      why: 'quoted metadata: "HiSeq X Ten sequencing: coe2leaf_control_3". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA511671
+      runs: [SRR8368645, SRR8368646, SRR8368647, SRR8368648, SRR8368649, SRR8368650, SRR8368651, SRR8368652, SRR8368653, SRR8368654]
+      reason: "not standard RNA-seq (circular RNA)"
+      why: 'quoted metadata: "RNase R+". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA896583
+      runs: [SRR22130837, SRR22130838, SRR22130839, SRR22130840, SRR22130841, SRR22130847, SRR22130848, SRR22130849, SRR22130850, SRR22130851]
+      reason: "genotype: other accession / cultivar (Col-3)"
+      why: 'quoted metadata: "Col-3". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA732996
+      runs: [SRR14663585, SRR14663586, SRR14663587, SRR14663648, SRR14663649, SRR14663650, SRR14663651, SRR14663652, SRR14663653]
+      reason: "genotype: mutant / transgenic (atx1 atx2 atxr7 mutant)"
+      why: 'quoted metadata: "mRNA-seqofArabidopsisthaliana:seedlingatx1/2/r7_rep3". Model audit of gold v4 (2026-11-25).'
+    - study: PRJDB43547
+      runs: [DRR1100841, DRR1100842, DRR1100843, DRR1100844, DRR1100845, DRR1100846, DRR1100847, DRR1100848]
+      reason: "genotype: mutant / transgenic (gDCL2 construct line)"
+      why: 'quoted metadata: "gDCL2-9-5w-RNA.R1 (SAMC4341122)". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1006063
+      runs: [SRR25658654, SRR25658655, SRR25658656, SRR25658658, SRR25658659, SRR25658660, SRR25658661]
+      reason: "not standard RNA-seq (subcellular fraction)"
+      why: 'quoted metadata: "Nuclei sorted by FANS(FACS)". Model audit of gold v4 (2026-11-25).'
+    - study: PRJDB17134
+      runs: [DRR516705, DRR516706, DRR516707, DRR516708, DRR516709, DRR516710]
+      reason: "genotype: mutant / transgenic (VP16-GR empty-vector line)"
+      why: 'quoted metadata: "VP16-GR-vector[w/ no insert]". Model audit of gold v4 (2026-11-25).'
+    - study: PRJDB39170
+      runs: [DRR850605, DRR850606, DRR850607, DRR850608, DRR850609, DRR850610]
+      reason: "genotype: mutant / transgenic (etp1 etp2 mutant)"
+      why: 'quoted metadata: "etp1etp2_1 (SAMC5781158)". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1225696
+      runs: [SRR32398210, SRR32398211, SRR32398212, SRR32398213, SRR32398214, SRR32398215]
+      reason: "genotype: mutant / transgenic (ApWHY1 overexpression)"
+      why: 'quoted metadata: "WCLOE3". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA358016
+      runs: [SRR5120187, SRR5120188, SRR5120189, SRR5120190, SRR5120191, SRR5120192]
+      reason: "genotype: hybrid Col-0 x C24 triploid"
+      why: 'quoted metadata: "C24/Col-0". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA388005
+      runs: [SRR5610318, SRR5610319, SRR5610320, SRR5610321, SRR5610322, SRR5610323]
+      reason: "genotype: mutant / transgenic (prp39-1 mutant)"
+      why: 'quoted metadata: "PRP39-1-4 biological replicate 2". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA397570
+      runs: [SRR5909365, SRR5909366, SRR5909367, SRR5909368, SRR5909369, SRR5909370]
+      reason: "genotype: other accession / cultivar (Col-S introgression line)"
+      why: 'quoted metadata: "Col-S". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA484410
+      runs: [SRR7642977, SRR7642978, SRR7642979, SRR7642983, SRR7642984, SRR7642985]
+      reason: "genotype: mutant / transgenic (CYCD6::GUS-GFP sorted cells)"
+      why: 'quoted metadata: "CYCD6::GUS-GFP sorted cells". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA544879
+      runs: [SRR9129092, SRR9129093, SRR9129094, SRR9129095, SRR9129098, SRR9129100]
+      reason: "genotype: mutant / transgenic (myb70 mutant)"
+      why: 'quoted metadata: "saltmyb70b3_1". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA645474
+      runs: [SRR12198385, SRR12198386, SRR12198387, SRR12198388, SRR12198393, SRR12198394]
+      reason: "genotype: other accession / cultivar (Ler)"
+      why: 'quoted metadata: "lersbergTM-4h1". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA816434
+      runs: [SRR18331336, SRR18331341, SRR18331343, SRR18331351, SRR18331352, SRR18331354]
+      reason: "not standard RNA-seq (subcellular fraction)"
+      why: 'quoted metadata: "nucRNA-Seq of A.thaliana seedlings". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1126653
+      runs: [SRR29490287, SRR29490288, SRR29490309, SRR29490310, SRR29490311]
+      reason: "not standard RNA-seq (3' end)"
+      why: 'quoted metadata: "3''RACE sequencing data from mutant lines". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA382891
+      runs: [SRR5448374, SRR5448375, SRR5448376, SRR5448377]
+      reason: "genotype: mutant / transgenic (pWOX5::GFP sorted cells)"
+      why: 'quoted metadata: "WOX5::GFP sorted fluorecent cells were harvested for RNA extraction". Model audit of gold v4 (2026-11-25).'
+    - study: PRJEB12877
+      runs: [ERR1295143, ERR1295144, ERR1295145]
+      reason: "genotype: mutant / transgenic (GA20ox1 overexpression)"
+      why: 'quoted metadata: "GA20ox1 OE". Model audit of gold v4 (2026-11-25).'
+    - study: PRJEB17880
+      runs: [ERR1727059, ERR1727060, ERR1727061]
+      reason: "tissue: cell culture (callus)"
+      why: 'quoted metadata: "plant callus". Model audit of gold v4 (2026-11-25).'
+    - study: PRJEB20510
+      runs: [ERR1942969, ERR1942970, ERR1942971]
+      reason: "genotype: mutant / transgenic (cipk3 cipk26 mutant)"
+      why: 'quoted metadata: "cipk3cipk26". Model audit of gold v4 (2026-11-25).'
+    - study: PRJEB32782
+      runs: [ERR3770566, ERR3770567, ERR3770568]
+      reason: "not standard RNA-seq (m6A IP)"
+      why: 'quoted metadata: "Col0_miCLIP_1". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1357653
+      runs: [SRR35949276, SRR35949277, SRR35949278]
+      reason: "genotype: mutant / transgenic (AtSUT4 overexpression)"
+      why: 'quoted metadata: "Over expressed AtSUT4". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA362817
+      runs: [SRR5194772, SRR5194773, SRR5194774]
+      reason: "genotype: mutant / transgenic (sc35-scl mutant)"
+      why: 'quoted metadata: "sc35-scl". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA591665
+      runs: [SRR10538402, SRR10538403, SRR10538404]
+      reason: "not standard RNA-seq (subcellular fraction)"
+      why: 'quoted metadata: "cytoplasm rep3 RNA-seq". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA624290
+      runs: [SRR11523197, SRR11523198, SRR11523199]
+      reason: "genotype: other accession / cultivar (autotetraploid Col-0)"
+      why: 'quoted metadata: "at_inflorescence_RNA_rep3_4x Col". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA316096
+      runs: [SRR3285590, SRR3285592]
+      reason: "not standard RNA-seq (m6A IP)"
+      why: 'quoted metadata: "WT-IP-biological rep1". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA780468
+      runs: [SRR16947422, SRR16947423]
+      reason: "tissue: cell culture (root callus)"
+      why: 'quoted metadata: "root calli". Model audit of gold v4 (2026-11-25).'
+    - study: PRJEB74219
+      runs: [ERR14787298]
+      reason: "genotype: mutant / transgenic (35S:HSF2A overexpression)"
+      why: 'quoted metadata: "Polyadenylated cDNA from 35S:HSF2A Col0". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1029634
+      runs: [SRR26425334]
+      reason: "genotype: mutant / transgenic (mta mutant)"
+      why: 'quoted metadata: "mta_seedling, polyA RNA, input, rep1". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1193262
+      runs: [SRR31580253]
+      reason: "genotype: mutant / transgenic (mRFP-RABD2b overexpression)"
+      why: 'quoted metadata: "Col-0 mRFP-RABD2b". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1199397
+      runs: [SRR32019140]
+      reason: "genotype: mutant / transgenic (TYDC-THT transgenic line)"
+      why: 'quoted metadata: "RNAseq of engineered Arabidopsis line modified to produce tyramine conjugates constitutively via dual expression of foreign tyrosine decarboxylase (TY". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1199413
+      runs: [SRR32019143]
+      reason: "genotype: mutant / transgenic (TYDC-THT transgenic line)"
+      why: 'quoted metadata: "RNAseq of engineered Arabidopsis line modified to produce tyramine conjugates constitutively via dual expression of foreign tyrosine decarboxylase (TY". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1199421
+      runs: [SRR32019141]
+      reason: "genotype: mutant / transgenic (TYDC-THT transgenic line)"
+      why: 'quoted metadata: "RNAseq of engineered Arabidopsis line modified to produce tyramine conjugates constitutively via dual expression of foreign tyrosine decarboxylase (TY". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1199426
+      runs: [SRR32019147]
+      reason: "genotype: mutant / transgenic (TYDC-THT transgenic line)"
+      why: 'quoted metadata: "Col-0 TYDC-THT-1.3". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA1278948
+      runs: [SRR34022949]
+      reason: "genotype: mutant / transgenic (bak1 lrk10l3 mutant)"
+      why: 'quoted metadata: "bak1l3 ATP". Model audit of gold v4 (2026-11-25).'
+    - study: PRJNA686212
+      runs: [SRR13270805]
+      reason: "not standard RNA-seq (subcellular fraction)"
+      why: 'quoted metadata: "crude mitochondria". Model audit of gold v4 (2026-11-25).'
   Sorghum_bicolor:
     - study: PRJNA302593
       runs: [SRR2924917, SRR2924918]

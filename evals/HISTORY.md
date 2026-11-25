@@ -73,3 +73,4 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-24 | Sorghum_bicolor | scatac-reads | multiome rows name the 737K-arc-v1 whitelist (issue #17) | 1.0 | 1.0 | 1.0 | 3/3 |
 | 2026-11-24 | Arabidopsis_thaliana | scatac-reads | multiome rows name the 737K-arc-v1 whitelist (issue #17) | 1.0 | 1.0 | 1.0 | 9/9 |
 | 2026-11-24 | Arabidopsis_thaliana | rna-seq | cell-culture rule and model-audit exceptions; gold v4 | 1.0 | 1.0 | 1.0 | 24/24 |
+| 2026-11-25 | Arabidopsis_thaliana | rna-seq | second model audit of gold v4; gold v5 | 1.0 | 1.0 | 1.0 | 24/24 |

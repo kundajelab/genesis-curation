@@ -5,6 +5,21 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-25, audit: A. thaliana RNA-seq gold v5
+
+The rebuild drops 339 runs from 49 studies (31,644 → 31,305 rows) and changes nothing else.
+They were found by reviewing 5,811 kept runs of 634 more random studies of gold v4 with the
+same criteria (Opus 5.5); every leave quotes the run's metadata and was read before being
+added to `exceptions.yaml`. Mutant, transgenic, inducible and reporter lines (including
+GFP-sorted root cells), other genotypes (Ler, Col-3, autotetraploid Col-0, a Col-0 x C24
+triploid), callus and protoplasts, and assays that are not expression RNA-seq (subcellular
+fractions, translatome, m6A IP, circular RNA, intron capture, 3' end). For PRJNA1125006 the
+p4h5 lines were told apart from Col-0 by the BioSample phenotype field.
+
+About 6% of these audited runs were wrong (7% in the first audit). The two audits
+reviewed 11,138 runs in 1,309 studies, about half of the studies in the sheet. Uncertain
+answers (about 9%) were left as kept.
+
 ## 2026-11-24, audit: A. thaliana RNA-seq gold v4
 
 The rebuild drops 749 runs (32,393 → 31,644 rows); 77 kept rows change only `sample_id`
