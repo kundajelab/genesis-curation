@@ -839,6 +839,15 @@ rna-seq:
       runs: [ERR1592576, ERR1592577, ERR1592578]
       reason: "tissue: cell culture (protoplasts, callus or cultured cells)"
       why: 'library protocol: "Total RNAs were isolated from the calli of wild type Col". Checked 2026-11-25.'
+    # Found by comparing reads of kept runs with left-out runs (2026-11-25); read by hand.
+    - study: PRJNA808745
+      runs: [SRR22123912, SRR22123913, SRR22123914, SRR22123915, SRR22123916, SRR22123917, SRR22123918, SRR22123919, SRR22123920, SRR22123921, SRR22123922, SRR22123923, SRR22123924, SRR22123925, SRR22123926, SRR22123928, SRR22123996, SRR22123997, SRR22123998, SRR22123999, SRR22124000, SRR22124001, SRR22124002, SRR22124003, SRR22124004, SRR22124005, SRR22124006, SRR22124007, SRR22124008, SRR22124009, SRR22124010, SRR22124012, SRR22124047, SRR22124048, SRR22124049, SRR22124050, SRR22124051, SRR22124052, SRR22124053, SRR22124054, SRR22124055, SRR22124056, SRR22124057, SRR22124058, SRR22124059, SRR22124061, SRR22124062, SRR22124064, SRR22124091, SRR22124092, SRR22124093, SRR22124094, SRR22124095, SRR22124097]
+      reason: "genotype: mutant / transgenic (fwa epiallele and zinc-finger fusion lines)"
+      why: 'sample titles: "RNAseq-SET2-fwa-rep6", "RNAseq-SET1-LHP1-ZF-rep1", "RNAseq-SET6-YPET-ZF-rep1"; genotype field says Columbia-0. SRR22124051 has the reads of fwa_RNAseq_rep-3 (SRR16892935). Checked 2026-11-25.'
+    - study: PRJNA918355
+      runs: [SRR22967615, SRR22967616, SRR22967617]
+      reason: "genotype: mutant / transgenic (clf mutant)"
+      why: 'sample titles: "Col-clf_replicate1"; same reads as mRNA-seq_C24_clf (SRR1618892). Checked 2026-11-25.'
   Sorghum_bicolor:
     - study: PRJNA302593
       runs: [SRR2924917, SRR2924918]

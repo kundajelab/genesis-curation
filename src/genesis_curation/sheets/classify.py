@@ -27,7 +27,7 @@ MUTANT = re.compile(
     r"mutant|knock[- ]?(out|down)|\bko\b|overexpress|\boe\b|\b\w+[- ]ox\b|crispr|cas9|\brnai\b|"
     r"amirna|t-dna|transgen|\bsalk[_ ]|\bsail[_ ]|\bgk[-_]\d|\bwisc|\bflag[_ ]\d|"
     r"\b[a-z]{2,6}\d{1,3}-\d{1,3}\b|\b[a-z]{2,6}\d{1,3}\s*x\s*[a-z]|"  # alleles: abi3-1, pif4-101
-    r"complement|reporter|gfp|gus\b|::|\bline\s*\d|"
+    r"complement|reporter|gfp|gus\b|::|\bline\s*\d|\w-/-|"  # wrky22-/-: homozygous mutant
     r"\bp[a-z0-9]{2,8}:[a-z]|\bntf\d?\b|\bintact\b",  # promoter fusions: p35S:NTF2, pCMZ:NTF
     re.I,
 )

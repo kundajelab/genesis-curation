@@ -65,6 +65,7 @@ def check_classes() -> None:
     assert genotype(AT, "Columbia_0") == "reference (Col-0)"
     assert genotype(AT, "abi3-1") == "mutant / transgenic"
     assert genotype(AT, "phl1") == "mutant / transgenic"  # bare gene name
+    assert genotype(AT, "ProWRKY22:WRKY22wrky22-/- | Col-0") == "mutant / transgenic"
     assert genotype(SB, "Tx430") == "other accession / cultivar"  # same shape, a cultivar
     assert genotype(SB, "BTx623") == "reference (BTx623)"
     assert genotype(SB, "BTx623 bmr6") == "mutant / transgenic"

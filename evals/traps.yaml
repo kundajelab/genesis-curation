@@ -594,3 +594,12 @@ traps:
     why: >-
       Bulk tissue controls of protoplasting studies: dev_stage "before protoplast", "12h
       non-dissociated", and "P. syringae-treated Arabidopsis leaf (bulk)".
+  - id: rna-homozygous-mutant-beside-background
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR30970121, SRR29125854]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      Genotype field "ProWRKY22Sichuan:WRKY22wrky22-/-" next to ecotype Col-0: a complemented
+      wrky22 line (PRJNA1167210). `-/-` marks a homozygous mutant even when Col-0 is also named.

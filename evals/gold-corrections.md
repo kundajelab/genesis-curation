@@ -5,6 +5,23 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-25, evening: A. thaliana RNA-seq gold v7
+
+The rebuild drops 69 runs from 3 studies (31,281 → 31,212 rows); 25 left-out runs change
+only their genotype label. The first reads of kept runs were compared with those of
+left-out runs of the same read count (321 groups); 228 kept runs share reads with a left-out
+run. About half of those pairs are wild-type controls that a weak title rule left out in
+the original study, so they stay kept and no general rule was added. Read by hand, three
+studies were wrong:
+- PRJNA808745 (54 runs): `fwa` epiallele and zinc-finger fusion lines (`LHP1-ZF`, `YPET-ZF`)
+  whose genotype field says Columbia-0; SRR22124051 carries the reads of an `fwa` run of
+  PRJNA779072.
+- PRJNA918355 (3 runs): `Col-clf` mutants; the reads match `mRNA-seq_C24_clf` of PRJNA264544.
+- PRJNA1167210 (12 runs): complemented `wrky22-/-` lines whose genotype field also names
+  Col-0. The builder now reads `-/-` as a mutant.
+Pairs left as they are because the two submissions disagree: PRJNA478084 (Col_0 vs
+`fer4-3`), PRJNA309649 (WT vs `clv3`), PRJNA994122 (LBD40 vs `agl15 agl18`).
+
 ## 2026-11-25, later: A. thaliana RNA-seq gold v6
 
 The rebuild drops 24 runs from 6 studies (31,305 → 31,281 rows) and changes nothing else.
