@@ -41,9 +41,12 @@ per change to confirm it holds.
 
 ## Next
 
-1. Duplicates of left-out runs: the duplicate probe compares kept runs only, so a
-   resubmission of a mutant run is kept unless its own metadata says mutant (SRR27606461,
-   now an exception). Read the BioSample genotype in DAP-seq instead of per-study entries.
+1. Duplicates of left-out runs: tried 2026-11-25. Of 228 kept runs whose reads equal a
+   left-out run's, about half are wild-type controls a weak title rule dropped in the
+   original study, so leaving out every copy would lower precision; the three wrong studies
+   became exceptions (gold v7). Next: use the pairs the other way, to find left-out controls
+   the title rule got wrong. Read the BioSample genotype in DAP-seq instead of per-study
+   entries.
 2. Done 2026-11-24: `--adjudicate-scope alias` sends runs whose alias lacks the wild-type
    word that other aliases of the study carry to the review, as gold v3 did by hand (798
    candidates, 638 left out). Next: run it on rice and on new species before their gold.
