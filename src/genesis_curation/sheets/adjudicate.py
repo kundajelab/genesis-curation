@@ -11,10 +11,11 @@ response, usage and hashes, and replays a cached response for an identical reque
 
 from __future__ import annotations
 
+import csv
 import re
 from collections import Counter
 from collections.abc import Callable, Iterable
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -322,12 +323,46 @@ class Samples(Protocol):
 class Settings:
     """Where `sheets build --adjudicate` finds its model provider and how much it may ask."""
 
-    runtime: Path
+    runtime: Path | None
     provider: str | None = None
     limit: int = 2000
     # "title": every kept run and every run the title rule left out; "alias": only the kept
     # runs `classify.alias_candidates` picks, small enough for a whole species.
     scope: str = "title"
+    # run -> (decision, reason, reason class) recorded by an earlier review; these runs are
+    # not sent again. Without a runtime, the other runs keep the rules' decision.
+    recorded: dict[str, tuple[str, str, str]] = field(default_factory=dict)
+
+
+def recorded_decisions(path: Path) -> dict[str, tuple[str, str, str]]:
+    """Decisions in a runs-qc TSV written by a reviewed build (`adjudication` columns)."""
+    decisions: dict[str, tuple[str, str, str]] = {}
+    with path.open(newline="") as handle:
+        for row in csv.DictReader(handle, delimiter="\t"):
+            if row.get("adjudication"):
+                reason = row.get("reason_left_out", "")
+                prefix = "metadata review: "
+                kind = reason.removeprefix(prefix) if reason.startswith(prefix) else ""
+                decisions[row["run"]] = (row["adjudication"], row["adjudication_reason"], kind)
+    return decisions
+
+
+class Reviewed(Protocol):
+    reason: str
+    adjudication: tuple[str, str] | None
+
+
+def decide(item: Reviewed, decision: str, reason: str, kind: str, counts: Counter[str]) -> None:
+    """Record a decision on a candidate: a keep clears a rule's reason, a leave sets one and
+    an uncertain answer keeps the rules' decision."""
+    item.adjudication = (decision, reason)
+    counts[f"{'leave' if item.reason else 'keep'}->{decision}"] += 1
+    if decision == "keep" and item.reason:
+        item.reason = ""
+    elif decision == "leave" and not item.reason:
+        # Only the class goes in the reason, so scoring classifies it reliably; the model's
+        # explanation is in the adjudication column.
+        item.reason = f"metadata review: {kind or 'other'}"
 
 
 def eligible(reason: str) -> bool:
@@ -357,6 +392,14 @@ def apply(
         for c in candidates
         if eligible(c.reason) and (only is None or c.run["run_accession"] in only)
     ]
+    counts: Counter[str] = Counter()
+    reused = [c for c in pool if c.run["run_accession"] in settings.recorded]
+    for item in reused:
+        decide(item, *settings.recorded[item.run["run_accession"]], counts)
+    pool = [c for c in pool if c.run["run_accession"] not in settings.recorded]
+    summary = {"runs": len(pool), "reused": len(reused)}
+    if settings.runtime is None or not pool:
+        return {**summary, "unreviewed": len(pool), "outcomes": dict(counts)}
     if len(pool) > settings.limit:
         raise ValueError(
             f"{len(pool)} runs to adjudicate is over --adjudicate-limit {settings.limit}"
@@ -368,7 +411,6 @@ def apply(
     by_study: dict[str, list[Any]] = {}
     for item in pool:
         by_study.setdefault(item.run["study_accession"], []).append(item)
-    counts: Counter[str] = Counter()
     tokens = {"prompt_tokens": 0, "completion_tokens": 0}
     for number, (study, group) in enumerate(sorted(by_study.items()), 1):
         text = {"accession": study, "title": group[0].run.get("study_title", ""), "text": ""}
@@ -387,15 +429,7 @@ def apply(
             answers = {d["run"]: d for d in decisions}
             for item in batch:
                 answer = answers[item.run["run_accession"]]
-                item.adjudication = (answer["decision"], answer["reason"])
-                before = "leave" if item.reason else "keep"
-                counts[f"{before}->{answer['decision']}"] += 1
-                if answer["decision"] == "keep" and item.reason:
-                    item.reason = ""
-                elif answer["decision"] == "leave" and not item.reason:
-                    # Only the class goes in the reason, so scoring classifies it reliably;
-                    # the model's explanation is in the adjudication column.
-                    item.reason = f"metadata review: {answer['reason_class'] or 'other'}"
+                decide(item, answer["decision"], answer["reason"], answer["reason_class"], counts)
         if number % 20 == 0:
             log(f"{species.folder}: adjudicated {number}/{len(by_study)} studies")
-    return {"runs": len(pool), "studies": len(by_study), "outcomes": dict(counts), **tokens}
+    return {**summary, "studies": len(by_study), "outcomes": dict(counts), **tokens}

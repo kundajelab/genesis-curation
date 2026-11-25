@@ -87,6 +87,13 @@ ATAC_TREATED = re.compile(
     r"\bcim\b|\bsim\b|regenerat|callus induc|hypocotyl explant|infiltrat|inoculat|\bhpi\b|\bdpi\b",
     re.I,
 )
+_ORGAN = r"(?:leaf|leaves|root|shoot|panicle|seed|stem|flower|anther|sheath|blade|embryo)s?"
+# Callus as one item of an organ list or pool ("Total mRNAs from callus, leaf, panicle ...",
+# "a mixture of 22 organs"): an atlas sample, not cell culture (rice PRJDA67119, PRJDB3605).
+ORGAN_POOL = re.compile(
+    rf"mixture of|\d+ organs|call(?:us|i)\s*,\s*{_ORGAN}|{_ORGAN}\s*,\s*(?:and\s+)?call(?:us|i)",
+    re.I,
+)
 # First match wins, in this order; "shoot" alone is checked after leaf and stem.
 TISSUES: tuple[tuple[str, re.Pattern[str]], ...] = tuple(
     (name, re.compile(pattern, re.I))
@@ -335,7 +342,7 @@ def classify_sample(
             for source in sources
             if source
             for name, pattern in TISSUES
-            if pattern.search(source)
+            if pattern.search(source) and not (name == "cell culture" and ORGAN_POOL.search(source))
         ),
         "not stated",
     )
@@ -458,6 +465,15 @@ def alias_flag(run: Run, reference: re.Pattern[str]) -> str:
     # Irradiation and EMS name a treatment of the sample ("Irradiated or unirradiated").
     words = (m for m in TRANSGENE.finditer(alias) if not re.match(r"(?i)irradiat|ems$", m.group(1)))
     match = next(words, None) or ALIAS_ALLELE.search(alias)
+    # An allele-like code ("we12-1": WT embryo, 12 h) does not count when the run's own title
+    # says wild type and names neither a mutant nor the code's stem (rice, PRJNA1155004). A
+    # study title listing "nrp1 nrp2, mrg1 mrg2 ... and WT" names the stem, so nrp2-1 counts.
+    if match and match.re is ALIAS_ALLELE:
+        stem = re.sub(r"-\d+$", "", match.group(1))
+        for field in ("sample_title", "experiment_title"):
+            text = run.get(field, "")
+            if states_wild_type(text) and not re.search(rf"mutant|{stem}", text, re.I):
+                return ""
     return f"sample alias suggests a transgene or mutant ({match.group(1)})" if match else ""
 
 
@@ -479,7 +495,11 @@ def cell_culture_flag(run: Run) -> str:
     protocol often describes both the protoplasts and the bulk tissue of a study."""
     for field in ("sample_alias", "sample_title", "experiment_title", "dev_stage"):
         text = run.get(field, "")
-        if PROCESSED_CELLS.search(text) and not INTACT_TISSUE.search(text):
+        if (
+            PROCESSED_CELLS.search(text)
+            and not INTACT_TISSUE.search(text)
+            and not ORGAN_POOL.search(text)
+        ):
             return f"{field}: {text[:80]}"
     return ""
 

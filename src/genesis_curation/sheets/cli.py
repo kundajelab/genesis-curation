@@ -188,17 +188,19 @@ def run_build(args: argparse.Namespace) -> tuple[dict[str, Any], int]:
 
 def adjudication_settings(args: argparse.Namespace) -> adjudicate.Settings | None:
     runtime = getattr(args, "adjudicate", None)
-    if runtime is None:
+    recorded = getattr(args, "adjudication_from", None)
+    if runtime is None and recorded is None:
         return None
     if args.workflow != rna.WORKFLOW:
         # criteria exist for more workflows (for `genesis eval llm`), but only the RNA-seq
         # builder applies the review so far
-        raise ValueError("--adjudicate supports rna-seq only")
+        raise ValueError("--adjudicate and --adjudication-from support rna-seq only")
     return adjudicate.Settings(
         runtime,
         getattr(args, "adjudicate_provider", None),
         args.adjudicate_limit,
         getattr(args, "adjudicate_scope", "title"),
+        adjudicate.recorded_decisions(recorded) if recorded else {},
     )
 
 
@@ -214,6 +216,7 @@ def build_namespace(**values: object) -> argparse.Namespace:
         "adjudicate_provider": None,
         "adjudicate_limit": 2000,
         "adjudicate_scope": "title",
+        "adjudication_from": None,
         "vdb_dump": None,
         "skip_runs_in": [],
         "offline": False,
@@ -393,6 +396,13 @@ def configure(parser: argparse.ArgumentParser) -> None:
         default="title",
         help="title: every kept run and every run the title rule left out; alias: only kept "
         "runs whose sample alias lacks the wild-type marker other aliases of the study carry",
+    )
+    review.add_argument(
+        "--adjudication-from",
+        type=Path,
+        metavar="RUNS_QC",
+        help="Reuse the decisions a reviewed build recorded in its runs-qc TSV; other runs go "
+        "to the model only with --adjudicate",
     )
     build.add_argument(
         "--extra-runs",

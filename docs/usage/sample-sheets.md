@@ -128,6 +128,11 @@ genesis sheets build --workflow rna-seq --species Sorghum_bicolor --out sb-rna-r
   kept run.
 - The runs-qc table gains `adjudication` and `adjudication_reason` columns, and `build.json`
   gains an `adjudication` block with counts of changed decisions and tokens used.
+- `--adjudication-from RUNS_QC` reapplies the decisions recorded in an earlier build's
+  runs-qc table (its `adjudication` columns) to the same runs, with no model call. With
+  `--adjudicate`, only runs that table does not cover are sent. Use it to rebuild a sheet after
+  a rule change without paying for the review again; `build.json` counts the runs `reused`
+  and those left `unreviewed`.
 
 The criteria the model applies are in `src/genesis_curation/sheets/adjudicate.py`. How well it
 agrees with hand-checked answers is measured by `genesis eval llm` (see

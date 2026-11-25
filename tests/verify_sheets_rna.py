@@ -74,6 +74,8 @@ def check_classes() -> None:
         ("root protoplasts", "cell culture"),
         ("hypocotyl explant-derived callus", "cell culture"),
         ("Cell suspension culture", "cell culture"),
+        ("Total mRNAs from callus, leaf, panicle, root, seed, and shoot", "seed"),
+        ("a mixture of 22 organs (Sheath, Blade, Callus)", "leaf"),
         ("leaves infiltrated with a bacterial suspension", "leaf"),
     ):
         found = classify.classify_sample(AT, Sample("S", attributes={"tissue": tissue}), run())
@@ -90,6 +92,7 @@ def check_classes() -> None:
         ("sample_title", "root explants, callus induction 4 d", False),
         ("sample_title", "callose synthase gsl8", False),
         ("sample_title", "Col-0 leaf protocol B", False),
+        ("sample_title", "Total mRNAs from callus, leaf, panicle and root", False),
     ):
         assert bool(classify.cell_culture_flag({field: text})) is flagged, (field, text)
     assert genotype(AT, "wild type") == "wild type, accession not stated"
@@ -181,6 +184,14 @@ def check_assays() -> None:
         "FN.pp5-1",
     ):
         assert classify.alias_flag(run(sample_alias=alias), reference) == "", alias
+    # An allele-like code beside a run title saying wild type (rice: we12-1 = WT embryo, 12 h),
+    # unless the title names the code's stem or a mutant.
+    wt = run(sample_alias="we12-1", experiment_title="WT embryo, 12 hours after imbibition")
+    assert classify.alias_flag(wt, reference) == ""
+    mt = run(sample_alias="me12-1", experiment_title="mutant embryo, 12 hours after imbibition")
+    assert classify.alias_flag(mt, reference)
+    listed = run(sample_alias="nrp1 nrp2-1", experiment_title="seedlings: nrp1 nrp2 and WT")
+    assert classify.alias_flag(listed, reference)
     for title in ("RNA-seq of Col-0 (control for 10X tpp-KO)", "chromatin interaction network"):
         assert classify.assay_flag(run(experiment_title=title)) == "", title
     assert classify.assay_flag(run(sample_title="chromatin-bound RNA")).endswith("fraction)")
@@ -492,6 +503,26 @@ def check_alias_candidates() -> None:
         )
     assert seen == ["SRR2"] and summary["runs"] == 1, (seen, summary)
     assert items[1].reason == "metadata review: genotype" and not items[0].reason
+    # decisions recorded by a reviewed build are reused without a provider
+    with tempfile.TemporaryDirectory() as tmp:
+        qc = Path(tmp) / "runs-qc.tsv"
+        qc.write_text(
+            "run\treason_left_out\tadjudication\tadjudication_reason\n"
+            "SRR1\tmetadata review: tissue\tleave\tcallus\n"
+            "SRR3\t\tkeep\ttreated wild type\n"
+            "SRR4\tgenotype: not stated\t\t\n"
+        )
+        recorded = adjudicate.recorded_decisions(qc)
+    assert recorded == {
+        "SRR1": ("leave", "callus", "tissue"),
+        "SRR3": ("keep", "treated wild type", ""),
+    }, recorded
+    items = [rna.Candidate(r, sample=classify.classify_sample(AT, Sample("S"), r)) for r in study]
+    items[2].reason = "sample title suggests a mutant"
+    settings = adjudicate.Settings(None, recorded=recorded)
+    summary = adjudicate.apply(items, AT, "rna-seq", mock.Mock(), settings, lambda _: None)
+    assert items[0].reason == "metadata review: tissue" and not items[2].reason, items
+    assert (summary["reused"], summary["unreviewed"]) == (2, 3), summary
     print("PASS alias candidates go to the metadata review, other kept runs do not")
 
 
