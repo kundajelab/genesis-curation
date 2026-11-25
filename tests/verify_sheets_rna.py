@@ -77,6 +77,20 @@ def check_classes() -> None:
     ):
         found = classify.classify_sample(AT, Sample("S", attributes={"tissue": tissue}), run())
         assert found.tissue == expected, (tissue, found.tissue)
+    # protoplasts or callus named outside the tissue fields (gold v6); bulk controls are tissue
+    for field, text, flagged in (
+        ("sample_alias", "Irradiated or unirradiated seedling protoplasts in the root tip", True),
+        ("sample_title", "At_root_proto_RNA", True),
+        ("sample_title", "Callus_0day_WT_rep1", True),
+        ("dev_stage", "after protoplast", True),
+        ("dev_stage", "before protoplast", False),
+        ("sample_title", "12h non-dissociated rep1", False),
+        ("sample_title", "P. syringae-treated Arabidopsis leaf (bulk, replicate 1)", False),
+        ("sample_title", "root explants, callus induction 4 d", False),
+        ("sample_title", "callose synthase gsl8", False),
+        ("sample_title", "Col-0 leaf protocol B", False),
+    ):
+        assert bool(classify.cell_culture_flag({field: text})) is flagged, (field, text)
     assert genotype(AT, "wild type") == "wild type, accession not stated"
     sample = Sample("SAMN1", attributes={"treatment": "mock", "tissue": "rosette leaves"})
     value = classify.classify_sample(AT, sample, run())

@@ -834,31 +834,11 @@ rna-seq:
       runs: [SRR13270805]
       reason: "not standard RNA-seq (subcellular fraction)"
       why: 'quoted metadata: "crude mitochondria". Model audit of gold v4 (2026-11-25).'
-    # Protoplast and callus runs named outside the tissue fields (alias, title, dev_stage, protocol); read by hand 2026-11-25.
-    - study: PRJNA380494
-      runs: [SRR5378389, SRR5378406, SRR5378407, SRR5378408, SRR5378409, SRR5378410, SRR5378411, SRR5378412, SRR5378413, SRR5378414, SRR5378415, SRR5378416]
-      reason: "tissue: cell culture (protoplasts, callus or cultured cells)"
-      why: 'sample alias: "Irradiated or unirradiated Arabidopsis thaliana seedling protoplasts during PCD in the stele or whole root tip". Checked 2026-11-25.'
-    - study: PRJDB12627
-      runs: [DRR748423, DRR748425, DRR748427]
-      reason: "tissue: cell culture (protoplasts, callus or cultured cells)"
-      why: 'sample title: "Callus_0day_WT_rep1". Checked 2026-11-25.'
+    # Callus named only in the protocol text, which the builder does not read for tissue; 2026-11-25.
     - study: PRJEB15204
       runs: [ERR1592576, ERR1592577, ERR1592578]
       reason: "tissue: cell culture (protoplasts, callus or cultured cells)"
       why: 'library protocol: "Total RNAs were isolated from the calli of wild type Col". Checked 2026-11-25.'
-    - study: PRJNA649267
-      runs: [SRR12340632]
-      reason: "tissue: cell culture (protoplasts, callus or cultured cells)"
-      why: 'sample title: "At_root_proto_RNA". Checked 2026-11-25.'
-    - study: PRJNA881937
-      runs: [SRR21621991, SRR21621995]
-      reason: "tissue: cell culture (protoplasts, callus or cultured cells)"
-      why: 'sample title: "Pooled protoplasts from P. syringae-treated Arabidopsis leaf". Checked 2026-11-25.'
-    - study: PRJNA941486
-      runs: [SRR25360750, SRR25360751, SRR25360752]
-      reason: "tissue: cell culture (protoplasts, callus or cultured cells)"
-      why: 'dev_stage: "after protoplast". Checked 2026-11-25.'
   Sorghum_bicolor:
     - study: PRJNA302593
       runs: [SRR2924917, SRR2924918]

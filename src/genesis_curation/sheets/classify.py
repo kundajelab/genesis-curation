@@ -461,6 +461,29 @@ def alias_flag(run: Run, reference: re.Pattern[str]) -> str:
     return f"sample alias suggests a transgene or mutant ({match.group(1)})" if match else ""
 
 
+# Protoplasts and callus named outside the tissue fields ("Pooled protoplasts from ... leaf",
+# "At_root_proto_RNA", "Callus_0day_WT", dev_stage "after protoplast"); gold v6.
+PROCESSED_CELLS = re.compile(
+    r"(?<![a-z])(?:protoplast\w*|proto(?=[_\W])|call(?:us|i))(?![a-z])", re.I
+)
+# Bulk controls of protoplasting studies, and callus induction on explants (a treatment).
+INTACT_TISSUE = re.compile(
+    r"before protoplast|without protoplast|no protoplast|non-?dissociat|\bbulk\b|callus[ _-]induc",
+    re.I,
+)
+
+
+def cell_culture_flag(run: Run) -> str:
+    """Protoplasts or callus named in the sample alias, sample title, experiment title or
+    dev_stage of a run whose tissue field names an organ. Protocol text is not read: one
+    protocol often describes both the protoplasts and the bulk tissue of a study."""
+    for field in ("sample_alias", "sample_title", "experiment_title", "dev_stage"):
+        text = run.get(field, "")
+        if PROCESSED_CELLS.search(text) and not INTACT_TISSUE.search(text):
+            return f"{field}: {text[:80]}"
+    return ""
+
+
 def alias_candidates(study_runs: Sequence[Run], reference: re.Pattern[str]) -> set[str]:
     """Runs of one study whose sample alias and sample title both lack the wild-type marker
     that other aliases of the study carry ("hda19-3_rep1" next to "Col-0_rep1"). About 3 in

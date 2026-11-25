@@ -156,7 +156,9 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
                         classify.alias_flag(run, titles[run["study_accession"]].wild_type),
                         # Protoplasts, callus and cultured cells are not plant tissue (policy
                         # 2026-11-19); checked last, since any other reason is more specific.
-                        TISSUE_LEFT_OUT if value.tissue == "cell culture" else "",
+                        TISSUE_LEFT_OUT
+                        if value.tissue == "cell culture" or classify.cell_culture_flag(run)
+                        else "",
                     )
                     if reason
                 ),
