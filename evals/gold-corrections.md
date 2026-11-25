@@ -5,6 +5,26 @@ Changes to the gold sheets after they were first published. Each one was found b
 has the same list, and each changed run's `reason_left_out` in the `runs-qc` table gives the
 reason. Every correction that reflects a real pitfall also has a trap in `traps.yaml`.
 
+## 2026-11-24, audit: A. thaliana RNA-seq gold v4
+
+The rebuild drops 749 runs (32,393 → 31,644 rows); 77 kept rows change only `sample_id`
+(tissue label), and no run is added.
+
+- 351 runs of protoplasts, callus and cell cultures (33 studies). The builder recorded these
+  as tissue `cell culture` but never left them out; it now does (policy 2026-11-19). Bare
+  "suspension" no longer means cell culture: protocol text also uses it for bacterial
+  inocula, which had mislabelled the tissue of 77 kept rows.
+- 398 runs from 56 studies, found by reviewing 5,359 kept runs of 685 random studies with
+  the adjudication criteria (Opus 5.5). Every leave quotes the run's metadata and was read
+  before being added to `exceptions.yaml`: mutant, transgenic, inducible and reporter lines
+  (including mock samples of inducible lines), other genotypes (Col-2, FRI-Col, tetraploid
+  Col-0, two hybrids), and assays that are not expression RNA-seq (5'P-seq, TAIL-seq,
+  PAL-seq, RNase R circRNA, nascent, polysome, chromatin-bound, nuclear and organelle RNA).
+  The six Col-0 runs of PRJNA1327086 (5P-seq) were found by the builder's alias review.
+
+About 7% of the audited runs were wrong, so the remaining 2,105 studies probably hold a
+similar share; the uncertain answers (about 7%) were left as kept.
+
 ## 2026-11-24, later: multiome ATAC whitelist (issue #17)
 
 The 36 `10x-multiome-atac` rows of the scATAC-reads gold (25 A. thaliana, 11 Sorghum) name

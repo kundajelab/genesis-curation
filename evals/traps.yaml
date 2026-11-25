@@ -540,3 +540,38 @@ traps:
       Col-0 samples whose aliases lack the study's wild-type word: 'PFBS treated 1 d_1'
       (chemical treatment), 'HWT1' (heat-treated WT) and 'R10_WTU6HI' (WT glued to other
       codes).
+  - id: rna-cell-culture-left-out
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR12005725, SRR32695499, SRR29019639]
+    expect: excluded
+    reason_class: tissue
+    why: >-
+      Root protoplasts (PRJNA639173), callus (PRJNA1236008) and a cell suspension culture
+      (PRJNA1111441): not plant tissue (policy 2026-11-19).
+  - id: rna-bacterial-suspension-is-not-cell-culture
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [ERR1406259, ERR3455852]
+    expect: included
+    why: >-
+      Plants whose protocol text mentions a bacterial suspension (PRJEB13938, PRJEB33743);
+      only cell suspensions are cell culture.
+  - id: rna-assay-named-only-in-study-text
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR8463991, SRR2187589, SRR35762213]
+    expect: excluded
+    reason_class: assay
+    why: >-
+      Col-0 runs whose method shows only in the study or protocol text: circRNA libraries
+      treated with RNase R, TAIL-seq, and 5P-seq (5'-phosphate decay intermediates).
+  - id: rna-mock-of-transgenic-line
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [SRR5219233, SRR11090074]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      Mock samples of inducible transgenic lines ('cyc-mock1' of p16:HEC1-GR, GUS_XVE):
+      untreated, but not wild-type Col-0.

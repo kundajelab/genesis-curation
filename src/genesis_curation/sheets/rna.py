@@ -145,9 +145,6 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
                         "sample under 1M reads" if depth < MIN_SAMPLE_READS else "",
                         "" if classify.is_reference(value) else f"genotype: {value.genotype}",
                         classify.assay_flag(run),
-                        # Protoplasts, callus and cultured cells are not plant tissue
-                        # (policy 2026-11-19; 428 such runs were in gold v3).
-                        TISSUE_LEFT_OUT if value.tissue == "cell culture" else "",
                         curated.get(run["run_accession"], ""),
                         item.reads.reason,
                         titles[run["study_accession"]].flag(run),
@@ -157,6 +154,9 @@ def metadata(species: Species, archive: Archive, log: Callable[[str], None]) -> 
                             stated[accession] if run["study_accession"] in mixed_studies else "",
                         ),
                         classify.alias_flag(run, titles[run["study_accession"]].wild_type),
+                        # Protoplasts, callus and cultured cells are not plant tissue (policy
+                        # 2026-11-19); checked last, since any other reason is more specific.
+                        TISSUE_LEFT_OUT if value.tissue == "cell culture" else "",
                     )
                     if reason
                 ),
