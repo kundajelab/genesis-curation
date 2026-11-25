@@ -57,6 +57,36 @@ gold:
     sheet_sha256: 9a6c7fcb78e60c1d3bfeca1229e3b687da7a08b832478764f98a506b9bee5489
     runs_qc: Sorghum_bicolor/scatac-reads-curated.runs-qc.tsv
     runs_qc_sha256: 07b8aacba131a21709126c7ae4484f9941c375d6b5755ef9710c91ad607a1ff8
+  - species: Oryza_sativa
+    workflow: rna-seq
+    sheet: Oryza_sativa/rna-seq-curated.tsv
+    sheet_sha256: 4494ae2e249753e205e219b21d43f7ce3ad6dd48069f92857370f23864a93151
+    runs_qc: Oryza_sativa/rna-seq-curated.runs-qc.tsv
+    runs_qc_sha256: 5e1656cfd7567cfec5c08475030dd50394f27fa6e6421890f73186ea5ecea51c
+  - species: Oryza_sativa
+    workflow: atac-seq
+    sheet: Oryza_sativa/atac-seq-curated.tsv
+    sheet_sha256: d133fd71dbbd3590a00a0d4bb502fb35fd28c693908bc20a1e5b2e501eaf9fd2
+    runs_qc: Oryza_sativa/atac-seq-curated.runs-qc.tsv
+    runs_qc_sha256: 2c10d2cf3fdf878a8ec3d932688a62a1cb0805716ae5d032a8e321179ec09ffa
+  - species: Oryza_sativa
+    workflow: dap-seq
+    sheet: Oryza_sativa/dap-seq-curated.tsv
+    sheet_sha256: d11024c6de0b3320de9ebe1db615f76d33aea43c0a4ddcdd06514ed779a9e2cc
+    runs_qc: Oryza_sativa/dap-seq-curated.runs-qc.tsv
+    runs_qc_sha256: 2cdcdce8f64d20d8b3c1faa53903a43aebf7d7b19102a7e1d7267d646c283edd
+  - species: Oryza_sativa
+    workflow: tss-seq
+    sheet: Oryza_sativa/tss-seq-curated.tsv
+    sheet_sha256: 83163327d1ecacff4e61fb1e945402af23b15ae9e146e4c08f5f19d8762b9c75
+    runs_qc: Oryza_sativa/tss-seq-curated.runs-qc.tsv
+    runs_qc_sha256: c1bc129cd5da6fb1d8ab50b8007103c5cf5bd458c49fc7cc9dad53cd7ba01825
+  - species: Oryza_sativa
+    workflow: scatac-reads
+    sheet: Oryza_sativa/scatac-reads-curated.tsv
+    sheet_sha256: 72b85fe97eb6f94595561fc05f06d13b578cf13ff58fd2f1d6c4da5c0bcb72ca
+    runs_qc: Oryza_sativa/scatac-reads-curated.runs-qc.tsv
+    runs_qc_sha256: c93302ca43d5c205ab78f826aa1ef3cec64fae95ceb8af1e3ee8b5a546c6725b
 # DAP-seq sheets that were in the genesis-preprocessing repository. The curated DAP sheets leave
 # their studies out, so `campaign` skips them too (as --dap-skip-runs-in would).
 repository_sheets:

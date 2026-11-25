@@ -76,3 +76,4 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-25 | Arabidopsis_thaliana | rna-seq | second model audit of gold v4; gold v5 | 1.0 | 1.0 | 1.0 | 24/24 |
 | 2026-11-25 | Arabidopsis_thaliana | rna-seq | protoplasts and callus named outside tissue fields; gold v6 | 1.0 | 1.0 | 1.0 | 26/26 |
 | 2026-11-25 | Arabidopsis_thaliana | rna-seq | fwa, clf and -/- lines found by read comparison; gold v7 | 1.0 | 1.0 | 1.0 | 27/27 |
+| 2026-11-25 | Oryza_sativa | all | first rice gold; organ-pool callus and WT-titled alias codes kept (A. thaliana gold unchanged) | — | — | — | 27/27 |

@@ -50,8 +50,10 @@ per change to confirm it holds.
 2. Done 2026-11-24: `--adjudicate-scope alias` sends runs whose alias lacks the wild-type
    word that other aliases of the study carry to the review, as gold v3 did by hand (798
    candidates, 638 left out). Next: run it on rice and on new species before their gold.
-3. Publish measured rice sheets (RNA-seq with the model review, ATAC, DAP, TSS, scATAC) and
-   add rice to `gold.yaml`, so rice is scored like the other two species.
+3. Done 2026-11-25: rice sheets for all five workflows are on the bucket and in `gold.yaml`
+   (RNA 5,532, ATAC 27, scATAC 46, TSS 4, DAP 350). The RNA sheet reuses the 2026-11-19 model
+   review (`--adjudication-from`). Next: measure the 42 ATAC and 4 TSS runs still unmeasured,
+   and audit rice RNA as A. thaliana was (no rice traps yet).
 4. Bring uncertain answers under 5% for ATAC and TSS; read which runs the model leaves
    uncertain and decide whether the criteria or the verified labels should say more.
 5. Triage: show the model each study's experiment counts by library strategy, so studies whose
