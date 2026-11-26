@@ -603,3 +603,22 @@ traps:
     why: >-
       Genotype field "ProWRKY22Sichuan:WRKY22wrky22-/-" next to ecotype Col-0: a complemented
       wrky22 line (PRJNA1167210). `-/-` marks a homozygous mutant even when Col-0 is also named.
+  - id: rna-wild-type-control-of-mutant-study-kept
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [DRR354226, SRR7264182, SRR30315613]
+    expect: included
+    why: >-
+      Wild-type runs of mutant studies: sample title "wild type control for ice1 mutant"
+      (PRJDB13231), and aliases "WT KCl" and "WT_10H_H_4" under an experiment title every run
+      of the study shares ("RNA-seq of sdg8 mutant and WT", "RNAseq of erfVII") (PRJNA474698,
+      PRJNA1150224).
+  - id: rna-mutant-beside-wild-type-control-excluded
+    species: Arabidopsis_thaliana
+    workflow: rna-seq
+    runs: [DRR354232, SRR7264188]
+    expect: excluded
+    reason_class: genotype
+    why: >-
+      The mutants of the same studies: sample title "ice1 mutant" (PRJDB13231) and alias
+      "sdg8-5 KCl" (PRJNA474698).

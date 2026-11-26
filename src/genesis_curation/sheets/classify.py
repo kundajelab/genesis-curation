@@ -543,6 +543,12 @@ TITLE_TREATMENT = re.compile(
 )
 
 
+# "wild-type T locus control for cbp80 mutant": the wild type of a mutant experiment.
+WILD_TYPE_CONTROL_FOR = re.compile(
+    r"(?<![a-z])(wt|wild[- ]?type|wildtype)(?![a-z]).*\bcontrols? (for|of)\b", re.I
+)
+
+
 class StudyTitles:
     """Within-study title rules: a run is flagged when other titles of its study carry a
     wild-type marker that its own title lacks, or when its own title names a mutant or
@@ -563,6 +569,14 @@ class StudyTitles:
         labels = [label(run) for run in study_runs]
         self.study_wild_type = any(self.wild_type.search(label) for label in labels)
         self.study_control = any(TITLE_CONTROL.search(label) for label in labels)
+        # Sample titles or aliases every run of a multi-run study shares describe the study
+        # ("RNA-seq analysis of WT, pskr1 and stop1"), not the sample.
+        self.shared = {
+            field: values.pop()
+            for field in ("sample_title", "sample_alias", "experiment_title")
+            if len(study_runs) > 1
+            and len(values := {run.get(field, "") for run in study_runs}) == 1
+        }
 
     def treatment(self, run: Run) -> str:
         """A treatment the titles show, or ''."""
@@ -590,11 +604,35 @@ class StudyTitles:
 
     def flag(self, run: Run) -> str:
         label = self.label(run)
+        # The run's own sample title and alias. When they say wild type, a mutant word in the
+        # experiment title ("mRNAseq of a GatCAB mutant", shared by WT-1 and gatb_1-1) or a
+        # "control for <mutant>" phrase does not make it a mutant (duplicate-pair review).
+        title, alias = (
+            run.get(field, "") if self.shared.get(field) != run.get(field, "") else ""
+            for field in ("sample_title", "sample_alias")
+        )
+        own = f"{title} | {alias}"
+        # A run-specific experiment title naming a mutant ("pgdh x s1 mutant aerial part 1"
+        # under a sample titled "WT A") still counts unless it also says wild type.
+        experiment = run.get("experiment_title", "")
+        own_wild_type = (
+            bool(re.search(TITLE_WILD_TYPE, own, re.I))
+            and (not TITLE_MUTANT.search(own) or bool(WILD_TYPE_CONTROL_FOR.search(own)))
+            and (
+                not TITLE_MUTANT.search(experiment)
+                or self.shared.get("experiment_title") == experiment
+                or bool(re.search(TITLE_WILD_TYPE, experiment, re.I))
+            )
+        )
         reasons = []
-        if self.study_wild_type and not self.wild_type.search(label):
+        if (
+            self.study_wild_type
+            and not self.wild_type.search(label)
+            and not self.wild_type.search(alias)
+        ):
             reasons.append("no wild-type marker, which other titles of the study have")
         mutant = TITLE_MUTANT.search(label)
-        if mutant:
+        if mutant and not own_wild_type:
             reasons.append(f"names a mutant or transgene ({mutant.group(1)})")
         return "sample title suggests a mutant: " + "; ".join(reasons) if reasons else ""
 

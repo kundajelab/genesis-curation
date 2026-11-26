@@ -44,9 +44,10 @@ per change to confirm it holds.
 1. Duplicates of left-out runs: tried 2026-11-25. Of 228 kept runs whose reads equal a
    left-out run's, about half are wild-type controls a weak title rule dropped in the
    original study, so leaving out every copy would lower precision; the three wrong studies
-   became exceptions (gold v7). Next: use the pairs the other way, to find left-out controls
-   the title rule got wrong. Read the BioSample genotype in DAP-seq instead of per-study
-   entries.
+   became exceptions (gold v7). Done 2026-11-26 (gold v8): the title rule keeps wild-type runs
+   whose own title or alias says WT although a title every run shares names the mutant, or
+   that are named "wild type control for <mutant>": 95 runs in 28 studies, all read as WT by
+   hand. Next: read the BioSample genotype in DAP-seq instead of per-study entries.
 2. Done 2026-11-24: `--adjudicate-scope alias` sends runs whose alias lacks the wild-type
    word that other aliases of the study carry to the review, as gold v3 did by hand (798
    candidates, 638 left out). Next: run it on rice and on new species before their gold.

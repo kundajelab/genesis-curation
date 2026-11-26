@@ -220,6 +220,36 @@ def check_assays() -> None:
     assert hours.treatment(run(sample_title="seedling_12h_rep1")) == "title: 12h"
     assert hours.treatment(run(sample_title="seedling_0h_rep1")) == ""
     assert "no wild-type marker" in rule.flag(study[2])
+    # A wild type named as the control of a mutant experiment stays.
+    control = [
+        run(experiment_title="cbp80 RNA-seq", sample_title="wild-type control for cbp80 mutant"),
+        run(experiment_title="cbp80 RNA-seq", sample_title="cbp80 mutant rep1"),
+    ]
+    rule = classify.StudyTitles(AT, control)
+    assert rule.flag(control[0]) == ""
+    assert "names a mutant" in rule.flag(control[1])
+    # A mutant named only in a title every run shares says nothing about each run.
+    shared = [
+        run(experiment_title="gatcab mutant RNA-seq", sample_title="WT rep1"),
+        run(experiment_title="gatcab mutant RNA-seq", sample_title="WT rep2"),
+    ]
+    rule = classify.StudyTitles(AT, shared)
+    assert rule.flag(shared[0]) == "" and rule.flag(shared[1]) == ""
+    # ...and a shared alias naming WT does not give the mutant runs a wild-type marker.
+    listed = [
+        run(sample_alias="RNA-seq analysis of WT, pskr1 and stop1", sample_title="pskr1 rep1"),
+        run(sample_alias="RNA-seq analysis of WT, pskr1 and stop1", sample_title="WT rep1"),
+    ]
+    rule = classify.StudyTitles(AT, listed)
+    assert "no wild-type marker" in rule.flag(listed[0])
+    assert rule.flag(listed[1]) == ""
+    # A run-specific experiment title naming a mutant overrides a wild-type sample title.
+    own = [
+        run(experiment_title="RNA-seq of pif4 mutant", sample_title="WT rep1"),
+        run(experiment_title="RNA-seq of Col-0", sample_title="WT rep2"),
+    ]
+    rule = classify.StudyTitles(AT, own)
+    assert rule.flag(own[0]) != "" and rule.flag(own[1]) == ""
     # issue #13: a treatment stated only in the study text comes from data/treatments.yaml
     treated = run(run_accession="DRR737566", study_accession="PRJDB36269")
     assert "nitrogen deprivation" in classify.curated_treatment("Oryza_sativa", treated)
