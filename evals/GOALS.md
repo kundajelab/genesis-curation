@@ -53,8 +53,9 @@ per change to confirm it holds.
    candidates, 638 left out). Next: run it on rice and on new species before their gold.
 3. Done 2026-11-25: rice sheets for all five workflows are on the bucket and in `gold.yaml`
    (RNA 5,532, ATAC 27, scATAC 46, TSS 4, DAP 350). The RNA sheet reuses the 2026-11-19 model
-   review (`--adjudication-from`). Next: measure the 42 ATAC and 4 TSS runs still unmeasured,
-   and audit rice RNA as A. thaliana was (no rice traps yet).
+   review (`--adjudication-from`). 2026-11-26: the 42 ATAC and 4 TSS runs held back are
+   measured and in gold (ATAC 69, TSS 8). Next: audit rice RNA as A. thaliana was (no rice
+   traps yet).
 4. Bring uncertain answers under 5% for ATAC and TSS; read which runs the model leaves
    uncertain and decide whether the criteria or the verified labels should say more.
 5. Triage: show the model each study's experiment counts by library strategy, so studies whose

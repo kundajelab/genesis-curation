@@ -66,9 +66,9 @@ gold:
   - species: Oryza_sativa
     workflow: atac-seq
     sheet: Oryza_sativa/atac-seq-curated.tsv
-    sheet_sha256: d133fd71dbbd3590a00a0d4bb502fb35fd28c693908bc20a1e5b2e501eaf9fd2
+    sheet_sha256: d610980029e60f35c605475e83c2123eba6cf4db133c8ea79da4eedba9f59f2d
     runs_qc: Oryza_sativa/atac-seq-curated.runs-qc.tsv
-    runs_qc_sha256: 2c10d2cf3fdf878a8ec3d932688a62a1cb0805716ae5d032a8e321179ec09ffa
+    runs_qc_sha256: 26b7de9ef24e0cef98569b13ced55c53da8283b919e575a3f94b02cd7a6feca0
   - species: Oryza_sativa
     workflow: dap-seq
     sheet: Oryza_sativa/dap-seq-curated.tsv
@@ -78,9 +78,9 @@ gold:
   - species: Oryza_sativa
     workflow: tss-seq
     sheet: Oryza_sativa/tss-seq-curated.tsv
-    sheet_sha256: 83163327d1ecacff4e61fb1e945402af23b15ae9e146e4c08f5f19d8762b9c75
+    sheet_sha256: 50d7f7d0d821c759c9004e8e0e583d7369244837fb61691f28e28a7dc0f3cdaf
     runs_qc: Oryza_sativa/tss-seq-curated.runs-qc.tsv
-    runs_qc_sha256: c1bc129cd5da6fb1d8ab50b8007103c5cf5bd458c49fc7cc9dad53cd7ba01825
+    runs_qc_sha256: b4a7360bad20981bed7e6bf5577cd42d5bad4c8e6df902d565fd01c49d763951
   - species: Oryza_sativa
     workflow: scatac-reads
     sheet: Oryza_sativa/scatac-reads-curated.tsv

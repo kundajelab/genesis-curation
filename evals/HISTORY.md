@@ -78,3 +78,5 @@ One row per scored candidate (`genesis sheets score --history evals/HISTORY.md`)
 | 2026-11-25 | Arabidopsis_thaliana | rna-seq | fwa, clf and -/- lines found by read comparison; gold v7 | 1.0 | 1.0 | 1.0 | 27/27 |
 | 2026-11-25 | Oryza_sativa | all | first rice gold; organ-pool callus and WT-titled alias codes kept (A. thaliana gold unchanged) | — | — | — | 27/27 |
 | 2026-11-26 | Arabidopsis_thaliana | rna-seq | wild-type controls of mutant studies kept; gold v8 | 1.0 | 1.0 | 1.0 | 29/29 |
+| 2026-11-26 | Oryza_sativa | atac-seq | 42 ATAC and 4 TSS runs measured; rice gold v2 | 1.0 | 1.0 | 1.0 | 0/0 |
+| 2026-11-26 | Oryza_sativa | tss-seq | 42 ATAC and 4 TSS runs measured; rice gold v2 | 1.0 | 1.0 | 1.0 | 0/0 |
