@@ -1,6 +1,6 @@
 # Gold sample sheets used by `genesis sheets score`. Fetch with `genesis sheets gold-fetch --to DIR`.
-# They are the curated sheets on the Stanford-Genesis Hugging Face bucket as of 2026-11-18,
-# after the corrections in gold-corrections.md.
+# They are the curated sheets on the Stanford-Genesis Hugging Face bucket (versions in
+# HISTORY.md; corrections in gold-corrections.md).
 base_url: https://huggingface.co/buckets/Stanford-Genesis/genesis-curation/resolve/curated-sample-sheets
 gold:
   - species: Arabidopsis_thaliana
@@ -57,6 +57,12 @@ gold:
     sheet_sha256: 9a6c7fcb78e60c1d3bfeca1229e3b687da7a08b832478764f98a506b9bee5489
     runs_qc: Sorghum_bicolor/scatac-reads-curated.runs-qc.tsv
     runs_qc_sha256: 07b8aacba131a21709126c7ae4484f9941c375d6b5755ef9710c91ad607a1ff8
+  - species: Sorghum_bicolor
+    workflow: tss-seq
+    sheet: Sorghum_bicolor/tss-seq-curated.tsv
+    sheet_sha256: e6763fe03946e8e547638dd684954bec393fa255fd98f1228d8bfcacb91bdbcb
+    runs_qc: Sorghum_bicolor/tss-seq-curated.runs-qc.tsv
+    runs_qc_sha256: a1a8801be7a0b0148fdd32ac71d4b49be5ff73fa6e3079eb685502e9d4b888a6
   - species: Oryza_sativa
     workflow: rna-seq
     sheet: Oryza_sativa/rna-seq-curated.tsv
